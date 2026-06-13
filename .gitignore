@@ -1,0 +1,120 @@
+# Python
+
+**pycache**/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+
+venv/
+.venv/
+env/
+ENV/
+
+# Environment Variables
+
+.env
+.env.*
+!.env.example
+
+# IDE
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Files
+
+.DS_Store
+Thumbs.db
+
+# Logs
+
+logs/
+*.log
+
+# Pytest
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Mypy
+
+.mypy_cache/
+
+# Ruff
+
+.ruff_cache/
+
+# Build
+
+build/
+dist/
+*.egg-info/
+
+# Jupyter
+
+.ipynb_checkpoints/
+
+# SQLAlchemy
+
+*.db
+*.sqlite3
+
+# Alembic
+
+alembic/versions/*.pyc
+
+# Uploaded Files
+
+uploads/
+temp/
+tmp/
+
+# Vector Databases (Future RAG)
+
+chroma_db/
+chroma/
+faiss_index/
+faiss/
+vector_store/
+vectorstores/
+
+# LangChain / LlamaIndex Cache
+
+.cache/
+langchain_cache/
+
+# Generated Reports
+
+reports/
+generated_reports/
+
+# Secrets
+
+secrets/
+credentials/
+service_account.json
+
+# Backup Files
+
+*.bak
+*.backup
+
+# Zip Files
+
+*.zip
+
+# Mac/Linux
+
+*.pid
+*.sock
+# Archives
+*.zip
+*.rar
+*.7z
+
+# Large datasets (optional)
+datasets/raw/

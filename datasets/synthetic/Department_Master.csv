@@ -1,0 +1,13 @@
+department_id,department_name,cost_center,head_employee_id
+DEPT-001,Finance,CC-FIN-001,EMP-CORP-00245
+DEPT-002,Procurement,CC-PRO-002,EMP-CORP-00153
+DEPT-003,Human Resources,CC-HR-003,EMP-CORP-00279
+DEPT-004,Information Technology,CC-IT-004,EMP-CORP-00577
+DEPT-005,Operations,CC-OPS-005,EMP-CORP-00468
+DEPT-006,Sales & Marketing,CC-SAL-006,EMP-RM467
+DEPT-007,Research & Development,CC-RND-007,EMP-RM722
+DEPT-008,Legal & Compliance,CC-LEG-008,EMP-CORP-00399
+DEPT-009,Internal Audit,CC-AUD-009,MGR-5683
+DEPT-010,Supply Chain,CC-SCH-010,EMP-CORP-00240
+DEPT-011,Risk Management,CC-RSK-011,EMP-CORP-00211
+DEPT-012,Executive Office,CC-EXE-012,EMP-CORP-00496

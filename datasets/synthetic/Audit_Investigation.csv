@@ -1,0 +1,501 @@
+investigation_id,audit_question,investigation_type,status,created_date,completed_date,scope_period_start,scope_period_end,created_by_employee_id
+INV-00001,Which high-risk or critical-risk vendors have received payments in the past 12 months?,VENDOR_RISK_ASSESSMENT,COMPLETED,2022-08-21,2022-09-23,2021-10-04,2022-08-06,EMP-38233
+INV-00002,Are there transactions to the same beneficiary from multiple employees?,CONTRACT_AUDIT,IN_PROGRESS,2023-09-05,,2021-11-18,2023-08-06,EMP-35091
+INV-00003,Which transactions exhibit patterns consistent with split payment fraud?,VENDOR_RISK_ASSESSMENT,COMPLETED,2021-11-20,2022-02-08,2020-04-11,2021-11-19,EMP-16896
+INV-00004,Are there expense claims approved by the submitting employee (self-approval)?,FINANCIAL_INVESTIGATION,ON_HOLD,2021-10-28,,2021-01-26,2021-10-12,EMP-21257
+INV-00005,Which transactions exceeded the approval authority limits of the authorising officer?,EXPENSE_AUDIT,COMPLETED,2021-06-14,2021-10-01,2019-12-26,2021-05-20,EMP-2924
+INV-00006,Which vendors received payments after their compliance certificate expired?,FRAUD_INVESTIGATION,IN_PROGRESS,2022-01-10,,2021-06-12,2022-01-08,EMP-38093
+INV-00007,Which vendors have not completed mandatory compliance assessments?,EXPENSE_AUDIT,COMPLETED,2023-08-27,2023-11-06,2023-05-11,2023-08-22,EMP-72607
+INV-00008,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,COMPLIANCE_REVIEW,COMPLETED,2024-02-26,2024-04-28,2022-06-19,2024-02-22,EMP-31668
+INV-00009,Which transactions exceeded the approval authority limits of the authorising officer?,EXPENSE_AUDIT,COMPLETED,2022-04-22,2022-07-21,2021-12-28,2022-04-18,EMP-1503
+INV-00010,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,POLICY_BREACH_REVIEW,OPEN,2021-11-19,,2020-08-31,2021-10-26,EMP-9213
+INV-00011,Are there transactions approved by employees whose authority limit was insufficient?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2023-12-21,,2022-10-17,2023-11-22,EMP-21847
+INV-00012,Which expense claims were submitted without an attached receipt?,POLICY_BREACH_REVIEW,COMPLETED,2023-03-31,2023-09-15,2021-07-20,2023-03-26,EMP-CORP-00597
+INV-00013,Which vendors have not completed mandatory compliance assessments?,EXPENSE_AUDIT,ON_HOLD,2022-10-16,,2021-09-11,2022-09-21,EMP-62103
+INV-00014,Identify duplicate expense claims submitted by the same employee within 7 days.,FINANCIAL_INVESTIGATION,COMPLETED,2024-05-05,2024-08-06,2023-10-24,2024-04-18,EMP-4111
+INV-00015,Are there transactions approved by employees whose authority limit was insufficient?,FINANCIAL_INVESTIGATION,COMPLETED,2023-06-15,2023-09-23,2022-06-22,2023-05-29,EMP-2356
+INV-00016,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,COMPLIANCE_REVIEW,COMPLETED,2021-10-31,2022-03-25,2020-02-21,2021-10-07,EMP-49948
+INV-00017,Identify duplicate expense claims submitted by the same employee within 7 days.,FRAUD_INVESTIGATION,IN_PROGRESS,2022-09-15,,2020-09-21,2022-08-27,EMP-44180
+INV-00018,Identify all approvals made by terminated employees during the audit period.,COMPLIANCE_REVIEW,IN_PROGRESS,2023-12-14,,2022-11-10,2023-12-13,EMP-53447
+INV-00019,Identify vendors operating without a valid compliance certificate.,CONTRACT_AUDIT,COMPLETED,2021-08-05,2021-08-24,2019-12-19,2021-07-09,EMP-59056
+INV-00020,Identify all approvals made by terminated employees during the audit period.,FRAUD_INVESTIGATION,COMPLETED,2021-12-06,2022-05-31,2020-01-27,2021-11-19,EMP-7014
+INV-00021,Identify vendors operating without a valid compliance certificate.,CONTRACT_AUDIT,IN_PROGRESS,2022-08-16,,2021-10-13,2022-08-08,EMP-26489
+INV-00022,Are there transactions approved by employees whose authority limit was insufficient?,APPROVAL_LIMIT_REVIEW,COMPLETED,2022-07-18,2022-12-22,2021-12-05,2022-07-16,EMP-28173
+INV-00023,Identify contracts with unusually high values relative to vendor risk tier.,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-01-29,2023-07-09,2022-01-19,2023-01-07,EMP-56018
+INV-00024,Identify contracts with unusually high values relative to vendor risk tier.,COMPLIANCE_REVIEW,ON_HOLD,2023-06-24,,2023-01-16,2023-05-30,EMP-35292
+INV-00025,Identify duplicate expense claims submitted by the same employee within 7 days.,COMPLIANCE_REVIEW,COMPLETED,2021-10-27,2022-01-04,2020-09-21,2021-09-30,EMP-20811
+INV-00026,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,FINANCIAL_INVESTIGATION,COMPLETED,2024-02-01,2024-03-21,2023-07-16,2024-01-30,EMP-15247
+INV-00027,Are there expense claims approved by the submitting employee (self-approval)?,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-04-15,2023-09-05,2021-08-19,2023-04-13,EMP-74466
+INV-00028,Are there transactions approved by employees whose authority limit was insufficient?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2024-05-24,,2023-08-13,2024-05-19,EMP-20460
+INV-00029,Which expense claims exceed the policy limit for the stated category?,VENDOR_RISK_ASSESSMENT,COMPLETED,2022-07-31,2022-11-19,2021-10-24,2022-07-21,EMP-69793
+INV-00030,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,EXPENSE_AUDIT,COMPLETED,2021-09-22,2021-11-01,2021-05-14,2021-09-18,EMP-58948
+INV-00031,Which high-risk or critical-risk vendors have received payments in the past 12 months?,POLICY_BREACH_REVIEW,IN_PROGRESS,2024-04-24,,2022-07-29,2024-04-16,EMP-56050
+INV-00032,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2022-04-03,,2021-10-08,2022-03-19,EMP-44179
+INV-00033,Are there transactions to the same beneficiary from multiple employees?,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-06-20,2023-10-11,2022-08-26,2023-06-17,EMP-53875
+INV-00034,Are there active contracts with BLACKLISTED vendors?,COMPLIANCE_REVIEW,COMPLETED,2021-11-04,2022-02-03,2020-06-19,2021-10-24,EMP-58723
+INV-00035,Which transactions exceeded the approval authority limits of the authorising officer?,APPROVAL_LIMIT_REVIEW,COMPLETED,2022-12-23,2023-04-13,2021-09-23,2022-11-26,EMP-55658
+INV-00036,Which contracts have passed their end date but remain in ACTIVE status?,EXPENSE_AUDIT,COMPLETED,2022-09-27,2023-03-08,2021-04-07,2022-09-27,EMP-68400
+INV-00037,Which escalated approvals were not subsequently ratified at the required level?,COMPLIANCE_REVIEW,ON_HOLD,2022-07-05,,2020-12-30,2022-06-09,EMP-56355
+INV-00038,Which contracts have passed their end date but remain in ACTIVE status?,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-12-31,2024-02-25,2023-06-12,2023-12-13,EMP-50842
+INV-00039,Are there active contracts with BLACKLISTED vendors?,COMPLIANCE_REVIEW,IN_PROGRESS,2023-11-20,,2022-06-09,2023-11-03,EMP-29791
+INV-00040,Which vendors received payments after their compliance certificate expired?,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-07-13,2023-08-19,2022-09-11,2023-07-13,EMP-47614
+INV-00041,Which contracts have passed their end date but remain in ACTIVE status?,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-08-11,2024-01-08,2021-09-29,2023-08-07,EMP-31931
+INV-00042,Which expense claims were submitted without an attached receipt?,POLICY_BREACH_REVIEW,COMPLETED,2021-10-25,2021-11-08,2021-03-12,2021-09-30,EMP-38057
+INV-00043,Are there expense claims approved by the submitting employee (self-approval)?,CONTRACT_AUDIT,COMPLETED,2024-01-12,2024-04-12,2023-08-08,2024-01-07,EMP-73095
+INV-00044,Which transactions exceeded the approval authority limits of the authorising officer?,CONTRACT_AUDIT,OPEN,2022-06-02,,2021-07-09,2022-05-07,EMP-65142
+INV-00045,Which transactions exhibit patterns consistent with split payment fraud?,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-12-16,2024-04-21,2022-11-16,2023-11-24,EMP-16134
+INV-00046,Which audit findings are supported by multiple independent evidence sources?,APPROVAL_LIMIT_REVIEW,OPEN,2024-04-08,,2023-04-10,2024-03-20,EMP-36623
+INV-00047,Are there expense claims approved by the submitting employee (self-approval)?,POLICY_BREACH_REVIEW,COMPLETED,2022-05-14,2022-06-18,2021-07-22,2022-04-17,EMP-58617
+INV-00048,Which vendors are marked NON_COMPLIANT under ISO 27001 or SOC 2?,APPROVAL_LIMIT_REVIEW,COMPLETED,2022-08-24,2022-12-04,2020-10-11,2022-08-12,EMP-56520
+INV-00049,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-09-24,2023-12-28,2023-03-07,2023-09-22,EMP-63481
+INV-00050,Which escalated approvals were not subsequently ratified at the required level?,FRAUD_INVESTIGATION,IN_PROGRESS,2022-09-16,,2021-12-18,2022-09-06,EMP-1093
+INV-00051,Identify duplicate expense claims submitted by the same employee within 7 days.,FRAUD_INVESTIGATION,COMPLETED,2021-07-20,2021-09-09,2020-02-07,2021-07-14,EMP-22668
+INV-00052,Identify vendors operating without a valid compliance certificate.,FRAUD_INVESTIGATION,OPEN,2023-11-13,,2022-02-19,2023-10-16,EMP-56797
+INV-00053,Identify contracts with unusually high values relative to vendor risk tier.,POLICY_BREACH_REVIEW,COMPLETED,2024-04-17,2024-06-07,2023-11-06,2024-03-28,EMP-33562
+INV-00054,Identify transactions with round-number amounts processed outside business hours.,FINANCIAL_INVESTIGATION,COMPLETED,2023-08-29,2024-01-05,2023-05-12,2023-08-21,EMP-43561
+INV-00055,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,FINANCIAL_INVESTIGATION,COMPLETED,2021-09-13,2021-10-03,2020-12-28,2021-09-02,EMP-44322
+INV-00056,Which escalated approvals were not subsequently ratified at the required level?,COMPLIANCE_REVIEW,COMPLETED,2021-06-02,2021-08-23,2019-11-06,2021-05-23,EMP-73835
+INV-00057,Identify vendors operating without a valid compliance certificate.,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2024-05-03,,2023-10-17,2024-04-12,EMP-2651
+INV-00058,Which vendors received payments after their compliance certificate expired?,CONTRACT_AUDIT,IN_PROGRESS,2022-05-29,,2021-08-08,2022-05-01,EMP-52763
+INV-00059,Identify contracts with unusually high values relative to vendor risk tier.,FRAUD_INVESTIGATION,COMPLETED,2023-01-14,2023-02-17,2021-04-14,2023-01-05,EMP-47418
+INV-00060,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,EXPENSE_AUDIT,COMPLETED,2022-11-29,2023-01-28,2020-11-29,2022-11-26,EMP-16080
+INV-00061,Identify duplicate expense claims submitted by the same employee within 7 days.,CONTRACT_AUDIT,COMPLETED,2022-08-11,2023-01-17,2020-11-22,2022-07-22,EMP-36385
+INV-00062,Which expense claims exceed the policy limit for the stated category?,EXPENSE_AUDIT,COMPLETED,2023-08-28,2023-12-07,2022-03-13,2023-08-18,EMP-65007
+INV-00063,Identify contracts with unusually high values relative to vendor risk tier.,CONTRACT_AUDIT,COMPLETED,2024-04-06,2024-06-20,2023-06-28,2024-04-03,EMP-55908
+INV-00064,Which expense claims were submitted without an attached receipt?,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-03-20,2023-08-17,2021-06-21,2023-02-26,EMP-57400
+INV-00065,Which transactions exceeded the approval authority limits of the authorising officer?,FINANCIAL_INVESTIGATION,COMPLETED,2023-11-12,2024-01-10,2022-01-21,2023-11-08,EMP-25402
+INV-00066,Which expense claims exceed the policy limit for the stated category?,CONTRACT_AUDIT,COMPLETED,2022-12-05,2023-04-18,2021-12-26,2022-11-26,EMP-603
+INV-00067,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,POLICY_BREACH_REVIEW,ON_HOLD,2023-01-24,,2022-02-14,2022-12-26,EMP-61355
+INV-00068,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,FRAUD_INVESTIGATION,OPEN,2022-01-10,,2021-01-14,2021-12-27,EMP-64333
+INV-00069,Which vendors have not completed mandatory compliance assessments?,EXPENSE_AUDIT,COMPLETED,2023-06-19,2023-07-26,2021-11-18,2023-05-26,EMP-14891
+INV-00070,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,CONTRACT_AUDIT,COMPLETED,2024-03-13,2024-07-25,2023-10-22,2024-03-01,EMP-62161
+INV-00071,Are there transactions to the same beneficiary from multiple employees?,FINANCIAL_INVESTIGATION,COMPLETED,2022-05-04,2022-08-31,2020-09-22,2022-04-23,EMP-2600
+INV-00072,Identify duplicate expense claims submitted by the same employee within 7 days.,COMPLIANCE_REVIEW,IN_PROGRESS,2021-06-11,,2020-07-25,2021-06-10,EMP-61043
+INV-00073,Which contracts have passed their end date but remain in ACTIVE status?,FINANCIAL_INVESTIGATION,COMPLETED,2022-07-30,2022-09-15,2021-09-29,2022-07-19,EMP-56019
+INV-00074,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,POLICY_BREACH_REVIEW,IN_PROGRESS,2021-09-20,,2020-07-07,2021-09-02,EMP-12754
+INV-00075,Which audit findings are supported by multiple independent evidence sources?,COMPLIANCE_REVIEW,COMPLETED,2023-04-26,2023-09-09,2021-09-30,2023-04-10,EMP-68577
+INV-00076,Are there active contracts with BLACKLISTED vendors?,CONTRACT_AUDIT,COMPLETED,2023-01-21,2023-02-13,2021-11-30,2022-12-24,EMP-38186
+INV-00077,Which transactions exceeded the approval authority limits of the authorising officer?,APPROVAL_LIMIT_REVIEW,ON_HOLD,2021-08-29,,2020-09-18,2021-08-01,EMP-8033
+INV-00078,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,FRAUD_INVESTIGATION,COMPLETED,2024-03-08,2024-07-15,2022-06-28,2024-02-07,EMP-16837
+INV-00079,Which vendors have not completed mandatory compliance assessments?,EXPENSE_AUDIT,COMPLETED,2023-10-18,2024-01-22,2023-06-20,2023-09-25,EMP-1973
+INV-00080,Are there transactions approved by employees whose authority limit was insufficient?,FINANCIAL_INVESTIGATION,COMPLETED,2022-11-22,2022-12-30,2021-08-22,2022-11-17,EMP-24170
+INV-00081,Are there expense claims approved by the submitting employee (self-approval)?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2022-01-01,,2020-03-31,2021-12-07,EMP-68723
+INV-00082,Identify all approvals made by terminated employees during the audit period.,EXPENSE_AUDIT,IN_PROGRESS,2024-01-04,,2023-04-08,2023-12-21,EMP-39039
+INV-00083,Identify all approvals made by terminated employees during the audit period.,VENDOR_RISK_ASSESSMENT,IN_PROGRESS,2022-02-28,,2020-03-15,2022-02-13,EMP-42215
+INV-00084,Which expense claims were submitted without an attached receipt?,POLICY_BREACH_REVIEW,COMPLETED,2024-05-05,2024-06-26,2022-05-15,2024-04-08,EMP-71853
+INV-00085,Which vendors received payments after their compliance certificate expired?,COMPLIANCE_REVIEW,COMPLETED,2022-12-08,2023-05-03,2021-05-29,2022-12-04,EMP-15662
+INV-00086,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,POLICY_BREACH_REVIEW,COMPLETED,2023-04-24,2023-06-29,2022-12-29,2023-04-21,EMP-50858
+INV-00087,Which transactions exhibit patterns consistent with split payment fraud?,COMPLIANCE_REVIEW,COMPLETED,2022-01-27,2022-06-19,2020-12-14,2022-01-18,EMP-51157
+INV-00088,Which escalated approvals were not subsequently ratified at the required level?,FINANCIAL_INVESTIGATION,COMPLETED,2024-05-22,2024-10-14,2022-07-15,2024-04-28,EMP-67443
+INV-00089,Are compliance records current for all vendors with active contracts?,VENDOR_RISK_ASSESSMENT,IN_PROGRESS,2023-06-09,,2023-03-06,2023-05-14,EMP-73472
+INV-00090,Identify transactions with round-number amounts processed outside business hours.,FRAUD_INVESTIGATION,COMPLETED,2024-05-01,2024-08-12,2022-08-20,2024-04-13,EMP-3024
+INV-00091,Identify contracts with unusually high values relative to vendor risk tier.,VENDOR_RISK_ASSESSMENT,IN_PROGRESS,2023-10-30,,2022-05-16,2023-10-22,EMP-18324
+INV-00092,Which escalated approvals were not subsequently ratified at the required level?,FINANCIAL_INVESTIGATION,COMPLETED,2023-07-15,2023-11-07,2022-12-06,2023-07-13,EMP-4190
+INV-00093,Which audit findings are supported by multiple independent evidence sources?,FRAUD_INVESTIGATION,COMPLETED,2022-12-13,2023-01-07,2021-01-02,2022-11-25,EMP-46780
+INV-00094,Identify transactions with round-number amounts processed outside business hours.,FINANCIAL_INVESTIGATION,IN_PROGRESS,2021-08-23,,2020-09-28,2021-08-06,EMP-21210
+INV-00095,Are there transactions approved by employees whose authority limit was insufficient?,FINANCIAL_INVESTIGATION,COMPLETED,2021-10-20,2021-12-21,2021-02-03,2021-09-25,EMP-44807
+INV-00096,Which escalated approvals were not subsequently ratified at the required level?,APPROVAL_LIMIT_REVIEW,COMPLETED,2022-12-02,2023-05-11,2021-11-22,2022-11-08,EMP-4947
+INV-00097,Are there transactions approved by employees whose authority limit was insufficient?,APPROVAL_LIMIT_REVIEW,COMPLETED,2024-05-14,2024-08-24,2023-12-04,2024-05-03,EMP-6141
+INV-00098,Identify contracts with unusually high values relative to vendor risk tier.,FRAUD_INVESTIGATION,COMPLETED,2023-06-28,2023-09-16,2022-11-15,2023-06-27,EMP-56149
+INV-00099,Are there active contracts with BLACKLISTED vendors?,VENDOR_RISK_ASSESSMENT,COMPLETED,2021-07-16,2022-01-02,2021-01-14,2021-07-04,EMP-844
+INV-00100,Which vendors are marked NON_COMPLIANT under ISO 27001 or SOC 2?,COMPLIANCE_REVIEW,COMPLETED,2023-04-10,2023-08-25,2021-09-27,2023-03-25,EMP-48145
+INV-00101,Which expense claims were submitted without an attached receipt?,FINANCIAL_INVESTIGATION,COMPLETED,2021-06-09,2021-08-24,2020-12-09,2021-05-16,EMP-44750
+INV-00102,Which vendors have not completed mandatory compliance assessments?,FINANCIAL_INVESTIGATION,COMPLETED,2022-01-11,2022-03-08,2020-06-25,2022-01-04,EMP-67808
+INV-00103,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2022-04-27,,2021-01-23,2022-04-16,EMP-24043
+INV-00104,Are there transactions approved by employees whose authority limit was insufficient?,FINANCIAL_INVESTIGATION,COMPLETED,2023-12-26,2024-05-16,2023-09-09,2023-11-27,EMP-54144
+INV-00105,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2023-05-06,,2022-02-27,2023-05-04,EMP-28476
+INV-00106,Are there active contracts with BLACKLISTED vendors?,FRAUD_INVESTIGATION,COMPLETED,2024-02-16,2024-03-18,2023-10-09,2024-01-22,EMP-3085
+INV-00107,Are compliance records current for all vendors with active contracts?,FINANCIAL_INVESTIGATION,COMPLETED,2023-04-08,2023-07-19,2023-01-03,2023-03-21,EMP-42430
+INV-00108,Which contracts have passed their end date but remain in ACTIVE status?,EXPENSE_AUDIT,IN_PROGRESS,2024-01-20,,2023-08-09,2023-12-23,EMP-47614
+INV-00109,Which contracts have passed their end date but remain in ACTIVE status?,FINANCIAL_INVESTIGATION,COMPLETED,2022-10-15,2023-02-22,2022-06-20,2022-10-04,EMP-71211
+INV-00110,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,CONTRACT_AUDIT,COMPLETED,2023-09-27,2024-02-07,2021-10-22,2023-09-15,EMP-124
+INV-00111,Which expense claims exceed the policy limit for the stated category?,VENDOR_RISK_ASSESSMENT,COMPLETED,2022-08-18,2023-01-19,2021-06-11,2022-08-04,EMP-39854
+INV-00112,Are there transactions approved by employees whose authority limit was insufficient?,COMPLIANCE_REVIEW,IN_PROGRESS,2022-06-08,,2021-01-07,2022-06-03,EMP-56591
+INV-00113,Which audit findings are supported by multiple independent evidence sources?,CONTRACT_AUDIT,COMPLETED,2022-04-11,2022-07-04,2021-12-23,2022-03-21,EMP-43053
+INV-00114,Which expense claims were submitted without an attached receipt?,VENDOR_RISK_ASSESSMENT,OPEN,2021-06-18,,2020-12-27,2021-06-17,EMP-22563
+INV-00115,Identify duplicate expense claims submitted by the same employee within 7 days.,COMPLIANCE_REVIEW,COMPLETED,2024-01-29,2024-06-26,2023-08-04,2024-01-02,EMP-57375
+INV-00116,Which transactions exhibit patterns consistent with split payment fraud?,FRAUD_INVESTIGATION,COMPLETED,2023-02-19,2023-04-30,2021-07-06,2023-02-06,EMP-43401
+INV-00117,Which transactions exhibit patterns consistent with split payment fraud?,CONTRACT_AUDIT,COMPLETED,2023-12-16,2024-03-18,2023-01-24,2023-12-01,EMP-59062
+INV-00118,Which vendors received payments after their compliance certificate expired?,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-12-31,2024-02-01,2022-01-23,2023-12-31,EMP-32685
+INV-00119,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,COMPLIANCE_REVIEW,COMPLETED,2024-04-12,2024-09-19,2022-11-21,2024-04-08,EMP-33974
+INV-00120,Are there expense claims approved by the submitting employee (self-approval)?,VENDOR_RISK_ASSESSMENT,COMPLETED,2022-10-05,2023-01-25,2022-06-10,2022-09-09,EMP-51710
+INV-00121,Identify vendors operating without a valid compliance certificate.,FINANCIAL_INVESTIGATION,COMPLETED,2021-07-09,2021-10-31,2020-10-25,2021-07-01,EMP-37691
+INV-00122,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-05-15,2023-07-20,2021-09-04,2023-04-17,EMP-29472
+INV-00123,Which vendors are marked NON_COMPLIANT under ISO 27001 or SOC 2?,FINANCIAL_INVESTIGATION,COMPLETED,2021-09-15,2022-03-11,2020-03-09,2021-09-02,EMP-28859
+INV-00124,Are there expense claims approved by the submitting employee (self-approval)?,EXPENSE_AUDIT,COMPLETED,2023-06-15,2023-10-14,2021-09-06,2023-05-27,EMP-70796
+INV-00125,Are there expense claims approved by the submitting employee (self-approval)?,CONTRACT_AUDIT,IN_PROGRESS,2023-04-08,,2021-05-07,2023-03-15,EMP-2730
+INV-00126,Which high-risk or critical-risk vendors have received payments in the past 12 months?,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-05-10,2023-06-24,2021-06-16,2023-04-27,EMP-24972
+INV-00127,Which transactions exceeded the approval authority limits of the authorising officer?,COMPLIANCE_REVIEW,COMPLETED,2022-09-17,2022-10-22,2022-03-17,2022-08-21,EMP-62554
+INV-00128,Are there transactions approved by employees whose authority limit was insufficient?,EXPENSE_AUDIT,IN_PROGRESS,2023-07-27,,2021-11-07,2023-07-04,EMP-41725
+INV-00129,Are there active contracts with BLACKLISTED vendors?,POLICY_BREACH_REVIEW,COMPLETED,2023-10-25,2024-03-12,2023-04-08,2023-10-08,EMP-20809
+INV-00130,Are there expense claims approved by the submitting employee (self-approval)?,APPROVAL_LIMIT_REVIEW,COMPLETED,2022-10-24,2023-03-21,2022-03-06,2022-10-19,EMP-52999
+INV-00131,Are there transactions to the same beneficiary from multiple employees?,APPROVAL_LIMIT_REVIEW,COMPLETED,2021-11-24,2022-01-14,2021-01-11,2021-11-08,EMP-29363
+INV-00132,Which high-risk or critical-risk vendors have received payments in the past 12 months?,CONTRACT_AUDIT,COMPLETED,2023-05-06,2023-10-31,2022-11-06,2023-04-08,EMP-35734
+INV-00133,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,COMPLIANCE_REVIEW,COMPLETED,2023-07-17,2023-11-14,2023-03-03,2023-07-07,EMP-15880
+INV-00134,Which transactions exceeded the approval authority limits of the authorising officer?,FINANCIAL_INVESTIGATION,COMPLETED,2022-11-14,2022-11-30,2020-11-18,2022-10-24,EMP-49613
+INV-00135,Identify duplicate expense claims submitted by the same employee within 7 days.,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-09-21,2023-12-22,2023-04-29,2023-09-17,EMP-60134
+INV-00136,Identify contracts with unusually high values relative to vendor risk tier.,EXPENSE_AUDIT,COMPLETED,2023-01-27,2023-05-05,2021-08-11,2023-01-21,EMP-66058
+INV-00137,Which expense claims exceed the policy limit for the stated category?,APPROVAL_LIMIT_REVIEW,COMPLETED,2022-12-14,2023-06-02,2021-04-19,2022-11-27,EMP-61920
+INV-00138,Identify duplicate expense claims submitted by the same employee within 7 days.,COMPLIANCE_REVIEW,COMPLETED,2024-05-24,2024-09-19,2023-07-15,2024-05-24,EMP-8881
+INV-00139,Are there transactions to the same beneficiary from multiple employees?,FRAUD_INVESTIGATION,COMPLETED,2023-06-08,2023-07-10,2021-10-21,2023-05-10,EMP-635
+INV-00140,Which vendors received payments after their compliance certificate expired?,APPROVAL_LIMIT_REVIEW,COMPLETED,2021-12-25,2022-03-14,2020-05-11,2021-12-24,EMP-69263
+INV-00141,Which high-risk or critical-risk vendors have received payments in the past 12 months?,FINANCIAL_INVESTIGATION,COMPLETED,2021-06-22,2021-08-25,2020-01-07,2021-06-11,EMP-29479
+INV-00142,Identify contracts with unusually high values relative to vendor risk tier.,POLICY_BREACH_REVIEW,COMPLETED,2022-05-21,2022-07-18,2020-07-19,2022-04-24,EMP-62701
+INV-00143,Are there expense claims approved by the submitting employee (self-approval)?,CONTRACT_AUDIT,OPEN,2023-01-02,,2021-09-25,2022-12-15,EMP-18832
+INV-00144,Which vendors received payments after their compliance certificate expired?,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-09-22,2023-11-10,2022-10-10,2023-09-15,EMP-36244
+INV-00145,Which vendors received payments after their compliance certificate expired?,CONTRACT_AUDIT,COMPLETED,2023-11-07,2024-01-24,2022-05-10,2023-11-05,EMP-70944
+INV-00146,Which vendors have not completed mandatory compliance assessments?,FRAUD_INVESTIGATION,COMPLETED,2023-01-07,2023-02-09,2021-08-07,2023-01-07,EMP-12330
+INV-00147,Which vendors have not completed mandatory compliance assessments?,EXPENSE_AUDIT,IN_PROGRESS,2024-03-24,,2022-07-23,2024-03-04,EMP-26530
+INV-00148,Which expense claims exceed the policy limit for the stated category?,FINANCIAL_INVESTIGATION,ON_HOLD,2022-03-19,,2021-10-27,2022-03-14,EMP-62766
+INV-00149,Which contracts have passed their end date but remain in ACTIVE status?,FRAUD_INVESTIGATION,COMPLETED,2021-11-09,2022-05-05,2021-05-24,2021-10-28,EMP-30806
+INV-00150,Identify vendors operating without a valid compliance certificate.,EXPENSE_AUDIT,COMPLETED,2022-03-02,2022-07-09,2020-08-25,2022-02-28,EMP-10251
+INV-00151,Identify transactions with round-number amounts processed outside business hours.,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-01-19,2023-02-13,2022-03-19,2022-12-29,EMP-59172
+INV-00152,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,COMPLIANCE_REVIEW,COMPLETED,2021-06-03,2021-11-19,2020-06-21,2021-05-15,EMP-61094
+INV-00153,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,FRAUD_INVESTIGATION,ON_HOLD,2023-01-04,,2022-10-06,2022-12-13,EMP-60335
+INV-00154,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-04-05,2023-05-27,2021-12-29,2023-03-13,EMP-44362
+INV-00155,Which contracts have passed their end date but remain in ACTIVE status?,VENDOR_RISK_ASSESSMENT,COMPLETED,2024-06-01,2024-08-09,2022-06-21,2024-05-15,EMP-40226
+INV-00156,Identify transactions with round-number amounts processed outside business hours.,VENDOR_RISK_ASSESSMENT,COMPLETED,2021-06-27,2021-12-14,2020-05-22,2021-06-09,EMP-30119
+INV-00157,Which escalated approvals were not subsequently ratified at the required level?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2024-01-08,,2022-12-04,2023-12-16,EMP-57909
+INV-00158,Which transactions exhibit patterns consistent with split payment fraud?,FINANCIAL_INVESTIGATION,COMPLETED,2023-03-30,2023-05-21,2022-10-31,2023-03-27,EMP-28712
+INV-00159,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,VENDOR_RISK_ASSESSMENT,COMPLETED,2021-11-24,2022-01-20,2020-07-09,2021-11-16,EMP-1006
+INV-00160,Are there active contracts with BLACKLISTED vendors?,COMPLIANCE_REVIEW,COMPLETED,2024-05-14,2024-10-01,2023-08-30,2024-04-27,EMP-65362
+INV-00161,Which vendors received payments after their compliance certificate expired?,CONTRACT_AUDIT,OPEN,2022-03-30,,2021-02-12,2022-03-14,EMP-61051
+INV-00162,Which transactions exceeded the approval authority limits of the authorising officer?,COMPLIANCE_REVIEW,COMPLETED,2023-11-16,2024-03-17,2023-06-20,2023-11-07,EMP-28905
+INV-00163,Which expense claims were submitted without an attached receipt?,EXPENSE_AUDIT,COMPLETED,2023-05-31,2023-10-15,2022-06-16,2023-05-21,EMP-43794
+INV-00164,Identify duplicate expense claims submitted by the same employee within 7 days.,APPROVAL_LIMIT_REVIEW,COMPLETED,2024-02-24,2024-04-09,2022-08-07,2024-02-21,EMP-17483
+INV-00165,Which transactions exhibit patterns consistent with split payment fraud?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2022-08-28,,2021-11-28,2022-08-14,EMP-22764
+INV-00166,Which vendors have not completed mandatory compliance assessments?,APPROVAL_LIMIT_REVIEW,COMPLETED,2022-04-10,2022-07-03,2021-11-23,2022-03-14,EMP-71000
+INV-00167,Which transactions exceeded the approval authority limits of the authorising officer?,POLICY_BREACH_REVIEW,COMPLETED,2023-02-16,2023-04-09,2021-03-17,2023-02-15,EMP-45552
+INV-00168,Which vendors have not completed mandatory compliance assessments?,CONTRACT_AUDIT,ON_HOLD,2022-02-24,,2021-07-16,2022-02-23,EMP-12705
+INV-00169,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2022-11-12,,2021-10-05,2022-11-05,EMP-7596
+INV-00170,Which expense claims exceed the policy limit for the stated category?,VENDOR_RISK_ASSESSMENT,COMPLETED,2024-01-02,2024-02-06,2023-08-26,2023-12-17,EMP-27067
+INV-00171,Which high-risk or critical-risk vendors have received payments in the past 12 months?,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-02-04,2023-04-20,2021-10-07,2023-02-03,EMP-65676
+INV-00172,Which transactions exhibit patterns consistent with split payment fraud?,COMPLIANCE_REVIEW,COMPLETED,2023-02-01,2023-04-23,2021-06-23,2023-01-30,EMP-393
+INV-00173,Which expense claims exceed the policy limit for the stated category?,FRAUD_INVESTIGATION,COMPLETED,2021-06-20,2021-11-22,2020-09-06,2021-06-06,EMP-22662
+INV-00174,Which escalated approvals were not subsequently ratified at the required level?,FRAUD_INVESTIGATION,COMPLETED,2022-02-18,2022-04-12,2021-06-14,2022-01-28,EMP-66055
+INV-00175,Identify vendors operating without a valid compliance certificate.,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-01-30,2023-03-06,2021-09-21,2023-01-13,EMP-2843
+INV-00176,Which transactions exceeded the approval authority limits of the authorising officer?,POLICY_BREACH_REVIEW,OPEN,2024-05-29,,2024-02-08,2024-05-01,EMP-62873
+INV-00177,Are there transactions to the same beneficiary from multiple employees?,COMPLIANCE_REVIEW,COMPLETED,2023-03-22,2023-04-14,2021-11-21,2023-03-14,EMP-6423
+INV-00178,Which transactions exhibit patterns consistent with split payment fraud?,EXPENSE_AUDIT,COMPLETED,2022-08-10,2022-10-03,2021-08-11,2022-07-23,EMP-4611
+INV-00179,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,APPROVAL_LIMIT_REVIEW,ON_HOLD,2024-02-12,,2023-05-11,2024-02-12,EMP-43206
+INV-00180,Are compliance records current for all vendors with active contracts?,CONTRACT_AUDIT,COMPLETED,2022-11-28,2023-01-19,2022-08-15,2022-11-23,EMP-27295
+INV-00181,Are compliance records current for all vendors with active contracts?,CONTRACT_AUDIT,COMPLETED,2022-05-24,2022-07-26,2022-01-15,2022-04-30,EMP-74209
+INV-00182,Which transactions exhibit patterns consistent with split payment fraud?,COMPLIANCE_REVIEW,COMPLETED,2022-08-31,2022-09-22,2022-04-14,2022-08-22,EMP-2356
+INV-00183,Identify duplicate expense claims submitted by the same employee within 7 days.,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-05-18,2023-07-06,2021-05-19,2023-05-06,EMP-20593
+INV-00184,Which escalated approvals were not subsequently ratified at the required level?,EXPENSE_AUDIT,COMPLETED,2024-04-30,2024-07-31,2023-03-09,2024-04-05,EMP-27678
+INV-00185,Are compliance records current for all vendors with active contracts?,FRAUD_INVESTIGATION,IN_PROGRESS,2023-01-23,,2021-05-25,2023-01-09,EMP-33300
+INV-00186,Are there active contracts with BLACKLISTED vendors?,VENDOR_RISK_ASSESSMENT,COMPLETED,2022-05-12,2022-06-01,2021-08-15,2022-04-25,EMP-50095
+INV-00187,Are there transactions to the same beneficiary from multiple employees?,EXPENSE_AUDIT,COMPLETED,2021-12-16,2022-06-09,2020-11-12,2021-12-08,EMP-9163
+INV-00188,Which escalated approvals were not subsequently ratified at the required level?,FINANCIAL_INVESTIGATION,COMPLETED,2024-05-08,2024-06-18,2022-11-02,2024-04-28,EMP-59246
+INV-00189,Which transactions exceeded the approval authority limits of the authorising officer?,EXPENSE_AUDIT,COMPLETED,2021-06-04,2021-08-24,2020-11-12,2021-05-21,EMP-35110
+INV-00190,Identify duplicate expense claims submitted by the same employee within 7 days.,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-08-04,2024-01-26,2022-09-02,2023-07-06,EMP-66054
+INV-00191,Which expense claims exceed the policy limit for the stated category?,FRAUD_INVESTIGATION,OPEN,2022-08-30,,2021-01-27,2022-08-22,EMP-52793
+INV-00192,Identify transactions with round-number amounts processed outside business hours.,CONTRACT_AUDIT,ON_HOLD,2022-05-29,,2021-07-01,2022-05-07,EMP-27573
+INV-00193,Which vendors received payments after their compliance certificate expired?,FINANCIAL_INVESTIGATION,COMPLETED,2024-03-15,2024-05-02,2023-05-10,2024-02-24,EMP-16970
+INV-00194,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,COMPLIANCE_REVIEW,COMPLETED,2022-11-25,2023-01-24,2022-03-27,2022-11-10,EMP-12818
+INV-00195,Are there transactions to the same beneficiary from multiple employees?,FRAUD_INVESTIGATION,COMPLETED,2023-08-09,2023-10-09,2022-05-28,2023-07-27,EMP-29377
+INV-00196,Which escalated approvals were not subsequently ratified at the required level?,POLICY_BREACH_REVIEW,COMPLETED,2022-02-26,2022-03-23,2021-04-19,2022-02-08,EMP-33928
+INV-00197,Are there active contracts with BLACKLISTED vendors?,POLICY_BREACH_REVIEW,COMPLETED,2022-07-14,2022-09-15,2021-07-25,2022-06-24,EMP-44918
+INV-00198,Are there expense claims approved by the submitting employee (self-approval)?,CONTRACT_AUDIT,COMPLETED,2021-10-09,2022-04-01,2019-12-31,2021-10-06,EMP-CORP-00282
+INV-00199,Identify duplicate expense claims submitted by the same employee within 7 days.,VENDOR_RISK_ASSESSMENT,IN_PROGRESS,2021-10-01,,2020-02-24,2021-09-20,EMP-10758
+INV-00200,Which escalated approvals were not subsequently ratified at the required level?,FRAUD_INVESTIGATION,COMPLETED,2023-12-09,2024-04-04,2023-04-21,2023-11-25,EMP-35362
+INV-00201,Which high-risk or critical-risk vendors have received payments in the past 12 months?,POLICY_BREACH_REVIEW,COMPLETED,2024-02-29,2024-05-12,2023-01-21,2024-02-02,EMP-39729
+INV-00202,Which transactions exceeded the approval authority limits of the authorising officer?,APPROVAL_LIMIT_REVIEW,COMPLETED,2022-08-31,2022-12-26,2020-09-08,2022-08-28,EMP-26170
+INV-00203,Are there expense claims approved by the submitting employee (self-approval)?,COMPLIANCE_REVIEW,COMPLETED,2023-10-17,2024-02-05,2022-08-21,2023-10-09,EMP-22268
+INV-00204,Are there transactions approved by employees whose authority limit was insufficient?,EXPENSE_AUDIT,COMPLETED,2022-05-17,2022-08-01,2021-10-28,2022-05-08,EMP-28603
+INV-00205,Which expense claims exceed the policy limit for the stated category?,FINANCIAL_INVESTIGATION,IN_PROGRESS,2024-02-06,,2023-06-30,2024-01-27,EMP-29002
+INV-00206,Identify contracts with unusually high values relative to vendor risk tier.,CONTRACT_AUDIT,COMPLETED,2022-01-13,2022-03-11,2020-12-14,2022-01-07,EMP-23801
+INV-00207,Which vendors are marked NON_COMPLIANT under ISO 27001 or SOC 2?,APPROVAL_LIMIT_REVIEW,COMPLETED,2022-12-01,2023-01-29,2022-04-30,2022-11-01,EMP-58533
+INV-00208,Which expense claims exceed the policy limit for the stated category?,EXPENSE_AUDIT,COMPLETED,2023-09-28,2023-10-18,2022-06-02,2023-09-14,EMP-66119
+INV-00209,Identify vendors operating without a valid compliance certificate.,EXPENSE_AUDIT,COMPLETED,2023-05-23,2023-09-13,2021-12-16,2023-05-02,EMP-8462
+INV-00210,Which transactions exceeded the approval authority limits of the authorising officer?,FINANCIAL_INVESTIGATION,IN_PROGRESS,2023-12-02,,2023-02-10,2023-11-29,EMP-72481
+INV-00211,Identify all approvals made by terminated employees during the audit period.,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2021-08-26,,2019-09-03,2021-08-20,EMP-65877
+INV-00212,Identify contracts with unusually high values relative to vendor risk tier.,CONTRACT_AUDIT,COMPLETED,2022-03-07,2022-04-13,2021-01-15,2022-02-20,EMP-285
+INV-00213,Which audit findings are supported by multiple independent evidence sources?,POLICY_BREACH_REVIEW,COMPLETED,2022-06-11,2022-11-01,2020-11-18,2022-06-04,EMP-41402
+INV-00214,Which audit findings are supported by multiple independent evidence sources?,EXPENSE_AUDIT,ON_HOLD,2022-04-13,,2020-11-18,2022-03-17,EMP-45679
+INV-00215,Are there transactions to the same beneficiary from multiple employees?,EXPENSE_AUDIT,COMPLETED,2022-03-07,2022-07-03,2020-06-11,2022-03-05,EMP-37051
+INV-00216,Which transactions exceeded the approval authority limits of the authorising officer?,FINANCIAL_INVESTIGATION,COMPLETED,2023-08-19,2023-09-30,2022-05-11,2023-08-09,EMP-37724
+INV-00217,Which transactions exhibit patterns consistent with split payment fraud?,FINANCIAL_INVESTIGATION,IN_PROGRESS,2023-12-14,,2023-05-20,2023-11-30,EMP-7043
+INV-00218,Are there transactions to the same beneficiary from multiple employees?,VENDOR_RISK_ASSESSMENT,OPEN,2022-10-06,,2021-04-18,2022-09-11,EMP-72156
+INV-00219,Which transactions exhibit patterns consistent with split payment fraud?,FRAUD_INVESTIGATION,IN_PROGRESS,2024-01-30,,2023-04-10,2024-01-22,EMP-15702
+INV-00220,Which audit findings are supported by multiple independent evidence sources?,FRAUD_INVESTIGATION,OPEN,2022-07-06,,2021-11-29,2022-06-16,EMP-6735
+INV-00221,Identify contracts with unusually high values relative to vendor risk tier.,EXPENSE_AUDIT,COMPLETED,2023-10-15,2024-03-16,2023-02-09,2023-10-01,EMP-41520
+INV-00222,Identify contracts with unusually high values relative to vendor risk tier.,COMPLIANCE_REVIEW,COMPLETED,2022-02-22,2022-04-14,2021-09-16,2022-02-05,EMP-54665
+INV-00223,Are there transactions to the same beneficiary from multiple employees?,POLICY_BREACH_REVIEW,COMPLETED,2023-06-04,2023-06-30,2022-07-12,2023-05-06,EMP-39363
+INV-00224,Which transactions exhibit patterns consistent with split payment fraud?,COMPLIANCE_REVIEW,COMPLETED,2023-09-23,2024-02-16,2023-03-10,2023-09-01,EMP-1868
+INV-00225,Which escalated approvals were not subsequently ratified at the required level?,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-11-23,2024-03-04,2022-04-04,2023-11-03,EMP-18681
+INV-00226,Which high-risk or critical-risk vendors have received payments in the past 12 months?,EXPENSE_AUDIT,IN_PROGRESS,2023-07-12,,2021-12-14,2023-06-25,EMP-68327
+INV-00227,Which high-risk or critical-risk vendors have received payments in the past 12 months?,POLICY_BREACH_REVIEW,COMPLETED,2023-09-14,2023-11-06,2022-07-07,2023-09-09,EMP-29341
+INV-00228,Are there transactions to the same beneficiary from multiple employees?,VENDOR_RISK_ASSESSMENT,OPEN,2023-04-14,,2021-10-05,2023-04-08,EMP-47515
+INV-00229,Are there active contracts with BLACKLISTED vendors?,EXPENSE_AUDIT,OPEN,2023-05-23,,2022-10-30,2023-05-06,EMP-20977
+INV-00230,Which vendors have not completed mandatory compliance assessments?,CONTRACT_AUDIT,COMPLETED,2022-09-14,2023-01-12,2021-05-27,2022-08-18,EMP-39986
+INV-00231,Which escalated approvals were not subsequently ratified at the required level?,COMPLIANCE_REVIEW,OPEN,2021-12-25,,2020-09-28,2021-12-15,EMP-44149
+INV-00232,Which expense claims were submitted without an attached receipt?,VENDOR_RISK_ASSESSMENT,COMPLETED,2021-12-03,2022-04-30,2021-03-11,2021-11-04,EMP-72450
+INV-00233,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,FINANCIAL_INVESTIGATION,IN_PROGRESS,2024-05-19,,2022-12-14,2024-05-12,EMP-65876
+INV-00234,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,FINANCIAL_INVESTIGATION,COMPLETED,2023-01-24,2023-06-25,2021-07-19,2023-01-12,EMP-38672
+INV-00235,Which high-risk or critical-risk vendors have received payments in the past 12 months?,CONTRACT_AUDIT,COMPLETED,2021-06-05,2021-11-20,2020-06-28,2021-05-28,EMP-54415
+INV-00236,Identify vendors operating without a valid compliance certificate.,VENDOR_RISK_ASSESSMENT,COMPLETED,2021-08-31,2022-01-03,2019-09-27,2021-08-11,EMP-35624
+INV-00237,Which audit findings are supported by multiple independent evidence sources?,FRAUD_INVESTIGATION,COMPLETED,2023-03-09,2023-06-05,2022-06-11,2023-02-24,EMP-43203
+INV-00238,Which escalated approvals were not subsequently ratified at the required level?,POLICY_BREACH_REVIEW,COMPLETED,2022-01-17,2022-06-07,2021-06-24,2021-12-24,EMP-23084
+INV-00239,Which high-risk or critical-risk vendors have received payments in the past 12 months?,FRAUD_INVESTIGATION,COMPLETED,2021-10-01,2022-02-16,2019-12-21,2021-09-06,EMP-33290
+INV-00240,Identify vendors operating without a valid compliance certificate.,EXPENSE_AUDIT,COMPLETED,2023-04-03,2023-09-28,2021-10-16,2023-03-20,EMP-52441
+INV-00241,Which escalated approvals were not subsequently ratified at the required level?,FRAUD_INVESTIGATION,ON_HOLD,2024-03-16,,2023-10-30,2024-02-27,EMP-46375
+INV-00242,Are there active contracts with BLACKLISTED vendors?,APPROVAL_LIMIT_REVIEW,COMPLETED,2024-01-24,2024-02-09,2023-03-24,2024-01-10,EMP-3072
+INV-00243,Identify duplicate expense claims submitted by the same employee within 7 days.,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2023-06-02,,2021-06-11,2023-05-12,EMP-23951
+INV-00244,Which vendors have not completed mandatory compliance assessments?,FRAUD_INVESTIGATION,COMPLETED,2022-03-15,2022-04-03,2020-08-07,2022-02-22,EMP-22982
+INV-00245,Which transactions exhibit patterns consistent with split payment fraud?,APPROVAL_LIMIT_REVIEW,ON_HOLD,2022-08-21,,2021-09-12,2022-07-27,EMP-70426
+INV-00246,Which transactions exceeded the approval authority limits of the authorising officer?,EXPENSE_AUDIT,COMPLETED,2024-03-23,2024-07-08,2022-11-10,2024-03-17,EMP-38394
+INV-00247,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,FINANCIAL_INVESTIGATION,IN_PROGRESS,2024-04-17,,2023-03-11,2024-04-14,EMP-37691
+INV-00248,Identify vendors operating without a valid compliance certificate.,FRAUD_INVESTIGATION,COMPLETED,2021-09-19,2022-02-22,2021-02-19,2021-09-15,EMP-47253
+INV-00249,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,POLICY_BREACH_REVIEW,COMPLETED,2022-03-05,2022-04-02,2020-06-27,2022-02-18,EMP-5177
+INV-00250,Identify duplicate expense claims submitted by the same employee within 7 days.,VENDOR_RISK_ASSESSMENT,IN_PROGRESS,2021-11-02,,2021-05-17,2021-10-07,EMP-23011
+INV-00251,Which escalated approvals were not subsequently ratified at the required level?,EXPENSE_AUDIT,COMPLETED,2023-02-27,2023-03-14,2022-03-30,2023-01-30,EMP-69213
+INV-00252,Identify contracts with unusually high values relative to vendor risk tier.,EXPENSE_AUDIT,COMPLETED,2021-07-13,2021-07-31,2020-07-14,2021-06-23,EMP-11354
+INV-00253,Which high-risk or critical-risk vendors have received payments in the past 12 months?,EXPENSE_AUDIT,COMPLETED,2023-05-21,2023-07-23,2022-08-21,2023-04-28,EMP-47583
+INV-00254,Identify contracts with unusually high values relative to vendor risk tier.,FRAUD_INVESTIGATION,COMPLETED,2022-11-25,2023-03-09,2021-12-06,2022-11-17,EMP-8302
+INV-00255,Which expense claims were submitted without an attached receipt?,CONTRACT_AUDIT,IN_PROGRESS,2022-10-09,,2020-10-18,2022-09-30,EMP-8484
+INV-00256,Which audit findings are supported by multiple independent evidence sources?,VENDOR_RISK_ASSESSMENT,OPEN,2021-06-20,,2019-07-18,2021-05-30,EMP-24073
+INV-00257,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,COMPLIANCE_REVIEW,COMPLETED,2022-05-11,2022-06-25,2021-12-20,2022-04-17,EMP-41831
+INV-00258,Which transactions exceeded the approval authority limits of the authorising officer?,FRAUD_INVESTIGATION,COMPLETED,2024-02-18,2024-06-09,2022-05-05,2024-01-21,EMP-13976
+INV-00259,Are there transactions to the same beneficiary from multiple employees?,POLICY_BREACH_REVIEW,COMPLETED,2023-01-23,2023-04-05,2022-01-15,2022-12-27,EMP-17212
+INV-00260,Which vendors are marked NON_COMPLIANT under ISO 27001 or SOC 2?,COMPLIANCE_REVIEW,COMPLETED,2023-08-08,2023-10-09,2021-12-31,2023-07-10,EMP-28139
+INV-00261,Identify duplicate expense claims submitted by the same employee within 7 days.,CONTRACT_AUDIT,OPEN,2023-06-25,,2022-05-06,2023-06-19,EMP-43509
+INV-00262,Which high-risk or critical-risk vendors have received payments in the past 12 months?,EXPENSE_AUDIT,COMPLETED,2023-11-10,2023-11-28,2022-06-12,2023-11-06,EMP-38255
+INV-00263,Are there active contracts with BLACKLISTED vendors?,CONTRACT_AUDIT,COMPLETED,2022-04-13,2022-05-10,2021-04-03,2022-03-14,EMP-21051
+INV-00264,Which expense claims exceed the policy limit for the stated category?,APPROVAL_LIMIT_REVIEW,COMPLETED,2022-07-29,2022-08-25,2020-12-22,2022-07-10,EMP-72113
+INV-00265,Identify transactions with round-number amounts processed outside business hours.,EXPENSE_AUDIT,COMPLETED,2023-11-03,2024-03-10,2022-11-09,2023-10-22,EMP-57688
+INV-00266,Are compliance records current for all vendors with active contracts?,FRAUD_INVESTIGATION,COMPLETED,2022-01-11,2022-06-10,2020-08-08,2021-12-29,EMP-56683
+INV-00267,Are compliance records current for all vendors with active contracts?,EXPENSE_AUDIT,COMPLETED,2023-07-14,2023-11-05,2021-10-09,2023-06-17,EMP-45098
+INV-00268,Which audit findings are supported by multiple independent evidence sources?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2023-04-23,,2022-02-08,2023-04-17,EMP-68709
+INV-00269,Which transactions exhibit patterns consistent with split payment fraud?,CONTRACT_AUDIT,COMPLETED,2023-01-02,2023-02-22,2022-01-15,2022-12-18,EMP-20359
+INV-00270,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,FINANCIAL_INVESTIGATION,COMPLETED,2023-06-09,2023-10-06,2023-03-10,2023-06-02,EMP-3077
+INV-00271,Are there expense claims approved by the submitting employee (self-approval)?,FINANCIAL_INVESTIGATION,IN_PROGRESS,2022-10-20,,2021-11-24,2022-09-22,EMP-51763
+INV-00272,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,VENDOR_RISK_ASSESSMENT,ON_HOLD,2024-01-22,,2023-02-20,2024-01-14,EMP-72148
+INV-00273,Identify all approvals made by terminated employees during the audit period.,POLICY_BREACH_REVIEW,IN_PROGRESS,2022-09-25,,2021-09-27,2022-09-14,EMP-72541
+INV-00274,Identify all approvals made by terminated employees during the audit period.,COMPLIANCE_REVIEW,COMPLETED,2024-01-02,2024-04-05,2022-06-25,2023-12-30,EMP-72061
+INV-00275,Identify duplicate expense claims submitted by the same employee within 7 days.,EXPENSE_AUDIT,COMPLETED,2022-06-22,2022-10-15,2020-07-23,2022-06-05,EMP-24924
+INV-00276,Which audit findings are supported by multiple independent evidence sources?,APPROVAL_LIMIT_REVIEW,OPEN,2023-03-13,,2021-07-18,2023-03-08,EMP-3216
+INV-00277,Are there active contracts with BLACKLISTED vendors?,POLICY_BREACH_REVIEW,IN_PROGRESS,2022-05-01,,2021-08-10,2022-04-12,EMP-16042
+INV-00278,Identify duplicate expense claims submitted by the same employee within 7 days.,CONTRACT_AUDIT,COMPLETED,2022-03-26,2022-07-30,2021-12-14,2022-03-12,EMP-73148
+INV-00279,Identify vendors operating without a valid compliance certificate.,FINANCIAL_INVESTIGATION,IN_PROGRESS,2023-10-06,,2022-05-14,2023-09-07,EMP-37676
+INV-00280,Identify all approvals made by terminated employees during the audit period.,FRAUD_INVESTIGATION,COMPLETED,2022-02-18,2022-06-08,2020-04-06,2022-01-19,EMP-30079
+INV-00281,Identify transactions with round-number amounts processed outside business hours.,CONTRACT_AUDIT,IN_PROGRESS,2024-05-03,,2023-12-16,2024-04-30,EMP-CORP-00092
+INV-00282,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,FINANCIAL_INVESTIGATION,COMPLETED,2023-12-24,2024-06-20,2023-05-18,2023-11-29,EMP-38790
+INV-00283,Which expense claims exceed the policy limit for the stated category?,COMPLIANCE_REVIEW,IN_PROGRESS,2022-06-19,,2021-02-28,2022-05-22,EMP-20461
+INV-00284,Which expense claims were submitted without an attached receipt?,FINANCIAL_INVESTIGATION,OPEN,2022-11-10,,2022-07-02,2022-10-15,EMP-54597
+INV-00285,Which transactions exceeded the approval authority limits of the authorising officer?,COMPLIANCE_REVIEW,OPEN,2023-09-06,,2022-07-13,2023-08-19,EMP-61530
+INV-00286,Which transactions exhibit patterns consistent with split payment fraud?,VENDOR_RISK_ASSESSMENT,IN_PROGRESS,2023-02-03,,2022-06-19,2023-01-29,EMP-29105
+INV-00287,Identify transactions with round-number amounts processed outside business hours.,FINANCIAL_INVESTIGATION,COMPLETED,2023-02-12,2023-06-10,2022-08-23,2023-01-24,EMP-63743
+INV-00288,Which vendors are marked NON_COMPLIANT under ISO 27001 or SOC 2?,FINANCIAL_INVESTIGATION,OPEN,2021-11-05,,2021-04-18,2021-10-13,EMP-54894
+INV-00289,Are there transactions to the same beneficiary from multiple employees?,COMPLIANCE_REVIEW,COMPLETED,2021-08-09,2021-10-21,2019-09-03,2021-07-17,EMP-34221
+INV-00290,Are compliance records current for all vendors with active contracts?,APPROVAL_LIMIT_REVIEW,COMPLETED,2022-04-06,2022-07-02,2020-06-25,2022-03-08,EMP-3962
+INV-00291,Identify all approvals made by terminated employees during the audit period.,POLICY_BREACH_REVIEW,IN_PROGRESS,2021-11-10,,2020-03-03,2021-11-07,EMP-64334
+INV-00292,Which transactions exceeded the approval authority limits of the authorising officer?,FINANCIAL_INVESTIGATION,COMPLETED,2023-09-14,2023-11-30,2022-10-14,2023-09-09,EMP-42254
+INV-00293,Which escalated approvals were not subsequently ratified at the required level?,CONTRACT_AUDIT,COMPLETED,2023-11-29,2024-04-17,2022-01-15,2023-11-04,EMP-9882
+INV-00294,Which vendors are marked NON_COMPLIANT under ISO 27001 or SOC 2?,FRAUD_INVESTIGATION,COMPLETED,2023-07-04,2023-11-01,2022-01-03,2023-06-13,EMP-17774
+INV-00295,Which audit findings are supported by multiple independent evidence sources?,EXPENSE_AUDIT,ON_HOLD,2023-08-05,,2022-06-18,2023-07-31,EMP-55488
+INV-00296,Which expense claims were submitted without an attached receipt?,VENDOR_RISK_ASSESSMENT,OPEN,2022-05-21,,2021-07-12,2022-05-20,EMP-49221
+INV-00297,Are compliance records current for all vendors with active contracts?,FRAUD_INVESTIGATION,COMPLETED,2022-08-08,2023-01-21,2020-09-18,2022-07-29,EMP-42120
+INV-00298,Which transactions exceeded the approval authority limits of the authorising officer?,CONTRACT_AUDIT,OPEN,2023-01-15,,2021-03-06,2023-01-14,EMP-6713
+INV-00299,Which contracts have passed their end date but remain in ACTIVE status?,CONTRACT_AUDIT,COMPLETED,2024-01-22,2024-05-10,2022-07-06,2023-12-24,EMP-8735
+INV-00300,Which audit findings are supported by multiple independent evidence sources?,VENDOR_RISK_ASSESSMENT,COMPLETED,2021-06-19,2021-09-14,2019-11-01,2021-06-11,MGR-2.0
+INV-00301,Which vendors are marked NON_COMPLIANT under ISO 27001 or SOC 2?,POLICY_BREACH_REVIEW,COMPLETED,2022-04-12,2022-07-11,2020-05-22,2022-04-12,EMP-35276
+INV-00302,Which expense claims were submitted without an attached receipt?,FINANCIAL_INVESTIGATION,COMPLETED,2022-03-05,2022-04-28,2020-12-21,2022-02-04,EMP-60136
+INV-00303,Which transactions exceeded the approval authority limits of the authorising officer?,EXPENSE_AUDIT,IN_PROGRESS,2022-09-10,,2021-06-04,2022-09-07,EMP-57424
+INV-00304,Identify vendors operating without a valid compliance certificate.,FRAUD_INVESTIGATION,COMPLETED,2024-03-03,2024-04-20,2023-03-17,2024-02-26,EMP-49398
+INV-00305,Are there expense claims approved by the submitting employee (self-approval)?,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-06-12,2023-08-21,2022-05-13,2023-06-10,EMP-33237
+INV-00306,Which transactions exceeded the approval authority limits of the authorising officer?,FINANCIAL_INVESTIGATION,ON_HOLD,2022-12-25,,2021-01-06,2022-11-27,EMP-48954
+INV-00307,Identify duplicate expense claims submitted by the same employee within 7 days.,EXPENSE_AUDIT,COMPLETED,2023-09-30,2024-02-12,2022-06-12,2023-09-02,EMP-27163
+INV-00308,Are there transactions approved by employees whose authority limit was insufficient?,FINANCIAL_INVESTIGATION,COMPLETED,2022-07-25,2022-10-23,2021-08-11,2022-07-23,EMP-635
+INV-00309,Which transactions exceeded the approval authority limits of the authorising officer?,COMPLIANCE_REVIEW,COMPLETED,2023-04-02,2023-08-02,2021-08-03,2023-03-06,EMP-36229
+INV-00310,Are there active contracts with BLACKLISTED vendors?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2023-04-11,,2021-09-16,2023-03-21,EMP-1862
+INV-00311,Identify vendors operating without a valid compliance certificate.,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-08-16,2024-01-02,2022-07-12,2023-07-20,EMP-59724
+INV-00312,Identify transactions with round-number amounts processed outside business hours.,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-04-19,2023-07-08,2022-01-05,2023-03-23,EMP-25139
+INV-00313,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,COMPLIANCE_REVIEW,OPEN,2023-12-16,,2023-01-05,2023-12-09,EMP-71760
+INV-00314,Which vendors are marked NON_COMPLIANT under ISO 27001 or SOC 2?,FINANCIAL_INVESTIGATION,COMPLETED,2022-05-14,2022-10-22,2021-09-25,2022-04-20,EMP-39176
+INV-00315,Identify vendors operating without a valid compliance certificate.,FINANCIAL_INVESTIGATION,COMPLETED,2023-09-18,2023-10-20,2022-04-09,2023-09-16,EMP-27366
+INV-00316,Identify transactions with round-number amounts processed outside business hours.,COMPLIANCE_REVIEW,COMPLETED,2023-07-19,2023-09-05,2022-08-08,2023-07-06,EMP-66268
+INV-00317,Are there active contracts with BLACKLISTED vendors?,VENDOR_RISK_ASSESSMENT,IN_PROGRESS,2021-07-12,,2020-12-01,2021-06-15,EMP-7137
+INV-00318,Which vendors have not completed mandatory compliance assessments?,EXPENSE_AUDIT,COMPLETED,2021-08-29,2022-02-14,2021-03-07,2021-08-09,EMP-71700
+INV-00319,Identify vendors operating without a valid compliance certificate.,CONTRACT_AUDIT,COMPLETED,2023-11-02,2024-01-07,2022-04-05,2023-10-28,EMP-23535
+INV-00320,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,FRAUD_INVESTIGATION,COMPLETED,2022-10-15,2023-04-01,2021-12-17,2022-09-20,EMP-60402
+INV-00321,Which expense claims exceed the policy limit for the stated category?,FINANCIAL_INVESTIGATION,COMPLETED,2023-03-11,2023-06-20,2021-06-19,2023-02-21,EMP-30191
+INV-00322,Identify vendors operating without a valid compliance certificate.,FRAUD_INVESTIGATION,IN_PROGRESS,2022-01-25,,2021-04-28,2022-01-06,EMP-CORP-00004
+INV-00323,Identify transactions with round-number amounts processed outside business hours.,COMPLIANCE_REVIEW,COMPLETED,2023-05-25,2023-10-14,2021-07-25,2023-05-24,EMP-53319
+INV-00324,Which expense claims exceed the policy limit for the stated category?,COMPLIANCE_REVIEW,COMPLETED,2021-11-29,2022-03-13,2020-11-02,2021-11-28,EMP-19013
+INV-00325,Are compliance records current for all vendors with active contracts?,POLICY_BREACH_REVIEW,ON_HOLD,2023-03-07,,2021-11-14,2023-02-26,EMP-49204
+INV-00326,Which transactions exhibit patterns consistent with split payment fraud?,FRAUD_INVESTIGATION,COMPLETED,2021-12-04,2022-03-15,2019-12-27,2021-11-29,EMP-46162
+INV-00327,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,APPROVAL_LIMIT_REVIEW,COMPLETED,2021-09-15,2022-03-06,2020-04-08,2021-08-22,EMP-13643
+INV-00328,Which vendors received payments after their compliance certificate expired?,POLICY_BREACH_REVIEW,OPEN,2022-03-16,,2020-12-11,2022-02-28,EMP-37697
+INV-00329,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,APPROVAL_LIMIT_REVIEW,COMPLETED,2024-03-11,2024-08-23,2022-07-30,2024-02-27,EMP-29373
+INV-00330,Which vendors received payments after their compliance certificate expired?,FRAUD_INVESTIGATION,COMPLETED,2022-09-21,2022-10-11,2022-06-14,2022-09-12,MGR-6637
+INV-00331,Which high-risk or critical-risk vendors have received payments in the past 12 months?,POLICY_BREACH_REVIEW,COMPLETED,2023-01-30,2023-02-23,2021-03-12,2023-01-22,EMP-37380
+INV-00332,Are there transactions approved by employees whose authority limit was insufficient?,COMPLIANCE_REVIEW,COMPLETED,2021-12-17,2022-03-09,2020-07-13,2021-12-05,EMP-38158
+INV-00333,Are there transactions to the same beneficiary from multiple employees?,COMPLIANCE_REVIEW,COMPLETED,2024-04-12,2024-04-30,2022-04-22,2024-03-18,EMP-48804
+INV-00334,Identify duplicate expense claims submitted by the same employee within 7 days.,FRAUD_INVESTIGATION,IN_PROGRESS,2023-03-13,,2021-11-13,2023-02-12,EMP-71536
+INV-00335,Identify duplicate expense claims submitted by the same employee within 7 days.,COMPLIANCE_REVIEW,COMPLETED,2023-04-26,2023-10-20,2022-01-19,2023-04-18,EMP-44983
+INV-00336,Are there expense claims approved by the submitting employee (self-approval)?,CONTRACT_AUDIT,COMPLETED,2022-07-19,2022-11-18,2021-08-28,2022-07-01,EMP-60764
+INV-00337,Are there transactions approved by employees whose authority limit was insufficient?,VENDOR_RISK_ASSESSMENT,COMPLETED,2024-04-05,2024-04-30,2023-09-26,2024-03-25,EMP-62770
+INV-00338,Identify vendors operating without a valid compliance certificate.,EXPENSE_AUDIT,COMPLETED,2021-08-17,2021-10-19,2020-12-19,2021-07-29,EMP-9158
+INV-00339,Which transactions exceeded the approval authority limits of the authorising officer?,COMPLIANCE_REVIEW,IN_PROGRESS,2023-02-18,,2021-11-05,2023-02-09,EMP-2030
+INV-00340,Which vendors are marked NON_COMPLIANT under ISO 27001 or SOC 2?,COMPLIANCE_REVIEW,COMPLETED,2022-08-08,2022-10-05,2020-09-09,2022-07-17,EMP-1569
+INV-00341,Identify transactions with round-number amounts processed outside business hours.,EXPENSE_AUDIT,IN_PROGRESS,2022-04-19,,2020-11-01,2022-04-08,EMP-43362
+INV-00342,Which high-risk or critical-risk vendors have received payments in the past 12 months?,EXPENSE_AUDIT,IN_PROGRESS,2022-04-14,,2021-02-26,2022-04-03,EMP-65101
+INV-00343,Are there active contracts with BLACKLISTED vendors?,CONTRACT_AUDIT,OPEN,2022-10-19,,2021-04-06,2022-09-25,EMP-33251
+INV-00344,Which expense claims were submitted without an attached receipt?,CONTRACT_AUDIT,COMPLETED,2022-10-23,2023-04-20,2022-06-27,2022-09-25,EMP-CORP-00481
+INV-00345,Identify all approvals made by terminated employees during the audit period.,EXPENSE_AUDIT,ON_HOLD,2021-07-08,,2020-01-15,2021-06-11,EMP-67663
+INV-00346,Which transactions exceeded the approval authority limits of the authorising officer?,COMPLIANCE_REVIEW,IN_PROGRESS,2022-02-06,,2020-09-18,2022-01-28,EMP-43101
+INV-00347,Which expense claims were submitted without an attached receipt?,COMPLIANCE_REVIEW,OPEN,2024-05-14,,2024-01-10,2024-04-25,EMP-10692
+INV-00348,Which contracts have passed their end date but remain in ACTIVE status?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2023-02-19,,2021-12-30,2023-01-23,EMP-38210
+INV-00349,Are there transactions approved by employees whose authority limit was insufficient?,FINANCIAL_INVESTIGATION,COMPLETED,2022-01-13,2022-04-22,2021-05-29,2022-01-05,EMP-45162
+INV-00350,Identify vendors operating without a valid compliance certificate.,POLICY_BREACH_REVIEW,ON_HOLD,2022-02-07,,2020-10-08,2022-02-07,EMP-72121
+INV-00351,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,VENDOR_RISK_ASSESSMENT,COMPLETED,2022-12-12,2023-05-25,2021-04-15,2022-11-18,EMP-42354
+INV-00352,Are compliance records current for all vendors with active contracts?,POLICY_BREACH_REVIEW,COMPLETED,2021-10-09,2022-01-22,2019-10-28,2021-09-28,EMP-54384
+INV-00353,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,APPROVAL_LIMIT_REVIEW,OPEN,2023-01-23,,2021-08-11,2023-01-21,EMP-23156
+INV-00354,Which audit findings are supported by multiple independent evidence sources?,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-04-20,2023-05-26,2021-06-17,2023-04-19,EMP-17259
+INV-00355,Which transactions exceeded the approval authority limits of the authorising officer?,FRAUD_INVESTIGATION,COMPLETED,2021-10-29,2022-03-07,2021-05-04,2021-10-08,EMP-10834
+INV-00356,Which transactions exhibit patterns consistent with split payment fraud?,COMPLIANCE_REVIEW,COMPLETED,2021-06-03,2021-11-07,2020-11-11,2021-05-05,EMP-31426
+INV-00357,Identify transactions with round-number amounts processed outside business hours.,COMPLIANCE_REVIEW,ON_HOLD,2022-09-21,,2021-09-19,2022-09-07,EMP-51269
+INV-00358,Which vendors have not completed mandatory compliance assessments?,POLICY_BREACH_REVIEW,COMPLETED,2021-09-24,2022-01-11,2020-08-08,2021-09-05,EMP-36283
+INV-00359,Identify vendors operating without a valid compliance certificate.,VENDOR_RISK_ASSESSMENT,ON_HOLD,2021-12-11,,2020-10-28,2021-11-24,EMP-70714
+INV-00360,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-02-24,2023-05-26,2021-11-08,2023-01-29,EMP-70381
+INV-00361,Are there transactions to the same beneficiary from multiple employees?,FRAUD_INVESTIGATION,COMPLETED,2023-08-09,2023-11-11,2022-09-02,2023-07-19,EMP-68386
+INV-00362,Are there expense claims approved by the submitting employee (self-approval)?,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-10-20,2023-11-07,2022-08-07,2023-09-28,EMP-64187
+INV-00363,Which expense claims exceed the policy limit for the stated category?,COMPLIANCE_REVIEW,COMPLETED,2022-04-02,2022-05-21,2020-04-21,2022-03-28,EMP-10079
+INV-00364,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,VENDOR_RISK_ASSESSMENT,ON_HOLD,2023-03-27,,2022-07-15,2023-03-02,EMP-27687
+INV-00365,Are there transactions approved by employees whose authority limit was insufficient?,POLICY_BREACH_REVIEW,IN_PROGRESS,2021-09-09,,2021-06-04,2021-08-14,EMP-71572
+INV-00366,Which audit findings are supported by multiple independent evidence sources?,CONTRACT_AUDIT,COMPLETED,2022-11-27,2023-05-10,2021-07-30,2022-11-25,EMP-33202
+INV-00367,Which escalated approvals were not subsequently ratified at the required level?,POLICY_BREACH_REVIEW,COMPLETED,2023-07-27,2023-11-17,2022-05-08,2023-07-11,EMP-54780
+INV-00368,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,EXPENSE_AUDIT,COMPLETED,2022-06-14,2022-11-08,2020-08-09,2022-05-24,EMP-408
+INV-00369,Which vendors received payments after their compliance certificate expired?,FINANCIAL_INVESTIGATION,ON_HOLD,2021-11-04,,2020-05-25,2021-11-04,EMP-37715
+INV-00370,Which vendors have not completed mandatory compliance assessments?,VENDOR_RISK_ASSESSMENT,COMPLETED,2021-06-11,2021-07-02,2021-01-19,2021-06-01,EMP-21708
+INV-00371,Which transactions exhibit patterns consistent with split payment fraud?,CONTRACT_AUDIT,COMPLETED,2021-11-15,2022-02-10,2020-04-29,2021-11-05,EMP-11292
+INV-00372,Identify contracts with unusually high values relative to vendor risk tier.,POLICY_BREACH_REVIEW,COMPLETED,2022-10-08,2022-12-26,2020-10-16,2022-09-19,EMP-22225
+INV-00373,Identify contracts with unusually high values relative to vendor risk tier.,POLICY_BREACH_REVIEW,IN_PROGRESS,2023-11-29,,2023-01-30,2023-11-11,EMP-45125
+INV-00374,Identify duplicate expense claims submitted by the same employee within 7 days.,POLICY_BREACH_REVIEW,IN_PROGRESS,2022-01-24,,2020-05-30,2022-01-22,EMP-10869
+INV-00375,Which contracts have passed their end date but remain in ACTIVE status?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2024-03-17,,2023-09-08,2024-02-25,EMP-21421
+INV-00376,Which high-risk or critical-risk vendors have received payments in the past 12 months?,CONTRACT_AUDIT,COMPLETED,2022-10-30,2023-01-06,2021-09-30,2022-10-01,EMP-45570
+INV-00377,Which expense claims were submitted without an attached receipt?,CONTRACT_AUDIT,OPEN,2023-01-11,,2022-01-18,2022-12-18,EMP-73057
+INV-00378,Are compliance records current for all vendors with active contracts?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2021-11-23,,2020-03-20,2021-11-03,EMP-10720
+INV-00379,Which transactions exhibit patterns consistent with split payment fraud?,CONTRACT_AUDIT,COMPLETED,2021-08-29,2021-11-02,2019-11-12,2021-08-17,EMP-36682
+INV-00380,Which transactions exceeded the approval authority limits of the authorising officer?,EXPENSE_AUDIT,COMPLETED,2023-02-21,2023-05-10,2022-01-28,2023-01-24,EMP-43206
+INV-00381,Which expense claims were submitted without an attached receipt?,POLICY_BREACH_REVIEW,COMPLETED,2022-09-19,2023-02-17,2022-02-14,2022-08-29,EMP-46623
+INV-00382,Which escalated approvals were not subsequently ratified at the required level?,COMPLIANCE_REVIEW,COMPLETED,2022-09-27,2023-01-08,2021-11-16,2022-09-16,EMP-27842
+INV-00383,Which escalated approvals were not subsequently ratified at the required level?,VENDOR_RISK_ASSESSMENT,COMPLETED,2022-12-04,2023-01-25,2022-08-17,2022-11-28,EMP-26827
+INV-00384,Which expense claims exceed the policy limit for the stated category?,VENDOR_RISK_ASSESSMENT,COMPLETED,2022-11-05,2023-05-04,2021-01-22,2022-10-09,EMP-15662
+INV-00385,Which contracts have passed their end date but remain in ACTIVE status?,EXPENSE_AUDIT,COMPLETED,2023-08-10,2023-09-08,2021-11-02,2023-07-31,EMP-36123
+INV-00386,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,CONTRACT_AUDIT,IN_PROGRESS,2022-08-13,,2021-01-07,2022-08-05,EMP-60744
+INV-00387,Which contracts have passed their end date but remain in ACTIVE status?,FINANCIAL_INVESTIGATION,OPEN,2022-08-24,,2021-01-16,2022-07-28,EMP-48798
+INV-00388,Identify transactions with round-number amounts processed outside business hours.,POLICY_BREACH_REVIEW,ON_HOLD,2022-10-11,,2022-01-28,2022-09-11,EMP-15480
+INV-00389,Which contracts have passed their end date but remain in ACTIVE status?,CONTRACT_AUDIT,COMPLETED,2022-06-21,2022-11-11,2022-03-21,2022-06-09,EMP-1962
+INV-00390,Are there transactions approved by employees whose authority limit was insufficient?,VENDOR_RISK_ASSESSMENT,IN_PROGRESS,2021-08-03,,2019-09-23,2021-07-14,EMP-62597
+INV-00391,Identify duplicate expense claims submitted by the same employee within 7 days.,POLICY_BREACH_REVIEW,OPEN,2022-01-03,,2021-05-14,2021-12-11,EMP-74433
+INV-00392,Identify all approvals made by terminated employees during the audit period.,APPROVAL_LIMIT_REVIEW,COMPLETED,2022-01-28,2022-04-06,2020-08-29,2022-01-14,EMP-49498
+INV-00393,Identify all approvals made by terminated employees during the audit period.,EXPENSE_AUDIT,IN_PROGRESS,2024-02-02,,2022-07-09,2024-01-27,EMP-288
+INV-00394,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,VENDOR_RISK_ASSESSMENT,OPEN,2023-10-01,,2023-04-23,2023-10-01,EMP-26595
+INV-00395,Identify all approvals made by terminated employees during the audit period.,CONTRACT_AUDIT,COMPLETED,2023-04-04,2023-06-19,2021-07-18,2023-03-16,EMP-5453
+INV-00396,Which vendors are marked NON_COMPLIANT under ISO 27001 or SOC 2?,COMPLIANCE_REVIEW,COMPLETED,2022-10-21,2022-12-22,2021-02-11,2022-10-03,EMP-23682
+INV-00397,Which expense claims exceed the policy limit for the stated category?,EXPENSE_AUDIT,COMPLETED,2023-02-03,2023-05-02,2022-07-06,2023-01-04,EMP-18703
+INV-00398,Which audit findings are supported by multiple independent evidence sources?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2022-02-06,,2021-07-30,2022-01-30,EMP-CORP-00267
+INV-00399,Are there transactions approved by employees whose authority limit was insufficient?,FINANCIAL_INVESTIGATION,COMPLETED,2024-01-26,2024-03-30,2022-11-04,2024-01-20,EMP-47751
+INV-00400,Which transactions exceeded the approval authority limits of the authorising officer?,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-12-15,2024-04-30,2022-12-21,2023-11-28,EMP-48658
+INV-00401,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,APPROVAL_LIMIT_REVIEW,COMPLETED,2021-10-31,2021-12-30,2020-06-22,2021-10-13,EMP-68115
+INV-00402,Are there active contracts with BLACKLISTED vendors?,FRAUD_INVESTIGATION,OPEN,2023-07-18,,2022-09-06,2023-07-09,EMP-24924
+INV-00403,Which expense claims exceed the policy limit for the stated category?,VENDOR_RISK_ASSESSMENT,IN_PROGRESS,2022-11-07,,2021-12-11,2022-10-21,EMP-73764
+INV-00404,Which audit findings are supported by multiple independent evidence sources?,FINANCIAL_INVESTIGATION,COMPLETED,2023-01-04,2023-01-20,2022-09-18,2022-12-08,EMP-38158
+INV-00405,Which escalated approvals were not subsequently ratified at the required level?,POLICY_BREACH_REVIEW,IN_PROGRESS,2024-04-16,,2022-08-23,2024-03-27,EMP-1032
+INV-00406,Which escalated approvals were not subsequently ratified at the required level?,FRAUD_INVESTIGATION,COMPLETED,2021-07-11,2021-08-25,2020-05-23,2021-06-26,EMP-17802
+INV-00407,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,EXPENSE_AUDIT,COMPLETED,2023-05-05,2023-09-14,2022-01-10,2023-04-13,EMP-CORP-00100
+INV-00408,Are there transactions approved by employees whose authority limit was insufficient?,VENDOR_RISK_ASSESSMENT,COMPLETED,2022-07-03,2022-07-23,2020-11-15,2022-07-02,EMP-60120
+INV-00409,Identify all approvals made by terminated employees during the audit period.,COMPLIANCE_REVIEW,COMPLETED,2023-07-19,2023-11-26,2022-03-31,2023-07-06,EMP-56639
+INV-00410,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,POLICY_BREACH_REVIEW,COMPLETED,2023-03-10,2023-03-24,2022-10-13,2023-03-09,EMP-6911
+INV-00411,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2022-04-21,,2021-09-11,2022-03-24,EMP-18244
+INV-00412,Which vendors have not completed mandatory compliance assessments?,FRAUD_INVESTIGATION,COMPLETED,2022-08-08,2022-10-05,2021-06-11,2022-07-24,EMP-207
+INV-00413,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,FINANCIAL_INVESTIGATION,IN_PROGRESS,2022-02-15,,2021-08-04,2022-02-10,EMP-19706
+INV-00414,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,EXPENSE_AUDIT,COMPLETED,2023-06-16,2023-09-24,2022-09-25,2023-06-05,EMP-60261
+INV-00415,Which expense claims were submitted without an attached receipt?,COMPLIANCE_REVIEW,COMPLETED,2022-11-26,2023-01-02,2021-05-23,2022-11-07,EMP-70643
+INV-00416,Which vendors have not completed mandatory compliance assessments?,CONTRACT_AUDIT,COMPLETED,2023-12-04,2023-12-23,2022-01-02,2023-11-09,EMP-62213
+INV-00417,Identify contracts with unusually high values relative to vendor risk tier.,FINANCIAL_INVESTIGATION,COMPLETED,2022-01-12,2022-02-26,2020-01-20,2021-12-25,EMP-55874
+INV-00418,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,CONTRACT_AUDIT,COMPLETED,2021-12-16,2022-02-20,2021-07-18,2021-12-06,EMP-20191
+INV-00419,Identify all approvals made by terminated employees during the audit period.,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-01-05,2023-03-25,2021-05-12,2022-12-19,EMP-60694
+INV-00420,Which vendors have not completed mandatory compliance assessments?,CONTRACT_AUDIT,COMPLETED,2023-04-08,2023-09-17,2022-09-05,2023-04-01,EMP-71289
+INV-00421,Identify transactions with round-number amounts processed outside business hours.,CONTRACT_AUDIT,COMPLETED,2022-06-18,2022-10-21,2021-01-10,2022-06-13,EMP-53430
+INV-00422,Which vendors have not completed mandatory compliance assessments?,CONTRACT_AUDIT,COMPLETED,2023-04-19,2023-06-17,2021-06-11,2023-04-13,EMP-4768
+INV-00423,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,EXPENSE_AUDIT,COMPLETED,2022-07-09,2022-10-03,2022-04-01,2022-06-25,EMP-32209
+INV-00424,Which expense claims were submitted without an attached receipt?,VENDOR_RISK_ASSESSMENT,ON_HOLD,2022-08-16,,2022-02-02,2022-07-23,EMP-46064
+INV-00425,Identify vendors operating without a valid compliance certificate.,FRAUD_INVESTIGATION,COMPLETED,2023-12-07,2024-04-09,2022-01-18,2023-11-12,EMP-59690
+INV-00426,Identify vendors operating without a valid compliance certificate.,POLICY_BREACH_REVIEW,COMPLETED,2024-01-01,2024-03-26,2023-06-24,2023-12-08,EMP-55190
+INV-00427,Identify duplicate expense claims submitted by the same employee within 7 days.,FRAUD_INVESTIGATION,IN_PROGRESS,2024-01-05,,2022-07-18,2023-12-13,EMP-27413
+INV-00428,Which transactions exhibit patterns consistent with split payment fraud?,VENDOR_RISK_ASSESSMENT,COMPLETED,2022-09-07,2022-10-25,2021-05-06,2022-08-27,EMP-58593
+INV-00429,Which contracts have passed their end date but remain in ACTIVE status?,EXPENSE_AUDIT,COMPLETED,2023-03-22,2023-09-02,2021-10-31,2023-03-04,EMP-9003
+INV-00430,Which transactions exhibit patterns consistent with split payment fraud?,FRAUD_INVESTIGATION,COMPLETED,2022-09-02,2022-10-16,2021-04-03,2022-08-09,EMP-26279
+INV-00431,Identify duplicate expense claims submitted by the same employee within 7 days.,FRAUD_INVESTIGATION,COMPLETED,2024-04-23,2024-10-02,2022-11-26,2024-04-17,EMP-27538
+INV-00432,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,APPROVAL_LIMIT_REVIEW,COMPLETED,2021-08-06,2022-01-31,2020-02-09,2021-07-08,EMP-35247
+INV-00433,Identify all approvals made by terminated employees during the audit period.,FINANCIAL_INVESTIGATION,COMPLETED,2023-07-23,2023-12-12,2023-04-02,2023-07-22,EMP-8211
+INV-00434,Identify contracts with unusually high values relative to vendor risk tier.,FRAUD_INVESTIGATION,COMPLETED,2022-01-30,2022-07-17,2020-10-29,2022-01-29,EMP-2788
+INV-00435,Which expense claims were submitted without an attached receipt?,CONTRACT_AUDIT,COMPLETED,2021-12-18,2022-02-04,2021-03-26,2021-11-27,EMP-71112
+INV-00436,Which audit findings are supported by multiple independent evidence sources?,FRAUD_INVESTIGATION,COMPLETED,2022-08-11,2022-11-01,2021-10-24,2022-07-25,EMP-29105
+INV-00437,Which expense claims were submitted without an attached receipt?,EXPENSE_AUDIT,COMPLETED,2023-01-19,2023-02-18,2022-07-19,2022-12-21,EMP-2030
+INV-00438,Which transactions exhibit patterns consistent with split payment fraud?,POLICY_BREACH_REVIEW,COMPLETED,2021-10-29,2022-04-18,2020-04-02,2021-09-30,EMP-53336
+INV-00439,Which audit findings are supported by multiple independent evidence sources?,APPROVAL_LIMIT_REVIEW,IN_PROGRESS,2023-02-27,,2021-07-29,2023-01-29,EMP-17505
+INV-00440,Which escalated approvals were not subsequently ratified at the required level?,POLICY_BREACH_REVIEW,OPEN,2024-05-03,,2023-10-04,2024-04-24,EMP-4047
+INV-00441,Are compliance records current for all vendors with active contracts?,FINANCIAL_INVESTIGATION,COMPLETED,2023-12-02,2023-12-30,2022-07-06,2023-11-16,EMP-36916
+INV-00442,Are there active contracts with BLACKLISTED vendors?,CONTRACT_AUDIT,COMPLETED,2022-06-14,2022-11-26,2022-03-06,2022-06-05,EMP-69463
+INV-00443,Identify duplicate expense claims submitted by the same employee within 7 days.,APPROVAL_LIMIT_REVIEW,COMPLETED,2021-09-14,2022-01-09,2019-12-30,2021-09-13,EMP-10329
+INV-00444,Which expense claims were submitted without an attached receipt?,COMPLIANCE_REVIEW,COMPLETED,2023-04-16,2023-07-14,2021-05-24,2023-04-08,EMP-16651
+INV-00445,Identify duplicate expense claims submitted by the same employee within 7 days.,EXPENSE_AUDIT,COMPLETED,2023-06-15,2023-11-10,2022-12-17,2023-05-27,EMP-12983
+INV-00446,Are there transactions approved by employees whose authority limit was insufficient?,FINANCIAL_INVESTIGATION,COMPLETED,2022-10-19,2022-12-15,2021-07-07,2022-10-03,EMP-62791
+INV-00447,Which transactions exceeded the approval authority limits of the authorising officer?,CONTRACT_AUDIT,COMPLETED,2021-09-01,2021-11-12,2020-01-19,2021-08-10,EMP-32629
+INV-00448,Are there expense claims approved by the submitting employee (self-approval)?,FINANCIAL_INVESTIGATION,OPEN,2022-04-27,,2021-10-09,2022-04-13,EMP-60404
+INV-00449,Which audit findings are supported by multiple independent evidence sources?,FRAUD_INVESTIGATION,COMPLETED,2023-03-27,2023-04-12,2021-11-06,2023-03-01,EMP-5053
+INV-00450,Which vendors received payments after their compliance certificate expired?,CONTRACT_AUDIT,IN_PROGRESS,2023-03-05,,2021-11-20,2023-02-10,EMP-35954
+INV-00451,Which expense claims exceed the policy limit for the stated category?,COMPLIANCE_REVIEW,COMPLETED,2022-12-08,2023-01-11,2021-04-06,2022-12-06,EMP-38775
+INV-00452,Which high-risk or critical-risk vendors have received payments in the past 12 months?,COMPLIANCE_REVIEW,IN_PROGRESS,2021-10-11,,2020-03-05,2021-09-20,EMP-26039
+INV-00453,Which transactions exhibit patterns consistent with split payment fraud?,EXPENSE_AUDIT,COMPLETED,2022-04-05,2022-04-30,2020-12-31,2022-03-09,EMP-74114
+INV-00454,Are compliance records current for all vendors with active contracts?,APPROVAL_LIMIT_REVIEW,OPEN,2024-02-11,,2022-03-01,2024-02-01,EMP-24687
+INV-00455,Which vendors received payments after their compliance certificate expired?,POLICY_BREACH_REVIEW,COMPLETED,2023-05-25,2023-07-02,2022-10-08,2023-04-27,EMP-60012
+INV-00456,Identify transactions with round-number amounts processed outside business hours.,FINANCIAL_INVESTIGATION,COMPLETED,2023-12-09,2024-02-15,2023-04-18,2023-11-12,EMP-69970
+INV-00457,Which high-risk or critical-risk vendors have received payments in the past 12 months?,FRAUD_INVESTIGATION,COMPLETED,2021-09-26,2021-10-14,2021-05-13,2021-08-31,EMP-29653
+INV-00458,Are there active contracts with BLACKLISTED vendors?,POLICY_BREACH_REVIEW,COMPLETED,2023-03-25,2023-06-28,2022-06-10,2023-02-24,EMP-65795
+INV-00459,Which expense claims exceed the policy limit for the stated category?,VENDOR_RISK_ASSESSMENT,ON_HOLD,2022-05-20,,2020-11-11,2022-05-13,EMP-38687
+INV-00460,Which audit findings are supported by multiple independent evidence sources?,CONTRACT_AUDIT,COMPLETED,2023-03-07,2023-08-14,2022-06-23,2023-03-05,EMP-57560
+INV-00461,Are compliance records current for all vendors with active contracts?,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-01-10,2023-01-27,2022-08-22,2022-12-29,EMP-8180
+INV-00462,Which audit findings are supported by multiple independent evidence sources?,FINANCIAL_INVESTIGATION,IN_PROGRESS,2023-04-12,,2021-12-12,2023-03-26,EMP-54546
+INV-00463,Identify vendors operating without a valid compliance certificate.,EXPENSE_AUDIT,COMPLETED,2024-03-14,2024-04-01,2022-10-03,2024-03-04,EMP-69912
+INV-00464,Identify vendors operating without a valid compliance certificate.,VENDOR_RISK_ASSESSMENT,COMPLETED,2023-04-30,2023-08-10,2022-12-01,2023-03-31,EMP-64630
+INV-00465,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,FINANCIAL_INVESTIGATION,IN_PROGRESS,2023-11-04,,2023-07-20,2023-11-02,EMP-14104
+INV-00466,Identify contracts with unusually high values relative to vendor risk tier.,VENDOR_RISK_ASSESSMENT,OPEN,2023-03-05,,2022-10-20,2023-02-19,EMP-50014
+INV-00467,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,FRAUD_INVESTIGATION,COMPLETED,2022-10-07,2022-10-27,2021-01-08,2022-09-18,EMP-5302
+INV-00468,Identify all approvals made by terminated employees during the audit period.,EXPENSE_AUDIT,COMPLETED,2022-07-12,2022-12-02,2022-02-06,2022-06-19,EMP-15374
+INV-00469,Identify contracts with unusually high values relative to vendor risk tier.,FRAUD_INVESTIGATION,COMPLETED,2024-01-15,2024-05-02,2023-05-23,2023-12-22,EMP-63743
+INV-00470,Which expense claims were submitted without an attached receipt?,EXPENSE_AUDIT,OPEN,2022-11-24,,2021-11-12,2022-10-28,EMP-69674
+INV-00471,Identify contracts with unusually high values relative to vendor risk tier.,FINANCIAL_INVESTIGATION,COMPLETED,2022-03-30,2022-09-02,2020-12-31,2022-03-28,EMP-70006
+INV-00472,Identify vendors operating without a valid compliance certificate.,EXPENSE_AUDIT,COMPLETED,2022-01-05,2022-03-22,2021-09-30,2021-12-07,EMP-47730
+INV-00473,Which vendors are marked NON_COMPLIANT under ISO 27001 or SOC 2?,EXPENSE_AUDIT,IN_PROGRESS,2023-12-25,,2023-03-23,2023-12-15,EMP-24389
+INV-00474,Are there contracts with vendors whose risk rating is HIGH or CRITICAL?,EXPENSE_AUDIT,IN_PROGRESS,2022-11-02,,2022-02-14,2022-10-19,EMP-5487
+INV-00475,Which transactions exceeded the approval authority limits of the authorising officer?,COMPLIANCE_REVIEW,COMPLETED,2023-09-13,2024-01-20,2023-01-17,2023-08-24,EMP-6971
+INV-00476,Which escalated approvals were not subsequently ratified at the required level?,CONTRACT_AUDIT,COMPLETED,2022-09-24,2022-10-10,2021-02-17,2022-09-10,EMP-55084
+INV-00477,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,CONTRACT_AUDIT,COMPLETED,2024-05-17,2024-10-18,2022-10-12,2024-05-11,EMP-19066
+INV-00478,Which vendors received payments after their compliance certificate expired?,FRAUD_INVESTIGATION,COMPLETED,2022-09-17,2022-11-20,2020-11-09,2022-08-18,MGR-9.0
+INV-00479,Identify transactions with round-number amounts processed outside business hours.,VENDOR_RISK_ASSESSMENT,IN_PROGRESS,2022-06-27,,2022-01-08,2022-06-09,EMP-58993
+INV-00480,Which contracts have passed their end date but remain in ACTIVE status?,FINANCIAL_INVESTIGATION,COMPLETED,2022-04-09,2022-08-21,2020-12-30,2022-03-16,EMP-8302
+INV-00481,Which audit findings are supported by multiple independent evidence sources?,FINANCIAL_INVESTIGATION,COMPLETED,2021-11-14,2022-02-07,2020-12-21,2021-10-23,EMP-65692
+INV-00482,Identify duplicate expense claims submitted by the same employee within 7 days.,COMPLIANCE_REVIEW,IN_PROGRESS,2022-08-03,,2021-12-16,2022-07-16,EMP-71289
+INV-00483,Are compliance records current for all vendors with active contracts?,APPROVAL_LIMIT_REVIEW,COMPLETED,2023-09-21,2024-03-03,2021-11-17,2023-09-10,EMP-3809
+INV-00484,Which contracts have passed their end date but remain in ACTIVE status?,APPROVAL_LIMIT_REVIEW,COMPLETED,2021-11-16,2022-05-06,2020-08-12,2021-11-01,EMP-58529
+INV-00485,Which expense claims were submitted without an attached receipt?,COMPLIANCE_REVIEW,COMPLETED,2024-05-24,2024-09-08,2022-08-10,2024-05-07,EMP-7575
+INV-00486,Are there transactions to the same beneficiary from multiple employees?,VENDOR_RISK_ASSESSMENT,COMPLETED,2022-01-31,2022-07-21,2021-06-04,2022-01-17,EMP-20593
+INV-00487,Which vendors received payments after their compliance certificate expired?,POLICY_BREACH_REVIEW,ON_HOLD,2023-08-12,,2022-04-22,2023-07-19,EMP-68783
+INV-00488,Identify contracts with unusually high values relative to vendor risk tier.,CONTRACT_AUDIT,COMPLETED,2022-04-02,2022-07-16,2020-08-22,2022-03-25,EMP-69620
+INV-00489,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,FRAUD_INVESTIGATION,COMPLETED,2024-02-02,2024-03-11,2022-10-13,2024-01-19,EMP-3000
+INV-00490,Are there transactions approved by employees whose authority limit was insufficient?,EXPENSE_AUDIT,OPEN,2022-09-25,,2021-01-07,2022-09-24,EMP-8699
+INV-00491,Which vendors have not completed mandatory compliance assessments?,FINANCIAL_INVESTIGATION,COMPLETED,2024-02-11,2024-03-17,2023-08-24,2024-01-12,EMP-7031
+INV-00492,Which vendors received payments after their compliance certificate expired?,POLICY_BREACH_REVIEW,COMPLETED,2021-09-29,2022-03-07,2020-03-24,2021-09-21,EMP-38127
+INV-00493,Which contracts have passed their end date but remain in ACTIVE status?,POLICY_BREACH_REVIEW,COMPLETED,2024-01-19,2024-06-24,2022-11-30,2024-01-05,EMP-49725
+INV-00494,Which transactions exceeded the approval authority limits of the authorising officer?,VENDOR_RISK_ASSESSMENT,COMPLETED,2022-08-09,2023-02-04,2021-05-17,2022-08-06,EMP-23333
+INV-00495,Which vendors received payments after their compliance certificate expired?,FRAUD_INVESTIGATION,IN_PROGRESS,2022-04-21,,2021-07-24,2022-04-18,EMP-28950
+INV-00496,Identify all approvals made by terminated employees during the audit period.,FRAUD_INVESTIGATION,IN_PROGRESS,2023-03-05,,2022-02-25,2023-02-25,EMP-37039
+INV-00497,Are compliance records current for all vendors with active contracts?,COMPLIANCE_REVIEW,COMPLETED,2022-08-26,2023-01-02,2021-07-22,2022-07-28,EMP-34602
+INV-00498,Identify findings with confidence scores below 0.5 that have been marked VALIDATED.,COMPLIANCE_REVIEW,COMPLETED,2021-07-16,2021-09-29,2021-04-03,2021-06-28,EMP-5920
+INV-00499,Which vendors have not completed mandatory compliance assessments?,FINANCIAL_INVESTIGATION,OPEN,2021-08-12,,2019-10-18,2021-07-23,EMP-14309
+INV-00500,Which vendors have not completed mandatory compliance assessments?,POLICY_BREACH_REVIEW,COMPLETED,2022-11-30,2023-02-25,2021-08-17,2022-11-02,EMP-10522
