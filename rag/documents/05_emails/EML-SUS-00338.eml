@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-186759 (Risk Score 0.95)
+From: leslie.townsend@enterprise.com
+To: joseph.james@enterprise.com
+Date: Sun, 25 Jun 2023 10:17:00 -0000
+Message-ID: <9c6472c0-b194-4b43-8131-bf70fd17acd1@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Joseph,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-186759
+  Date:              2020-11-26
+  Vendor:            PrimeAxis Corp LLC (VND-04977)
+  Amount:            138,025.45 EUR
+  Transaction Type:  REIMBURSEMENT
+  Risk Score:        0.95
+  Status:            PENDING
+
+Reason for flag: unusually high transaction amount relative to vendor's histo=
+rical pattern.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Leslie Townsend
+Manager
+Fraud & Anomaly Detection Team

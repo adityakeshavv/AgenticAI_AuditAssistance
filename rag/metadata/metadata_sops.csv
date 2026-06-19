@@ -1,0 +1,16 @@
+document_id,document_type,related_vendor_id,related_employee_id,related_transaction_id,related_contract_id,related_investigation_id,creation_date,file_name
+SOP-VOB-001,SOP,,EMP-59544,,,,2025-05-14,SOP-VOB-001_Vendor_Onboarding_SOP.pdf
+SOP-POA-002,SOP,,EMP-26652,,,,2024-08-30,SOP-POA-002_Purchase_Order_Approval_SOP.pdf
+SOP-EXP-003,SOP,,EMP-31635,,,,2023-05-28,SOP-EXP-003_Expense_Claim_Processing_SOP.pdf
+SOP-VCR-004,SOP,,EMP-55039,,,,2024-01-10,SOP-VCR-004_Vendor_Compliance_Reassessment_SOP.pdf
+SOP-TAE-005,SOP,,EMP-70174,,,,2023-06-24,SOP-TAE-005_Transaction_Approval_Escalation_SOP.pdf
+SOP-CRT-006,SOP,,EMP-6338,,,,2025-04-23,SOP-CRT-006_Contract_Renewal_and_Termination_SOP.pdf
+SOP-STI-007,SOP,,MGR-12.0,,,,2025-08-12,SOP-STI-007_Suspicious_Transaction_Investigation_SOP.pdf
+SOP-SOD-008,SOP,,EMP-49963,,,,2023-12-10,SOP-SOD-008_Segregation_of_Duties_Control_SOP.pdf
+SOP-GEC-009,SOP,,EMP-2380,,,,2025-09-10,SOP-GEC-009_Ghost_Employee_-_Terminated_Approver_Control_SOP.pdf
+SOP-DID-010,SOP,,EMP-52981,,,,2025-08-13,SOP-DID-010_Duplicate_Invoice_Detection_SOP.pdf
+SOP-HRP-011,SOP,,EMP-66553,,,,2024-10-18,SOP-HRP-011_High-Risk_Vendor_Payment_Hold_SOP.pdf
+SOP-AEC-012,SOP,,EMP-42659,,,,2024-07-11,SOP-AEC-012_Audit_Evidence_Collection_and_Retention_SOP.pdf
+SOP-SPD-013,SOP,,EMP-2505,,,,2023-02-13,SOP-SPD-013_Split_Purchase_Detection_SOP.pdf
+SOP-WBI-014,SOP,,EMP-16318,,,,2025-08-05,SOP-WBI-014_Whistleblower_Report_Intake_SOP.pdf
+SOP-MFC-015,SOP,,EMP-34142,,,,2024-02-21,SOP-MFC-015_Month-End_Financial_Control_Reconciliation_SOP.pdf

@@ -1,0 +1,36 @@
+Subject:
+ Compliance Alert: Vendor VND-00022 -- NON_COMPLIANT under CIS Controls
+From: matthew.park@enterprise.com
+To: christopher.thomas@enterprise.com
+Date: Sun, 11 Jan 2026 11:37:00 -0000
+Message-ID: <5aa72b97-709d-498a-9596-a703634c9328@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Christopher,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            KineticBlue Ltd International (VND-00022)
+  Framework:         CIS Controls
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2019-11-01
+  Expiry Date:       2022-05-10
+  Compliance ID:     CMP-004774
+
+Findings summary: Insufficient audit trail documentation for transaction proc=
+essing.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-00022) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Matthew Park
+Senior Analyst
+Compliance Office

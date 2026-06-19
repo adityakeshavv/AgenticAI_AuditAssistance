@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-03192 -- NON_COMPLIANT under HIPAA
+From: christopher.bush@enterprise.com
+To: bailey.lee@enterprise.com
+Date: Thu, 09 Feb 2023 14:47:00 -0000
+Message-ID: <8ae75d3f-176a-4b51-8355-ce73ad87e50d@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Bailey,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            BlueStar Procurement (VND-03192)
+  Framework:         HIPAA
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2021-09-13
+  Expiry Date:       2022-11-13
+  Compliance ID:     CMP-013826
+
+Findings summary: Insufficient audit trail documentation for transaction proc=
+essing.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-03192) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Christopher Bush
+Manager
+Compliance Office

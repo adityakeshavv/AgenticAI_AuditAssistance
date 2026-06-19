@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1826123492 (Risk Score 0.73)
+From: jeremy.atkinson@enterprise.com
+To: darren.campbell@enterprise.com
+Date: Mon, 15 Jul 2024 20:15:00 -0000
+Message-ID: <68746928-d9fe-427d-9489-dcef911ddb92@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Darren,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1826123492
+  Date:              2024-09-05
+  Vendor:            YellowBridge Partners Inc (VND-03462)
+  Amount:            618,394.42 GBP
+  Transaction Type:  TRANSFER
+  Risk Score:        0.73
+  Status:            COMPLETED
+
+Reason for flag: round-number amount inconsistent with typical invoice patter=
+ns.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Jeremy Atkinson
+Senior Specialist
+Fraud & Anomaly Detection Team

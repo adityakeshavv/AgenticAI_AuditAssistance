@@ -1,0 +1,33 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C742096010 (Risk Score 0.95)
+From: jerome.love@enterprise.com
+To: jessica.smith@enterprise.com
+Date: Fri, 17 Mar 2023 12:42:00 -0000
+Message-ID: <df91857f-769f-426a-b0b3-815841cbe3fd@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Jessica,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C742096010
+  Date:              2023-05-29
+  Vendor:            NorthBridge Supplies LLC (VND-02273)
+  Amount:            23,327.06 CAD
+  Transaction Type:  ADVANCE
+  Risk Score:        0.95
+  Status:            COMPLETED
+
+Reason for flag: transaction processed outside standard business hours.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Jerome Love
+Chief Officer
+Fraud & Anomaly Detection Team

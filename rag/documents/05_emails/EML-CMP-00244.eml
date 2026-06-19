@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-02806 -- EXPIRED under NIST CSF
+From: katherine.brown@enterprise.com
+To: steven.hall@enterprise.com
+Date: Wed, 05 Nov 2025 08:13:00 -0000
+Message-ID: <3e30851d-1149-4151-b320-4836fac33aa5@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Steven,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            XpressCore Dynamics Ltd (VND-02806)
+  Framework:         NIST CSF
+  Compliance Status: EXPIRED
+  Assessment Date:   2021-05-06
+  Expiry Date:       2023-04-21
+  Compliance ID:     CMP-013414
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-02806) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Katherine Brown
+Senior Associate
+Compliance Office

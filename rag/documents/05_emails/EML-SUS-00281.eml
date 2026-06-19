@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1546632922 (Risk Score 0.61)
+From: joshua.wilson@enterprise.com
+To: douglas.hart@enterprise.com
+Date: Thu, 31 Jul 2025 12:31:00 -0000
+Message-ID: <f8a6d7cf-6da9-4c8f-b5e1-b04d844bb0be@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Douglas,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1546632922
+  Date:              2023-04-04
+  Vendor:            VoltEdge Solutions Inc (VND-03562)
+  Amount:            2,559.68 USD
+  Transaction Type:  REFUND
+  Risk Score:        0.61
+  Status:            COMPLETED
+
+Reason for flag: vendor flagged as high-risk with no recent compliance reasse=
+ssment.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Joshua Wilson
+Senior Specialist
+Fraud & Anomaly Detection Team

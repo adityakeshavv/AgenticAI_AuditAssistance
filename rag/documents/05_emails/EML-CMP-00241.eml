@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-01049 -- NON_COMPLIANT under GDPR
+From: dale.ortiz@enterprise.com
+To: valerie.harris@enterprise.com
+Date: Mon, 24 Mar 2025 10:20:00 -0000
+Message-ID: <950ee291-f29c-4dd6-a763-0c32dbfce1c0@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Valerie,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            IronPoint Manufacturing Ltd (VND-01049)
+  Framework:         GDPR
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2020-11-16
+  Expiry Date:       2022-01-28
+  Compliance ID:     CMP-005494
+
+Findings summary: Critical control gap identified in access management proced=
+ures.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-01049) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Dale Ortiz
+Senior Associate
+Compliance Office

@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-00967 -- EXPIRED under ISO 27001
+From: jason.ruiz@enterprise.com
+To: timothy.reynolds@enterprise.com
+Date: Sat, 03 Feb 2024 10:52:00 -0000
+Message-ID: <59e2221f-ad1d-4cb9-983f-9a9a0a6c18dc@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Timothy,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            InnoCore Dynamics International (VND-00967)
+  Framework:         ISO 27001
+  Compliance Status: EXPIRED
+  Assessment Date:   2022-11-02
+  Expiry Date:       2023-07-02
+  Compliance ID:     CMP-005216
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-00967) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Jason Ruiz
+Manager
+Compliance Office

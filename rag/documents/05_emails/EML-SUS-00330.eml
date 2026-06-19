@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C140332829 (Risk Score 0.73)
+From: victor.johnson@enterprise.com
+To: timothy.martinez@enterprise.com
+Date: Tue, 10 Oct 2023 08:23:00 -0000
+Message-ID: <eb2302de-a464-4625-96ec-141e6a091d11@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Timothy,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C140332829
+  Date:              2022-11-17
+  Vendor:            VoltEdge Solutions Holdings (VND-00326)
+  Amount:            32,066.78 USD
+  Transaction Type:  TRANSFER
+  Risk Score:        0.73
+  Status:            COMPLETED
+
+Reason for flag: transaction risk score exceeds the automated monitoring thre=
+shold.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Victor Johnson
+Senior Associate
+Fraud & Anomaly Detection Team

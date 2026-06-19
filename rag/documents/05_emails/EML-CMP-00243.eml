@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-01890 -- EXPIRED under GDPR
+From: lucas.cox@enterprise.com
+To: sharon.patterson@enterprise.com
+Date: Fri, 17 Apr 2026 10:47:00 -0000
+Message-ID: <50964e95-2c6c-4a0c-9ace-a33c964573f5@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Sharon,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            HorizonEdge Inc International (VND-01890)
+  Framework:         GDPR
+  Compliance Status: EXPIRED
+  Assessment Date:   2022-05-16
+  Expiry Date:       2023-01-08
+  Compliance ID:     CMP-007147
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-01890) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Lucas Cox
+Team Lead
+Compliance Office

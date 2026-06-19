@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C91444127 (Risk Score 0.85)
+From: briana.ortega@enterprise.com
+To: rachel.vasquez@enterprise.com
+Date: Sun, 01 Oct 2023 15:53:00 -0000
+Message-ID: <fb7c096b-690e-4666-b0b6-b76554ac365e@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Rachel,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C91444127
+  Date:              2024-10-13
+  Vendor:            TitanPath Holdings Inc (VND-01195)
+  Amount:            5,216.61 USD
+  Transaction Type:  PAYMENT
+  Risk Score:        0.85
+  Status:            COMPLETED
+
+Reason for flag: round-number amount inconsistent with typical invoice patter=
+ns.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Briana Ortega
+Senior Analyst
+Fraud & Anomaly Detection Team

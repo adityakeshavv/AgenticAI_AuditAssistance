@@ -1,0 +1,30 @@
+Subject: ESCALATION: Transaction TXN-683764 requires senior approval
+From: kyle.johnson@enterprise.com
+To: christopher.burke@enterprise.com
+Cc: crystal.brown@enterprise.com
+Date: Wed, 16 Apr 2025 10:57:00 -0000
+Message-ID: <cfc31601-66e6-426d-850f-002ac83b6269@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Christopher,
+
+I need to escalate Approval ID APR-041141 (Transaction TXN-683764)
+to you because the transaction amount (19,558.19) exceeds the original approv=
+er's authorised limit of 5,000.00.
+
+  Transaction ID:    TXN-683764
+  Amount:            19,558.19
+  Approval Level:    L1
+  Approval Limit:    5,000.00
+  Current Status:    ESCALATED
+  Delegation Ref:    ESC-Vda7443
+
+This is time-sensitive and I'd appreciate your review by end of week. Please
+advise if you need additional context from the requesting department before
+making a decision.
+
+Regards,
+Kyle Johnson
+Senior Associate

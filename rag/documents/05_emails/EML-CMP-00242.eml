@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-00746 -- NON_COMPLIANT under GDPR
+From: lindsay.williams@enterprise.com
+To: antonio.mcintosh@enterprise.com
+Date: Sun, 06 Oct 2024 09:08:00 -0000
+Message-ID: <c3992a90-9529-4835-a55f-cf16e3fa79a9@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Antonio,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            TrueNorth Services Ltd (VND-00746)
+  Framework:         GDPR
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2019-09-14
+  Expiry Date:       2021-07-29
+  Compliance ID:     CMP-012154
+
+Findings summary: Incident response plan not tested within required 12-month =
+window.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-00746) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Lindsay Williams
+Senior Analyst
+Compliance Office

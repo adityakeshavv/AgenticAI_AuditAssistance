@@ -1,0 +1,33 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C86125671 (Risk Score 0.92)
+From: jennifer.dawson@enterprise.com
+To: cameron.gonzalez@enterprise.com
+Date: Tue, 09 Jan 2024 09:14:00 -0000
+Message-ID: <581f51b0-e98f-4eeb-a2d9-206e3690096b@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Cameron,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C86125671
+  Date:              2024-05-17
+  Vendor:            SilverPath Holdings Group (VND-01207)
+  Amount:            81,937.78 USD
+  Transaction Type:  SETTLEMENT
+  Risk Score:        0.92
+  Status:            COMPLETED
+
+Reason for flag: transaction processed outside standard business hours.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Jennifer Dawson
+Senior Analyst
+Fraud & Anomaly Detection Team

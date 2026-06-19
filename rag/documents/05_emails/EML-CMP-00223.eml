@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-00311 -- EXPIRED under ISO 27001
+From: desiree.ray@enterprise.com
+To: colin.olson@enterprise.com
+Date: Thu, 29 Jun 2023 11:18:00 -0000
+Message-ID: <9dc59da0-33d6-4d17-ace3-57b423ec7c0c@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Colin,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            YellowBridge Partners Ltd (VND-00311)
+  Framework:         ISO 27001
+  Compliance Status: EXPIRED
+  Assessment Date:   2019-02-09
+  Expiry Date:       2021-09-14
+  Compliance ID:     CMP-007082
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-00311) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Desiree Ray
+Senior Associate
+Compliance Office

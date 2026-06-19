@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-02723 -- NON_COMPLIANT under CMMC
+From: david.bowen@enterprise.com
+To: zachary.washington@enterprise.com
+Date: Sat, 11 Mar 2023 13:05:00 -0000
+Message-ID: <fff89bea-d1da-4b4f-abcb-bc51a0d271d7@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Zachary,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            OmegaLink Systems (VND-02723)
+  Framework:         CMMC
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2020-02-10
+  Expiry Date:       2021-11-18
+  Compliance ID:     CMP-011973
+
+Findings summary: Critical control gap identified in access management proced=
+ures.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-02723) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+David Bowen
+Senior Associate
+Compliance Office

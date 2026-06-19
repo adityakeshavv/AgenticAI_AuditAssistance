@@ -1,0 +1,33 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-746843 (Risk Score 0.96)
+From: heather.may@enterprise.com
+To: jason.perez@enterprise.com
+Date: Thu, 09 Mar 2023 11:59:00 -0000
+Message-ID: <5df28ee1-2b02-4166-9acb-1925deeb1395@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Jason,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-746843
+  Date:              2020-08-15
+  Vendor:            XcelPath Networks Inc (VND-03054)
+  Amount:            374.47 USD
+  Transaction Type:  ADVANCE
+  Risk Score:        0.96
+  Status:            COMPLETED
+
+Reason for flag: transaction processed outside standard business hours.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Heather May
+Senior Specialist
+Fraud & Anomaly Detection Team

@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-04404 -- NON_COMPLIANT under GDPR
+From: lisa.webb@enterprise.com
+To: michelle.erickson@enterprise.com
+Date: Sat, 30 Nov 2024 11:56:00 -0000
+Message-ID: <94e29546-6083-42a7-934f-906c6f867ce3@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Michelle,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            LucentBridge Technologies Ltd (VND-04404)
+  Framework:         GDPR
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2020-02-09
+  Expiry Date:       2021-01-03
+  Compliance ID:     CMP-007090
+
+Findings summary: Incident response plan not tested within required 12-month =
+window.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-04404) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Lisa Webb
+Senior Specialist
+Compliance Office

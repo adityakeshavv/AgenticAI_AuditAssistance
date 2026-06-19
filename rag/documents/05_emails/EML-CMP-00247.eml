@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-04088 -- NON_COMPLIANT under ISO 27001
+From: melanie.avery@enterprise.com
+To: shelia.anderson@enterprise.com
+Date: Sat, 09 Sep 2023 17:35:00 -0000
+Message-ID: <59eb5c10-e9b9-4f16-9369-48f66c1a58d1@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Shelia,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            DeltaPath Logistics Group (VND-04088)
+  Framework:         ISO 27001
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2019-04-24
+  Expiry Date:       2020-06-24
+  Compliance ID:     CMP-010376
+
+Findings summary: Incident response plan not tested within required 12-month =
+window.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-04088) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Melanie Avery
+Senior Specialist
+Compliance Office

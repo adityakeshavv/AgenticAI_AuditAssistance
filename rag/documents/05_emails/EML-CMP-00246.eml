@@ -1,0 +1,36 @@
+Subject:
+ Compliance Alert: Vendor VND-00069 -- NON_COMPLIANT under SOC 2 Type II
+From: regina.carroll@enterprise.com
+To: monique.mccarty@enterprise.com
+Date: Fri, 26 Jan 2024 17:34:00 -0000
+Message-ID: <1d69311d-5ce9-4511-8fc0-b1b665620481@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Monique,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            PeakVault Services Ltd (VND-00069)
+  Framework:         SOC 2 Type II
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2022-09-21
+  Expiry Date:       2024-02-18
+  Compliance ID:     CMP-012005
+
+Findings summary: Vendor failed data encryption requirements under framework =
+section 7.2.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-00069) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Regina Carroll
+Senior Associate
+Compliance Office

@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-02031 -- NON_COMPLIANT under HIPAA
+From: steven.kelly@enterprise.com
+To: thomas.mcclain@enterprise.com
+Date: Sun, 28 Jan 2024 16:42:00 -0000
+Message-ID: <b0ac658d-1d4e-424a-b4d1-bd92d4c79ec8@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Thomas,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            Apex Solutions Group (VND-02031)
+  Framework:         HIPAA
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2023-09-01
+  Expiry Date:       2025-01-30
+  Compliance ID:     CMP-009532
+
+Findings summary: Third-party sub-processor agreements not in place as requir=
+ed.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-02031) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Steven Kelly
+Team Lead
+Compliance Office

@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-295122 (Risk Score 0.75)
+From: lacey.cooper@enterprise.com
+To: terrence.haney@enterprise.com
+Date: Mon, 19 May 2025 11:11:00 -0000
+Message-ID: <c3683031-7a41-4ffa-b620-2b3ad03e86e5@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Terrence,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-295122
+  Date:              2024-09-24
+  Vendor:            VertiLink Distributors Ltd (VND-04255)
+  Amount:            446,754.32 USD
+  Transaction Type:  PAYMENT
+  Risk Score:        0.75
+  Status:            COMPLETED
+
+Reason for flag: vendor flagged as high-risk with no recent compliance reasse=
+ssment.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Lacey Cooper
+Senior Specialist
+Fraud & Anomaly Detection Team

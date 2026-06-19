@@ -1,0 +1,36 @@
+Subject:
+ Compliance Alert: Vendor VND-02075 -- NON_COMPLIANT under SOC 2 Type II
+From: jeffrey.benjamin@enterprise.com
+To: caitlyn.ross@enterprise.com
+Date: Sat, 27 May 2023 11:42:00 -0000
+Message-ID: <e9e4b255-bfe0-4dc7-987d-62b0ea1b73d8@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Caitlyn,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            KineticBlue Ltd Inc (VND-02075)
+  Framework:         SOC 2 Type II
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2023-05-25
+  Expiry Date:       2024-04-07
+  Compliance ID:     CMP-013431
+
+Findings summary: Critical control gap identified in access management proced=
+ures.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-02075) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Jeffrey Benjamin
+Senior Manager
+Compliance Office

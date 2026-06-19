@@ -1,0 +1,33 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C841450293 (Risk Score 0.92)
+From: monica.marshall@enterprise.com
+To: rebecca.jackson@enterprise.com
+Date: Mon, 22 Jan 2024 17:39:00 -0000
+Message-ID: <297e1275-c772-4444-abe4-94e6db0e20b0@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Rebecca,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C841450293
+  Date:              2022-05-20
+  Vendor:            EcoVenture Supplies Holdings (VND-00136)
+  Amount:            4,204.75 USD
+  Transaction Type:  PAYMENT
+  Risk Score:        0.92
+  Status:            COMPLETED
+
+Reason for flag: transaction processed outside standard business hours.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Monica Marshall
+Senior Manager
+Fraud & Anomaly Detection Team

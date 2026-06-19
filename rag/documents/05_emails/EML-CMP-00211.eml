@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-04661 -- NON_COMPLIANT under ISO 27001
+From: joshua.underwood@enterprise.com
+To: megan.everett@enterprise.com
+Date: Fri, 17 Oct 2025 16:47:00 -0000
+Message-ID: <6694b89e-56ab-4e51-9cfe-42a6c6e362db@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Megan,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            DeltaPath Logistics (VND-04661)
+  Framework:         ISO 27001
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2019-08-18
+  Expiry Date:       2020-03-05
+  Compliance ID:     CMP-007712
+
+Findings summary: Insufficient audit trail documentation for transaction proc=
+essing.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-04661) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Joshua Underwood
+Team Lead
+Compliance Office

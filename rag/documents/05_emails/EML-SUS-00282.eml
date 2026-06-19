@@ -1,0 +1,33 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C441980080 (Risk Score 0.81)
+From: heather.marshall@enterprise.com
+To: jennifer.reyes@enterprise.com
+Date: Tue, 03 Jun 2025 13:06:00 -0000
+Message-ID: <a88f44fa-9bf1-4a80-94df-ec11ad2b92ed@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Jennifer,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C441980080
+  Date:              2020-10-13
+  Vendor:            YieldPoint Partners International (VND-02486)
+  Amount:            19,406.42 USD
+  Transaction Type:  INVOICE
+  Risk Score:        0.81
+  Status:            PENDING
+
+Reason for flag: transaction processed outside standard business hours.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Heather Marshall
+Senior Analyst
+Fraud & Anomaly Detection Team

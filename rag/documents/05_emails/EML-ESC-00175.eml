@@ -1,0 +1,30 @@
+Subject: ESCALATION: Transaction TXN-282792 requires senior approval
+From: brian.miller@enterprise.com
+To: courtney.mack@enterprise.com
+Cc: dean.whitney@enterprise.com
+Date: Wed, 04 Feb 2026 12:23:00 -0000
+Message-ID: <1f25d23d-ab5b-45f4-af0a-f748026348f7@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Courtney,
+
+I need to escalate Approval ID APR-008613 (Transaction TXN-282792)
+to you because approval status is currently 'REJECTED' and policy requires se=
+nior sign-off before this can proceed further.
+
+  Transaction ID:    TXN-282792
+  Amount:            3,285.34
+  Approval Level:    L1
+  Approval Limit:    5,000.00
+  Current Status:    REJECTED
+  Delegation Ref:    nan
+
+This is time-sensitive and I'd appreciate your review by end of week. Please
+advise if you need additional context from the requesting department before
+making a decision.
+
+Regards,
+Brian Miller
+Senior Associate

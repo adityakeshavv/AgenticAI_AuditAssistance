@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-04120 -- NON_COMPLIANT under NIST CSF
+From: kelsey.jackson@enterprise.com
+To: robert.ramos@enterprise.com
+Date: Mon, 10 Nov 2025 17:41:00 -0000
+Message-ID: <58f945ca-4e2f-46c2-9cf0-70c7499b18e5@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Robert,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            NexPoint Analytics Group (VND-04120)
+  Framework:         NIST CSF
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2022-06-04
+  Expiry Date:       2024-01-16
+  Compliance ID:     CMP-007432
+
+Findings summary: Insufficient audit trail documentation for transaction proc=
+essing.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-04120) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Kelsey Jackson
+Team Lead
+Compliance Office

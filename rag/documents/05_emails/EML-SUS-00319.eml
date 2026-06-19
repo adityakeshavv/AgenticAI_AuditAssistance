@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1368295389 (Risk Score 0.93)
+From: lauren.fox@enterprise.com
+To: philip.jones@enterprise.com
+Date: Mon, 09 Jun 2025 12:28:00 -0000
+Message-ID: <a0fffd2e-fd51-455f-a68d-45995cccb8c5@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Philip,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1368295389
+  Date:              2021-10-02
+  Vendor:            ClearPath Logistics Holdings (VND-01886)
+  Amount:            6,996.23 USD
+  Transaction Type:  INVOICE
+  Risk Score:        0.93
+  Status:            REVERSED
+
+Reason for flag: round-number amount inconsistent with typical invoice patter=
+ns.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Lauren Fox
+Senior Specialist
+Fraud & Anomaly Detection Team

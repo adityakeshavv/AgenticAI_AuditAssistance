@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1554215432 (Risk Score 0.70)
+From: melinda.robinson@enterprise.com
+To: laura.ross@enterprise.com
+Date: Thu, 09 Feb 2023 18:48:00 -0000
+Message-ID: <8e24b87d-3476-4bc2-8079-4da58b13d905@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Laura,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1554215432
+  Date:              2023-06-28
+  Vendor:            VertiLink Distributors (VND-01107)
+  Amount:            186,611.01 CAD
+  Transaction Type:  PAYMENT
+  Risk Score:        0.70
+  Status:            COMPLETED
+
+Reason for flag: multiple transactions to the same vendor within a short wind=
+ow (possible split payment).
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Melinda Robinson
+Senior Associate
+Fraud & Anomaly Detection Team

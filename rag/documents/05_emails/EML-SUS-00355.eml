@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-213809 (Risk Score 0.65)
+From: casey.mason@enterprise.com
+To: patrick.rogers@enterprise.com
+Date: Wed, 09 Aug 2023 11:56:00 -0000
+Message-ID: <2d1d7e57-793e-421d-beb3-bf496a3668a3@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Patrick,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-213809
+  Date:              2023-08-01
+  Vendor:            Delta_Logistics Ltd (VND-02498)
+  Amount:            707,378.59 EUR
+  Transaction Type:  REFUND
+  Risk Score:        0.65
+  Status:            COMPLETED
+
+Reason for flag: transaction risk score exceeds the automated monitoring thre=
+shold.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Casey Mason
+Deputy Manager
+Fraud & Anomaly Detection Team

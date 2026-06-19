@@ -1,0 +1,36 @@
+Subject:
+ Compliance Alert: Vendor VND-03339 -- NON_COMPLIANT under SOC 2 Type II
+From: christopher.williams@enterprise.com
+To: brittany.lee@enterprise.com
+Date: Sun, 10 Aug 2025 12:55:00 -0000
+Message-ID: <d19e2a95-780e-4104-ba54-c2e39ce070a2@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Brittany,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            FlowBridge Inc (VND-03339)
+  Framework:         SOC 2 Type II
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2019-02-18
+  Expiry Date:       2020-06-18
+  Compliance ID:     CMP-014654
+
+Findings summary: Vendor failed data encryption requirements under framework =
+section 7.2.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-03339) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Christopher Williams
+Senior Analyst
+Compliance Office

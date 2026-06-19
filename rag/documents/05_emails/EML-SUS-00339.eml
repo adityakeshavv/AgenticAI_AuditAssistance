@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1814893134 (Risk Score 0.75)
+From: jessica.le@enterprise.com
+To: kimberly.thornton@enterprise.com
+Date: Mon, 08 Apr 2024 07:54:00 -0000
+Message-ID: <0cacb078-b766-44d4-a894-d345089d77b3@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Kimberly,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1814893134
+  Date:              2020-04-11
+  Vendor:            UnityCore Technologies Holdings (VND-00155)
+  Amount:            100,774.49 USD
+  Transaction Type:  TRANSFER
+  Risk Score:        0.75
+  Status:            COMPLETED
+
+Reason for flag: transaction risk score exceeds the automated monitoring thre=
+shold.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Jessica Le
+Senior Associate
+Fraud & Anomaly Detection Team

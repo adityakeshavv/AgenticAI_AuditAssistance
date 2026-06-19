@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-01748 -- NON_COMPLIANT under GDPR
+From: susan.melendez@enterprise.com
+To: bryce.parker@enterprise.com
+Date: Mon, 15 May 2023 13:55:00 -0000
+Message-ID: <7790c627-717c-4d81-8e12-e44720b72298@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Bryce,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            RedPoint Consulting Group (VND-01748)
+  Framework:         GDPR
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2023-12-10
+  Expiry Date:       2024-06-29
+  Compliance ID:     CMP-002930
+
+Findings summary: Critical control gap identified in access management proced=
+ures.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-01748) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Susan Melendez
+Senior Specialist
+Compliance Office

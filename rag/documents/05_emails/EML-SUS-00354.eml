@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-830470 (Risk Score 0.82)
+From: melissa.parker@enterprise.com
+To: elizabeth.foster@enterprise.com
+Date: Sun, 21 Dec 2025 14:57:00 -0000
+Message-ID: <7f2128ec-6a2a-43c8-869b-d0f164acab7a@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Elizabeth,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-830470
+  Date:              2023-09-17
+  Vendor:            GreenBridge Consulting Holdings (VND-04952)
+  Amount:            69,151.63 USD
+  Transaction Type:  SETTLEMENT
+  Risk Score:        0.82
+  Status:            COMPLETED
+
+Reason for flag: transaction risk score exceeds the automated monitoring thre=
+shold.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Melissa Parker
+Senior Associate
+Fraud & Anomaly Detection Team

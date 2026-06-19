@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-03735 -- NON_COMPLIANT under CMMC
+From: linda.washington@enterprise.com
+To: george.ballard@enterprise.com
+Date: Sat, 23 Sep 2023 15:20:00 -0000
+Message-ID: <9a45a3c6-4cb0-4399-bee1-d63a2850c557@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi George,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            DeltaPath Logistics LLC (VND-03735)
+  Framework:         CMMC
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2019-07-14
+  Expiry Date:       2021-04-17
+  Compliance ID:     CMP-008364
+
+Findings summary: Incident response plan not tested within required 12-month =
+window.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-03735) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Linda Washington
+Deputy Manager
+Compliance Office

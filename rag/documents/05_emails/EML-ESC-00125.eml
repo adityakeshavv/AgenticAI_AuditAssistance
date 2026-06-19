@@ -1,0 +1,30 @@
+Subject: ESCALATION: Transaction TXN-C51362851 requires senior approval
+From: curtis.thompson@enterprise.com
+To: sophia.smith@enterprise.com
+Cc: leslie.oneill@enterprise.com
+Date: Tue, 24 Jan 2023 10:51:00 -0000
+Message-ID: <5e73252b-fd91-4b0e-a030-7b7543c6ed1e@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Sophia,
+
+I need to escalate Approval ID APR-015220 (Transaction TXN-C51362851)
+to you because the transaction amount (40,052.15) exceeds the original approv=
+er's authorised limit of 25,000.00.
+
+  Transaction ID:    TXN-C51362851
+  Amount:            40,052.15
+  Approval Level:    L2
+  Approval Limit:    25,000.00
+  Current Status:    ESCALATED
+  Delegation Ref:    ESC-naN3420
+
+This is time-sensitive and I'd appreciate your review by end of week. Please
+advise if you need additional context from the requesting department before
+making a decision.
+
+Regards,
+Curtis Thompson
+Senior Associate

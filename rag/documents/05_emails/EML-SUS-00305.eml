@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1694152498 (Risk Score 0.90)
+From: lori.cordova@enterprise.com
+To: lori.gonzalez@enterprise.com
+Date: Sun, 28 Dec 2025 19:46:00 -0000
+Message-ID: <cf28e54f-3e50-477a-a4ea-4f555e066b6b@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Lori,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1694152498
+  Date:              2023-12-11
+  Vendor:            NexPoint Analytics (VND-02327)
+  Amount:            171,332.40 EUR
+  Transaction Type:  REFUND
+  Risk Score:        0.90
+  Status:            COMPLETED
+
+Reason for flag: transaction risk score exceeds the automated monitoring thre=
+shold.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Lori Cordova
+Team Lead
+Fraud & Anomaly Detection Team

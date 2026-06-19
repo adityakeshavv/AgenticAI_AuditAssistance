@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-04547 -- EXPIRED under HIPAA
+From: daniel.davis@enterprise.com
+To: kenneth.adams@enterprise.com
+Date: Mon, 23 Jan 2023 10:29:00 -0000
+Message-ID: <faedbed1-cf2c-49e4-8bf8-95d7a21a2672@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Kenneth,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            JetStream Analytics Group (VND-04547)
+  Framework:         HIPAA
+  Compliance Status: EXPIRED
+  Assessment Date:   2020-07-10
+  Expiry Date:       2021-02-28
+  Compliance ID:     CMP-011988
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-04547) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Daniel Davis
+Deputy Manager
+Compliance Office

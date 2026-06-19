@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-01104 -- NON_COMPLIANT under ISO 27001
+From: melanie.roberts@enterprise.com
+To: david.turner@enterprise.com
+Date: Wed, 12 Feb 2025 14:58:00 -0000
+Message-ID: <4c057b32-c22a-4282-8017-f4e4ce204c96@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi David,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            OmegaLink Systems (VND-01104)
+  Framework:         ISO 27001
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2023-06-23
+  Expiry Date:       2025-05-10
+  Compliance ID:     CMP-006768
+
+Findings summary: Incident response plan not tested within required 12-month =
+window.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-01104) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Melanie Roberts
+Senior Associate
+Compliance Office

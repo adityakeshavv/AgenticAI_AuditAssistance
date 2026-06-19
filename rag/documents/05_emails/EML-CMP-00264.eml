@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-04772 -- EXPIRED under SOX
+From: richard.hall@enterprise.com
+To: rhonda.merritt@enterprise.com
+Date: Fri, 10 Apr 2026 15:24:00 -0000
+Message-ID: <f6aeedff-3feb-4019-82a1-80ff8b3f19e5@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Rhonda,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            SilverPath Holdings (VND-04772)
+  Framework:         SOX
+  Compliance Status: EXPIRED
+  Assessment Date:   2023-12-25
+  Expiry Date:       2023-10-06
+  Compliance ID:     CMP-006515
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-04772) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Richard Hall
+Team Lead
+Compliance Office

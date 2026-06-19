@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-438631 (Risk Score 0.85)
+From: laura.allen@enterprise.com
+To: kayla.garza@enterprise.com
+Date: Mon, 24 Apr 2023 09:30:00 -0000
+Message-ID: <222578ed-0269-4809-a9a6-7e18f96e1cd5@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Kayla,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-438631
+  Date:              2022-04-20
+  Vendor:            LatticeCore Partners LLC (VND-04870)
+  Amount:            6,181.59 INR
+  Transaction Type:  REFUND
+  Risk Score:        0.85
+  Status:            COMPLETED
+
+Reason for flag: vendor flagged as high-risk with no recent compliance reasse=
+ssment.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Laura Allen
+Manager
+Fraud & Anomaly Detection Team

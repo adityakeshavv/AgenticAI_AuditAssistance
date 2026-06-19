@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1184110081 (Risk Score 0.92)
+From: michelle.navarro@enterprise.com
+To: jacob.jones@enterprise.com
+Date: Mon, 22 Sep 2025 17:43:00 -0000
+Message-ID: <647f1d43-9997-4e05-adf4-83b8a50a2caa@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Jacob,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1184110081
+  Date:              2023-10-20
+  Vendor:            LucentBridge Technologies Inc (VND-03661)
+  Amount:            100.00 GBP
+  Transaction Type:  PAYMENT
+  Risk Score:        0.92
+  Status:            COMPLETED
+
+Reason for flag: vendor flagged as high-risk with no recent compliance reasse=
+ssment.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Michelle Navarro
+Senior Associate
+Fraud & Anomaly Detection Team

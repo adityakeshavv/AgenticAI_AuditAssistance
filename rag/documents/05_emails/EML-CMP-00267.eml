@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-03213 -- EXPIRED under SOX
+From: david.herrera@enterprise.com
+To: kevin.lambert@enterprise.com
+Date: Thu, 26 Mar 2026 18:32:00 -0000
+Message-ID: <f0f396b2-c2b1-4eac-acb4-e4f88c5ac762@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Kevin,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            Delta_Logistics International (VND-03213)
+  Framework:         SOX
+  Compliance Status: EXPIRED
+  Assessment Date:   2020-12-08
+  Expiry Date:       2023-11-06
+  Compliance ID:     CMP-011353
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-03213) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+David Herrera
+Deputy Manager
+Compliance Office

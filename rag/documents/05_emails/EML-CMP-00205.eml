@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-01806 -- NON_COMPLIANT under ISO 27001
+From: matthew.martin@enterprise.com
+To: mary.romero@enterprise.com
+Date: Wed, 10 May 2023 09:42:00 -0000
+Message-ID: <83688d07-7249-4149-beab-71d1bb1f453d@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Mary,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            LucentBridge Technologies Ltd (VND-01806)
+  Framework:         ISO 27001
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2021-10-08
+  Expiry Date:       2023-03-22
+  Compliance ID:     CMP-006080
+
+Findings summary: Critical control gap identified in access management proced=
+ures.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-01806) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Matthew Martin
+Manager
+Compliance Office

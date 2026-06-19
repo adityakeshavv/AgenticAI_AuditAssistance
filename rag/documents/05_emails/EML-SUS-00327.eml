@@ -1,0 +1,33 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-240677 (Risk Score 0.90)
+From: steven.stevens@enterprise.com
+To: tracy.thompson@enterprise.com
+Date: Mon, 20 May 2024 19:56:00 -0000
+Message-ID: <98fbcb7e-9c39-43cd-aeca-3c2e51dc540b@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Tracy,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-240677
+  Date:              2023-03-10
+  Vendor:            SilverPath Holdings Group (VND-02595)
+  Amount:            732,067.59 USD
+  Transaction Type:  TRANSFER
+  Risk Score:        0.90
+  Status:            COMPLETED
+
+Reason for flag: transaction processed outside standard business hours.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Steven Stevens
+Deputy Manager
+Fraud & Anomaly Detection Team

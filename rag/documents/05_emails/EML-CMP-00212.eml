@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-04301 -- NON_COMPLIANT under GDPR
+From: brandy.zhang@enterprise.com
+To: heather.davis@enterprise.com
+Date: Mon, 24 Jun 2024 16:39:00 -0000
+Message-ID: <f53660b9-2589-4dfa-8472-a7bb532b51fc@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Heather,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            PrimeAxis Corp LLC (VND-04301)
+  Framework:         GDPR
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2023-11-25
+  Expiry Date:       2024-12-01
+  Compliance ID:     CMP-002371
+
+Findings summary: Critical control gap identified in access management proced=
+ures.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-04301) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Brandy Zhang
+Deputy Manager
+Compliance Office

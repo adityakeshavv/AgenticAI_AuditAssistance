@@ -1,0 +1,33 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-110489 (Risk Score 0.63)
+From: edward.murphy@enterprise.com
+To: stuart.walker@enterprise.com
+Date: Sat, 13 Dec 2025 09:24:00 -0000
+Message-ID: <93b90dcb-54d4-4c9b-b7bf-1bbaba2cc5ac@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Stuart,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-110489
+  Date:              2024-01-07
+  Vendor:            EcoVenture Supplies LLC (VND-01604)
+  Amount:            67,077.02 USD
+  Transaction Type:  PAYMENT
+  Risk Score:        0.63
+  Status:            COMPLETED
+
+Reason for flag: transaction processed outside standard business hours.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Edward Murphy
+Analyst
+Fraud & Anomaly Detection Team

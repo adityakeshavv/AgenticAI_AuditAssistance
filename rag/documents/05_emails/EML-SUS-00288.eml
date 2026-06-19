@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-267123 (Risk Score 0.64)
+From: stephanie.lewis@enterprise.com
+To: christina.wyatt@enterprise.com
+Date: Tue, 23 Jul 2024 13:26:00 -0000
+Message-ID: <d488b0a4-75c1-4d36-9a22-c7ca83e14710@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Christina,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-267123
+  Date:              2023-02-11
+  Vendor:            BlueStar Procurement LLC (VND-00549)
+  Amount:            21,828.00 CAD
+  Transaction Type:  PURCHASE
+  Risk Score:        0.64
+  Status:            FLAGGED
+
+Reason for flag: transaction risk score exceeds the automated monitoring thre=
+shold.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Stephanie Lewis
+Team Lead
+Fraud & Anomaly Detection Team

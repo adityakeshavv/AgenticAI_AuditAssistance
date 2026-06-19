@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-531505 (Risk Score 0.75)
+From: lisa.vaughn@enterprise.com
+To: carrie.jennings@enterprise.com
+Date: Fri, 26 Dec 2025 15:16:00 -0000
+Message-ID: <65651e31-720d-4c9f-a7ac-de5e74001fac@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Carrie,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-531505
+  Date:              2021-04-25
+  Vendor:            EdgeWave Technologies Ltd (VND-00511)
+  Amount:            152,368.06 USD
+  Transaction Type:  REIMBURSEMENT
+  Risk Score:        0.75
+  Status:            COMPLETED
+
+Reason for flag: unusually high transaction amount relative to vendor's histo=
+rical pattern.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Lisa Vaughn
+Team Lead
+Fraud & Anomaly Detection Team

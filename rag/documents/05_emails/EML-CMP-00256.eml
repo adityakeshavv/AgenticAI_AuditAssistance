@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-03321 -- NON_COMPLIANT under SOX
+From: ronnie.mcpherson@enterprise.com
+To: kevin.martin@enterprise.com
+Date: Wed, 11 Feb 2026 14:57:00 -0000
+Message-ID: <a9e2612e-cca4-4513-adfb-e15c5dd84e90@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Kevin,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            SilverPath Holdings Group (VND-03321)
+  Framework:         SOX
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2019-12-15
+  Expiry Date:       2021-06-12
+  Compliance ID:     CMP-003744
+
+Findings summary: Incident response plan not tested within required 12-month =
+window.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-03321) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Ronnie Mcpherson
+Team Lead
+Compliance Office

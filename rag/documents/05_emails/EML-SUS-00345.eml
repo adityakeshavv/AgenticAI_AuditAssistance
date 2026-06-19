@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C2009864439 (Risk Score 0.75)
+From: amber.saunders@enterprise.com
+To: richard.parker@enterprise.com
+Date: Fri, 02 Jun 2023 09:55:00 -0000
+Message-ID: <e91a130f-de26-427c-a6ef-71c1e4decb20@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Richard,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C2009864439
+  Date:              2022-12-18
+  Vendor:            KineticBlue Ltd LLC (VND-03885)
+  Amount:            61,397.26 USD
+  Transaction Type:  ADVANCE
+  Risk Score:        0.75
+  Status:            COMPLETED
+
+Reason for flag: unusually high transaction amount relative to vendor's histo=
+rical pattern.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Amber Saunders
+Senior Analyst
+Fraud & Anomaly Detection Team

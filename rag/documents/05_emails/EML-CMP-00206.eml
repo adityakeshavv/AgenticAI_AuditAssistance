@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-03515 -- EXPIRED under PCI-DSS
+From: nicholas.boyd@enterprise.com
+To: darlene.hardin@enterprise.com
+Date: Tue, 16 Sep 2025 10:07:00 -0000
+Message-ID: <1a48ef9f-2afa-4645-aeb1-5ca29e7bf788@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Darlene,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            Epsilon_Group Holdings (VND-03515)
+  Framework:         PCI-DSS
+  Compliance Status: EXPIRED
+  Assessment Date:   2020-05-28
+  Expiry Date:       2022-09-16
+  Compliance ID:     CMP-014458
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-03515) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Nicholas Boyd
+Senior Specialist
+Compliance Office

@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-163018 (Risk Score 0.97)
+From: kevin.hickman@enterprise.com
+To: phillip.dalton@enterprise.com
+Date: Sat, 20 Jan 2024 09:57:00 -0000
+Message-ID: <12cd4650-144d-4e2c-8c71-1ed499dc8ea7@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Phillip,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-163018
+  Date:              2023-04-21
+  Vendor:            Beta_Supplies LLC (VND-00464)
+  Amount:            6,920.80 USD
+  Transaction Type:  SETTLEMENT
+  Risk Score:        0.97
+  Status:            COMPLETED
+
+Reason for flag: round-number amount inconsistent with typical invoice patter=
+ns.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Kevin Hickman
+Senior Associate
+Fraud & Anomaly Detection Team

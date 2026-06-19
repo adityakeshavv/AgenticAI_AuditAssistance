@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-01089 -- NON_COMPLIANT under ISO 27001
+From: allison.allen@enterprise.com
+To: maria.robinson@enterprise.com
+Date: Fri, 06 Sep 2024 14:03:00 -0000
+Message-ID: <a6067a27-66a0-47da-803b-8f4d5fd9b34a@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Maria,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            TitanPath Holdings Inc (VND-01089)
+  Framework:         ISO 27001
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2021-11-27
+  Expiry Date:       2023-08-31
+  Compliance ID:     CMP-001076
+
+Findings summary: Insufficient audit trail documentation for transaction proc=
+essing.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-01089) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Allison Allen
+Senior Associate
+Compliance Office

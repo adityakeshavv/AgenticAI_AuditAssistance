@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-02270 -- NON_COMPLIANT under PCI-DSS
+From: vickie.evans@enterprise.com
+To: william.french@enterprise.com
+Date: Sun, 04 Jun 2023 15:31:00 -0000
+Message-ID: <850203ab-bb93-4a15-b136-d5fb10d16824@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi William,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            WaveCore Manufacturing Inc (VND-02270)
+  Framework:         PCI-DSS
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2021-05-11
+  Expiry Date:       2021-05-20
+  Compliance ID:     CMP-011508
+
+Findings summary: Insufficient audit trail documentation for transaction proc=
+essing.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-02270) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Vickie Evans
+Senior Specialist
+Compliance Office

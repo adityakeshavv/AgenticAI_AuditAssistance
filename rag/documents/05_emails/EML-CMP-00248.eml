@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-02630 -- NON_COMPLIANT under GDPR
+From: christopher.bush@enterprise.com
+To: stephanie.williams@enterprise.com
+Date: Mon, 31 Jul 2023 16:00:00 -0000
+Message-ID: <ce0c0701-5767-4f82-8679-0646aa0de399@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Stephanie,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            EcoVenture Supplies (VND-02630)
+  Framework:         GDPR
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2021-01-09
+  Expiry Date:       2021-11-07
+  Compliance ID:     CMP-010961
+
+Findings summary: Critical control gap identified in access management proced=
+ures.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-02630) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Christopher Bush
+Manager
+Compliance Office

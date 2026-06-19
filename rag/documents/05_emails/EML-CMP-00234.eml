@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-00712 -- EXPIRED under ISO 9001
+From: derek.delgado@enterprise.com
+To: william.sullivan@enterprise.com
+Date: Sun, 12 Nov 2023 15:35:00 -0000
+Message-ID: <a7eac1c8-1c4a-4f30-acf3-3142833955bc@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi William,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            WaveCore Manufacturing LLC (VND-00712)
+  Framework:         ISO 9001
+  Compliance Status: EXPIRED
+  Assessment Date:   2019-08-02
+  Expiry Date:       2021-03-15
+  Compliance ID:     CMP-008519
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-00712) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Derek Delgado
+Senior Specialist
+Compliance Office

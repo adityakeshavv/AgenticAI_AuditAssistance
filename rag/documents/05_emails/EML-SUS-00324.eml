@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C771816470 (Risk Score 0.75)
+From: phillip.thompson@enterprise.com
+To: meagan.young@enterprise.com
+Date: Fri, 30 Jun 2023 19:33:00 -0000
+Message-ID: <f1e84978-6025-44a9-ab4c-14e3e8328104@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Meagan,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C771816470
+  Date:              2021-10-10
+  Vendor:            HarborLight Services International (VND-03442)
+  Amount:            224,548.91 USD
+  Transaction Type:  INVOICE
+  Risk Score:        0.75
+  Status:            COMPLETED
+
+Reason for flag: vendor flagged as high-risk with no recent compliance reasse=
+ssment.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Phillip Thompson
+Team Lead
+Fraud & Anomaly Detection Team

@@ -1,7 +1,9 @@
 # Python
 
-**pycache**/
+__pycache__/
 *.py[cod]
+*.pyd
+*.pyo
 *$py.class
 
 # Virtual Environment
@@ -81,6 +83,8 @@ faiss_index/
 faiss/
 vector_store/
 vectorstores/
+rag/embeddings/
+rag/vector_store/
 
 # LangChain / LlamaIndex Cache
 

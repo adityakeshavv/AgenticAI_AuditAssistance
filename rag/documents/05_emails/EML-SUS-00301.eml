@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C458184662 (Risk Score 0.68)
+From: steven.anderson@enterprise.com
+To: travis.smith@enterprise.com
+Date: Mon, 06 Nov 2023 20:54:00 -0000
+Message-ID: <45f97bce-626a-4495-85cd-7f0824c64fcb@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Travis,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C458184662
+  Date:              2020-02-07
+  Vendor:            Delta_Logistics International (VND-00550)
+  Amount:            17,549.80 INR
+  Transaction Type:  TRANSFER
+  Risk Score:        0.68
+  Status:            COMPLETED
+
+Reason for flag: unusually high transaction amount relative to vendor's histo=
+rical pattern.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Steven Anderson
+Senior Director
+Fraud & Anomaly Detection Team

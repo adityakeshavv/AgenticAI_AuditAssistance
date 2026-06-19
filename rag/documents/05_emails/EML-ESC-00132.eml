@@ -1,0 +1,30 @@
+Subject: ESCALATION: Transaction TXN-C1085254540 requires senior approval
+From: janet.harris@enterprise.com
+To: andrea.carlson@enterprise.com
+Cc: kim.gomez@enterprise.com
+Date: Wed, 13 Nov 2024 18:43:00 -0000
+Message-ID: <bde3a6e4-149a-4e17-b71b-a4bae989da51@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Andrea,
+
+I need to escalate Approval ID APR-024154 (Transaction TXN-C1085254540)
+to you because approval status is currently 'ESCALATED' and policy requires s=
+enior sign-off before this can proceed further.
+
+  Transaction ID:    TXN-C1085254540
+  Amount:            21,004.85
+  Approval Level:    L2
+  Approval Limit:    25,000.00
+  Current Status:    ESCALATED
+  Delegation Ref:    ESC-XiN9563
+
+This is time-sensitive and I'd appreciate your review by end of week. Please
+advise if you need additional context from the requesting department before
+making a decision.
+
+Regards,
+Janet Harris
+Team Lead

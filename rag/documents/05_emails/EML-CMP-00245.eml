@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-00737 -- EXPIRED under SOC 2 Type II
+From: kayla.fitzgerald@enterprise.com
+To: andrea.stevenson@enterprise.com
+Date: Tue, 23 Jul 2024 12:03:00 -0000
+Message-ID: <caf21612-05bd-4e37-bc00-f4aeb636d53e@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Andrea,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            PeakVault Services Group (VND-00737)
+  Framework:         SOC 2 Type II
+  Compliance Status: EXPIRED
+  Assessment Date:   2023-03-28
+  Expiry Date:       2021-07-14
+  Compliance ID:     CMP-013094
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-00737) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Kayla Fitzgerald
+Senior Associate
+Compliance Office

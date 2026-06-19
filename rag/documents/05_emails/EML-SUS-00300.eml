@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-908698 (Risk Score 0.69)
+From: jessica.carter@enterprise.com
+To: julie.freeman@enterprise.com
+Date: Sun, 28 Jan 2024 19:52:00 -0000
+Message-ID: <3fad6bbb-0540-49b7-ba03-92f2557291ca@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Julie,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-908698
+  Date:              2021-10-16
+  Vendor:            Gamma_Co Group (VND-01020)
+  Amount:            202,486.03 AUD
+  Transaction Type:  TRANSFER
+  Risk Score:        0.69
+  Status:            COMPLETED
+
+Reason for flag: unusually high transaction amount relative to vendor's histo=
+rical pattern.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Jessica Carter
+Team Lead
+Fraud & Anomaly Detection Team

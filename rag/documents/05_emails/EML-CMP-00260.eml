@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-02740 -- NON_COMPLIANT under GDPR
+From: jennifer.boyer@enterprise.com
+To: alejandro.nguyen@enterprise.com
+Date: Tue, 30 Sep 2025 09:37:00 -0000
+Message-ID: <0aff6975-e6ac-433f-894d-4226a7c98f61@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Alejandro,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            YieldPoint Partners Inc (VND-02740)
+  Framework:         GDPR
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2019-10-29
+  Expiry Date:       2020-09-02
+  Compliance ID:     CMP-009112
+
+Findings summary: Incident response plan not tested within required 12-month =
+window.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-02740) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Jennifer Boyer
+Senior Analyst
+Compliance Office

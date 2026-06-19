@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-01793 -- NON_COMPLIANT under ISO 27001
+From: nicole.sherman@enterprise.com
+To: lindsey.hall@enterprise.com
+Date: Sat, 30 Mar 2024 17:35:00 -0000
+Message-ID: <9c25da84-7442-4bc9-96f9-ac8b4983cdd8@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Lindsey,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            DawnTech Services LLC (VND-01793)
+  Framework:         ISO 27001
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2021-03-07
+  Expiry Date:       2022-07-25
+  Compliance ID:     CMP-000220
+
+Findings summary: Third-party sub-processor agreements not in place as requir=
+ed.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-01793) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Nicole Sherman
+Senior Associate
+Compliance Office

@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-673666 (Risk Score 0.75)
+From: bobby.price@enterprise.com
+To: steven.brown@enterprise.com
+Date: Fri, 10 Oct 2025 15:17:00 -0000
+Message-ID: <08bdd271-1ceb-4f72-9a61-9e47cd92c90d@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Steven,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-673666
+  Date:              2023-08-11
+  Vendor:            HarborLight Services (VND-04449)
+  Amount:            731,939.89 EUR
+  Transaction Type:  TRANSFER
+  Risk Score:        0.75
+  Status:            COMPLETED
+
+Reason for flag: vendor flagged as high-risk with no recent compliance reasse=
+ssment.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Bobby Price
+Senior Analyst
+Fraud & Anomaly Detection Team

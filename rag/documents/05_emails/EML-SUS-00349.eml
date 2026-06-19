@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-676249 (Risk Score 0.70)
+From: charles.andrade@enterprise.com
+To: marie.rodgers@enterprise.com
+Date: Fri, 29 Aug 2025 13:24:00 -0000
+Message-ID: <42798c98-920f-4021-8034-f27f336b17d3@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Marie,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-676249
+  Date:              2020-03-21
+  Vendor:            YieldPoint Partners LLC (VND-02177)
+  Amount:            150,273.40 USD
+  Transaction Type:  PURCHASE
+  Risk Score:        0.70
+  Status:            PENDING
+
+Reason for flag: transaction risk score exceeds the automated monitoring thre=
+shold.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Charles Andrade
+Senior Associate
+Fraud & Anomaly Detection Team

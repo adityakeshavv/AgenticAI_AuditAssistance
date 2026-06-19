@@ -1,0 +1,33 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-828790 (Risk Score 0.76)
+From: rebecca.schmitt@enterprise.com
+To: megan.erickson@enterprise.com
+Date: Thu, 16 Oct 2025 09:58:00 -0000
+Message-ID: <dd0460eb-c620-4253-87a1-f2640bd30ece@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Megan,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-828790
+  Date:              2020-05-03
+  Vendor:            Epsilon_Group Ltd (VND-03036)
+  Amount:            12,473.96 USD
+  Transaction Type:  PURCHASE
+  Risk Score:        0.76
+  Status:            COMPLETED
+
+Reason for flag: transaction processed outside standard business hours.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Rebecca Schmitt
+Senior Specialist
+Fraud & Anomaly Detection Team

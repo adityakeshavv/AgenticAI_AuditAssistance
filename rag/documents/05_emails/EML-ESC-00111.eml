@@ -1,0 +1,30 @@
+Subject: ESCALATION: Transaction TXN-C772065437 requires senior approval
+From: anthony.holden@enterprise.com
+To: alex.brown@enterprise.com
+Cc: patricia.brown@enterprise.com
+Date: Tue, 16 Apr 2024 09:10:00 -0000
+Message-ID: <456b312c-b206-4ecc-a5d4-64fd29e78b06@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Alex,
+
+I need to escalate Approval ID APR-041229 (Transaction TXN-C772065437)
+to you because approval status is currently 'ESCALATED' and policy requires s=
+enior sign-off before this can proceed further.
+
+  Transaction ID:    TXN-C772065437
+  Amount:            381,502.92
+  Approval Level:    L4
+  Approval Limit:    500,000.00
+  Current Status:    ESCALATED
+  Delegation Ref:    ESC-Wku1396
+
+This is time-sensitive and I'd appreciate your review by end of week. Please
+advise if you need additional context from the requesting department before
+making a decision.
+
+Regards,
+Anthony Holden
+Senior Analyst

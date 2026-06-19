@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-00767 -- NON_COMPLIANT under ISO 9001
+From: sarah.robinson@enterprise.com
+To: jack.lambert@enterprise.com
+Date: Wed, 28 Feb 2024 14:01:00 -0000
+Message-ID: <9660060a-ff02-40ae-a62e-e61c9fe60efb@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Jack,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            FlowBridge Inc International (VND-00767)
+  Framework:         ISO 9001
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2020-08-29
+  Expiry Date:       2021-11-17
+  Compliance ID:     CMP-007864
+
+Findings summary: Incident response plan not tested within required 12-month =
+window.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-00767) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Sarah Robinson
+Senior Manager
+Compliance Office

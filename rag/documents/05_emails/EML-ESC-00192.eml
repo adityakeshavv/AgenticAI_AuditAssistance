@@ -1,0 +1,30 @@
+Subject: ESCALATION: Transaction TXN-173892 requires senior approval
+From: erin.sanchez@enterprise.com
+To: connie.gonzalez@enterprise.com
+Cc: kevin.butler@enterprise.com
+Date: Sun, 17 Mar 2024 10:39:00 -0000
+Message-ID: <7b375698-5ffe-455e-9fc7-df7363da3177@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Connie,
+
+I need to escalate Approval ID APR-032034 (Transaction TXN-173892)
+to you because approval status is currently 'ESCALATED' and policy requires s=
+enior sign-off before this can proceed further.
+
+  Transaction ID:    TXN-173892
+  Amount:            16,726.68
+  Approval Level:    L2
+  Approval Limit:    25,000.00
+  Current Status:    ESCALATED
+  Delegation Ref:    ESC-Gbh4070
+
+This is time-sensitive and I'd appreciate your review by end of week. Please
+advise if you need additional context from the requesting department before
+making a decision.
+
+Regards,
+Erin Sanchez
+Senior Analyst

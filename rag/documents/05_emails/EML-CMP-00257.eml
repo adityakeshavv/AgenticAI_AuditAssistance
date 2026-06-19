@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-00951 -- EXPIRED under HIPAA
+From: samuel.phillips@enterprise.com
+To: angela.owen@enterprise.com
+Date: Sat, 30 Mar 2024 13:18:00 -0000
+Message-ID: <2e811113-1902-4ac1-a0fa-d25ae7f29ab1@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Angela,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            Acuity Systems International (VND-00951)
+  Framework:         HIPAA
+  Compliance Status: EXPIRED
+  Assessment Date:   2023-10-16
+  Expiry Date:       2021-05-07
+  Compliance ID:     CMP-003218
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-00951) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Samuel Phillips
+Senior Associate
+Compliance Office

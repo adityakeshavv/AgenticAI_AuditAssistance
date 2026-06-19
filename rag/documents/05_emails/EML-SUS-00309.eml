@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1499144714 (Risk Score 0.71)
+From: jamie.nicholson@enterprise.com
+To: david.richard@enterprise.com
+Date: Fri, 20 Dec 2024 13:17:00 -0000
+Message-ID: <8be66eec-41ee-4761-a5d1-bb2c469f8c83@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi David,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1499144714
+  Date:              2021-03-30
+  Vendor:            BridgeTech Consulting Inc (VND-02959)
+  Amount:            92,194.32 GBP
+  Transaction Type:  SETTLEMENT
+  Risk Score:        0.71
+  Status:            COMPLETED
+
+Reason for flag: transaction risk score exceeds the automated monitoring thre=
+shold.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Jamie Nicholson
+Senior Analyst
+Fraud & Anomaly Detection Team

@@ -1,5 +1,6 @@
 -- Agentic AI-Powered Audit Assistant
--- PostgreSQL 17.5 schema for the 11 finalized synthetic datasets.
+-- PostgreSQL 17.5 schema for the 11 finalized structured datasets plus the
+-- document_metadata bridge table for unstructured audit documents.
 --
 -- Design notes:
 -- 1. The finalized CSV datasets are the canonical source of truth.
@@ -8,10 +9,12 @@
 --    instead of generated surrogate keys.
 -- 4. evidence.source_table and evidence.source_record_id are intentional
 --    polymorphic references and therefore do not have foreign key constraints.
--- 5. The department/employee circular relationship is resolved by creating
+-- 5. document_metadata stores only metadata and soft links to structured rows;
+--    related_* columns intentionally do not enforce foreign keys.
+-- 6. The department/employee circular relationship is resolved by creating
 --    department_master first without its head_employee_id FK, then adding that FK
 --    with ALTER TABLE after employee_master exists.
--- 6. employee_master.email is not UNIQUE because the accepted dataset contains
+-- 7. employee_master.email is not UNIQUE because the accepted dataset contains
 --    duplicate email values.
 
 BEGIN;
@@ -447,6 +450,40 @@ COMMENT ON COLUMN evidence.source_table IS
 COMMENT ON COLUMN evidence.source_record_id IS
     'Polymorphic source record identifier. This is intentionally not enforced with a foreign key.';
 
+CREATE TABLE document_metadata (
+    document_id VARCHAR(50) PRIMARY KEY,
+    document_type VARCHAR(100) NOT NULL,
+    document_category VARCHAR(100) NOT NULL,
+    related_vendor_id VARCHAR(20),
+    related_employee_id VARCHAR(30),
+    related_transaction_id VARCHAR(50),
+    related_contract_id VARCHAR(20),
+    related_investigation_id VARCHAR(20),
+    creation_date DATE NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    source_metadata_file VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+COMMENT ON TABLE document_metadata IS
+    'Bridge table linking unstructured document assets to structured audit entities using soft references only.';
+COMMENT ON COLUMN document_metadata.related_vendor_id IS
+    'Soft reference to vendor.vendor_id. Intentionally not enforced with a foreign key.';
+COMMENT ON COLUMN document_metadata.related_employee_id IS
+    'Soft reference to employee_master.employee_id. Intentionally not enforced with a foreign key.';
+COMMENT ON COLUMN document_metadata.related_transaction_id IS
+    'Soft reference to transaction_master.transaction_id. Intentionally not enforced with a foreign key.';
+COMMENT ON COLUMN document_metadata.related_contract_id IS
+    'Soft reference to contract.contract_id. Intentionally not enforced with a foreign key.';
+COMMENT ON COLUMN document_metadata.related_investigation_id IS
+    'Soft reference to audit_investigation.investigation_id. Intentionally not enforced with a foreign key.';
+COMMENT ON COLUMN document_metadata.file_path IS
+    'Resolved file-system path generated during ingestion from the configured rag/documents directory, category, and file name.';
+COMMENT ON COLUMN document_metadata.source_metadata_file IS
+    'Origin metadata CSV used to ingest this row.';
+
 CREATE INDEX idx_employee_master_department_id
     ON employee_master (department_id);
 CREATE INDEX idx_employee_master_manager_id
@@ -483,6 +520,23 @@ CREATE INDEX idx_audit_finding_investigation_id
 
 CREATE INDEX idx_evidence_finding_id
     ON evidence (finding_id);
+
+CREATE INDEX idx_document_metadata_document_id
+    ON document_metadata (document_id);
+CREATE INDEX idx_document_metadata_document_type
+    ON document_metadata (document_type);
+CREATE INDEX idx_document_metadata_document_category
+    ON document_metadata (document_category);
+CREATE INDEX idx_document_metadata_related_vendor_id
+    ON document_metadata (related_vendor_id);
+CREATE INDEX idx_document_metadata_related_employee_id
+    ON document_metadata (related_employee_id);
+CREATE INDEX idx_document_metadata_related_transaction_id
+    ON document_metadata (related_transaction_id);
+CREATE INDEX idx_document_metadata_related_contract_id
+    ON document_metadata (related_contract_id);
+CREATE INDEX idx_document_metadata_related_investigation_id
+    ON document_metadata (related_investigation_id);
 
 CREATE INDEX idx_vendor_risk_status
     ON vendor (risk_rating, status);
@@ -543,6 +597,9 @@ CREATE TRIGGER trg_audit_finding_set_updated_at
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_evidence_set_updated_at
     BEFORE UPDATE ON evidence
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_document_metadata_set_updated_at
+    BEFORE UPDATE ON document_metadata
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 COMMIT;

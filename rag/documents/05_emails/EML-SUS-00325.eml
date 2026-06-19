@@ -1,0 +1,33 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C802143475 (Risk Score 0.79)
+From: kim.myers@enterprise.com
+To: john.andrews@enterprise.com
+Date: Sun, 07 Dec 2025 10:49:00 -0000
+Message-ID: <6cf4c2f0-c258-4bd1-9377-b678340542bb@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi John,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C802143475
+  Date:              2021-01-31
+  Vendor:            LatticeCore Partners (VND-03076)
+  Amount:            229,774.97 USD
+  Transaction Type:  REFUND
+  Risk Score:        0.79
+  Status:            FLAGGED
+
+Reason for flag: transaction processed outside standard business hours.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Kim Myers
+Team Lead
+Fraud & Anomaly Detection Team

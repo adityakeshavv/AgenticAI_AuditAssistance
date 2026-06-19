@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-664583 (Risk Score 0.60)
+From: tiffany.owen@enterprise.com
+To: vincent.gomez@enterprise.com
+Date: Fri, 15 Dec 2023 19:07:00 -0000
+Message-ID: <dd018ce5-0eb4-4a73-acac-590156786908@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Vincent,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-664583
+  Date:              2021-07-07
+  Vendor:            XpressCore Dynamics Ltd (VND-04621)
+  Amount:            35,459.91 EUR
+  Transaction Type:  SETTLEMENT
+  Risk Score:        0.60
+  Status:            COMPLETED
+
+Reason for flag: transaction risk score exceeds the automated monitoring thre=
+shold.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Tiffany Owen
+Senior Specialist
+Fraud & Anomaly Detection Team

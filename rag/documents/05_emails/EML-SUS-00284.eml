@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-202682 (Risk Score 0.80)
+From: ashlee.mitchell@enterprise.com
+To: michael.ray@enterprise.com
+Date: Fri, 28 Mar 2025 12:38:00 -0000
+Message-ID: <8e0c6f2d-5f3c-4a07-943e-079aa9155bbc@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Michael,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-202682
+  Date:              2020-01-14
+  Vendor:            PrimeAxis Corp Holdings (VND-04417)
+  Amount:            260,643.55 USD
+  Transaction Type:  SETTLEMENT
+  Risk Score:        0.80
+  Status:            COMPLETED
+
+Reason for flag: unusually high transaction amount relative to vendor's histo=
+rical pattern.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Ashlee Mitchell
+Deputy Manager
+Fraud & Anomaly Detection Team

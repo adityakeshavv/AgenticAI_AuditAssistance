@@ -1,0 +1,30 @@
+Subject: ESCALATION: Transaction TXN-C263833514 requires senior approval
+From: preston.harris@enterprise.com
+To: jamie.robinson@enterprise.com
+Cc: ruben.esparza@enterprise.com
+Date: Sun, 03 Nov 2024 09:58:00 -0000
+Message-ID: <98a7a86f-b06a-4c91-b247-801dac77a055@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Jamie,
+
+I need to escalate Approval ID APR-002397 (Transaction TXN-C263833514)
+to you because approval status is currently 'REJECTED' and policy requires se=
+nior sign-off before this can proceed further.
+
+  Transaction ID:    TXN-C263833514
+  Amount:            20,816.92
+  Approval Level:    L2
+  Approval Limit:    25,000.00
+  Current Status:    REJECTED
+  Delegation Ref:    nan
+
+This is time-sensitive and I'd appreciate your review by end of week. Please
+advise if you need additional context from the requesting department before
+making a decision.
+
+Regards,
+Preston Harris
+Team Lead

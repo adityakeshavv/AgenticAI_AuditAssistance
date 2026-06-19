@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-02341 -- NON_COMPLIANT under GDPR
+From: gregg.hays@enterprise.com
+To: theresa.williams@enterprise.com
+Date: Mon, 26 Feb 2024 09:41:00 -0000
+Message-ID: <1fb9396f-70a2-4794-a5fe-05eaee92b445@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Theresa,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            GreenBridge Consulting Group (VND-02341)
+  Framework:         GDPR
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2021-06-10
+  Expiry Date:       2023-05-31
+  Compliance ID:     CMP-005282
+
+Findings summary: Incident response plan not tested within required 12-month =
+window.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-02341) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Gregg Hays
+Senior Manager
+Compliance Office

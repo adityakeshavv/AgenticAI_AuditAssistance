@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-512952 (Risk Score 0.92)
+From: angie.martinez@enterprise.com
+To: antonio.taylor@enterprise.com
+Date: Sat, 28 Jan 2023 08:47:00 -0000
+Message-ID: <723a4135-ff38-4639-8a5e-36776542a692@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Antonio,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-512952
+  Date:              2024-06-30
+  Vendor:            ClearPath Logistics Inc (VND-01761)
+  Amount:            451,054.04 EUR
+  Transaction Type:  TRANSFER
+  Risk Score:        0.92
+  Status:            COMPLETED
+
+Reason for flag: multiple transactions to the same vendor within a short wind=
+ow (possible split payment).
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Angie Martinez
+Senior Specialist
+Fraud & Anomaly Detection Team

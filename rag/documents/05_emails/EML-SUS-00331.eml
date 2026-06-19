@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C328140385 (Risk Score 0.63)
+From: dylan.carpenter@enterprise.com
+To: shane.delacruz@enterprise.com
+Date: Fri, 01 Nov 2024 11:45:00 -0000
+Message-ID: <813953eb-2284-4588-89b2-1c7e03ee5c50@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Shane,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C328140385
+  Date:              2021-09-22
+  Vendor:            MomentumCore Corp Ltd (VND-02922)
+  Amount:            143,873.73 AUD
+  Transaction Type:  SETTLEMENT
+  Risk Score:        0.63
+  Status:            COMPLETED
+
+Reason for flag: round-number amount inconsistent with typical invoice patter=
+ns.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Dylan Carpenter
+Senior Associate
+Fraud & Anomaly Detection Team

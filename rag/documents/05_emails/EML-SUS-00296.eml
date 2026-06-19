@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1114131846 (Risk Score 0.81)
+From: joseph.nolan@enterprise.com
+To: john.carney@enterprise.com
+Date: Fri, 19 Jan 2024 18:15:00 -0000
+Message-ID: <7cb73161-26a3-41d7-be96-8f7757a56e3f@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi John,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1114131846
+  Date:              2020-06-29
+  Vendor:            EcoVenture Supplies Holdings (VND-03630)
+  Amount:            103,205.13 INR
+  Transaction Type:  REFUND
+  Risk Score:        0.81
+  Status:            COMPLETED
+
+Reason for flag: transaction risk score exceeds the automated monitoring thre=
+shold.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Joseph Nolan
+Senior Associate
+Fraud & Anomaly Detection Team

@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1954215525 (Risk Score 0.82)
+From: kari.valencia@enterprise.com
+To: michele.sharp@enterprise.com
+Date: Fri, 24 Nov 2023 11:15:00 -0000
+Message-ID: <0cd30d4a-d11d-4ba7-a82d-dac2ff832087@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Michele,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1954215525
+  Date:              2021-02-28
+  Vendor:            KryptonPath Ltd International (VND-01240)
+  Amount:            80,014.35 INR
+  Transaction Type:  TRANSFER
+  Risk Score:        0.82
+  Status:            COMPLETED
+
+Reason for flag: unusually high transaction amount relative to vendor's histo=
+rical pattern.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Kari Valencia
+Senior Analyst
+Fraud & Anomaly Detection Team

@@ -1,0 +1,312 @@
+import json
+import logging
+from typing import Any, Protocol
+
+from app.core.config import get_settings
+
+
+logger = logging.getLogger(__name__)
+
+
+VALID_AGENTS = {
+    "transaction_agent",
+    "vendor_agent",
+    "compliance_agent",
+    "approval_agent",
+    "investigation_agent",
+    "general_agent",
+}
+
+
+class FallbackRouter(Protocol):
+    def route(self, query: str) -> dict[str, Any]:
+        ...
+
+
+class LLMRouterService:
+    """OpenAI-compatible semantic router with keyword fallback."""
+
+    def __init__(self, fallback_router: FallbackRouter | None = None) -> None:
+        self.settings = get_settings()
+        self.fallback_router = fallback_router
+
+    def route(self, query: str) -> dict[str, Any]:
+        if not self.settings.openai_api_key:
+            logger.warning("OPENAI_API_KEY is not configured. Falling back to keyword router.")
+            return self._fallback(query, "OPENAI_API_KEY is not configured.")
+
+        try:
+            response_text = self._call_llm(query)
+            parsed = self._parse_response(response_text)
+            logger.info("LLM router selected %s with confidence %.2f", parsed["agent"], parsed["confidence"])
+            return parsed
+        except Exception as exc:
+            logger.warning("LLM router failed. Falling back to keyword router: %s", exc)
+            return self._fallback(query, f"LLM router failed: {exc}")
+
+    def _call_llm(self, query: str) -> str:
+        try:
+            from openai import OpenAI
+        except ImportError as exc:
+            raise RuntimeError("openai package is not installed. Run pip install -r backend/requirements.txt.") from exc
+
+        client = OpenAI(api_key=self.settings.openai_api_key)
+        response = client.chat.completions.create(
+            model=self.settings.openai_model,
+            temperature=0,
+            messages=[
+                {
+                    "role": "system",
+                    "content": self._system_prompt(),
+                },
+                {
+                    "role": "user",
+                    "content": query,
+                },
+            ],
+        )
+
+        content = response.choices[0].message.content
+        if not content:
+            raise ValueError("LLM returned an empty routing response.")
+        return content
+
+    def _parse_response(self, response_text: str) -> dict[str, Any]:
+        cleaned = response_text.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+
+        payload = json.loads(cleaned)
+
+        agent = payload.get("agent")
+        confidence = float(payload.get("confidence", 0))
+        reason = payload.get("reason")
+
+        if agent not in VALID_AGENTS:
+            raise ValueError(f"Invalid agent returned by LLM: {agent}")
+        if confidence < 0 or confidence > 1:
+            raise ValueError(f"Invalid confidence returned by LLM: {confidence}")
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValueError("LLM response must include a non-empty reason.")
+
+        return {
+            "agent": agent,
+            "confidence": confidence,
+            "reason": reason.strip(),
+        }
+
+    def _fallback(self, query: str, reason: str) -> dict[str, Any]:
+        if self.fallback_router is None:
+            return {
+                "agent": "general_agent",
+                "confidence": 0.50,
+                "reason": reason,
+            }
+
+        result = self.fallback_router.route(query)
+        return {
+            "agent": result.get("agent", "general_agent"),
+            "confidence": result.get("confidence", 0.50),
+            "reason": f"{reason} Fallback reason: {result.get('reason', 'Keyword fallback selected route.')}",
+        }
+
+    @staticmethod
+    def _system_prompt() -> str:
+        return """
+You are an intent router for an enterprise audit assistant.
+Classify the user's query into exactly one available agent.
+
+Available agents:
+- transaction_agent: payments, transactions, suspicious payments, duplicate invoices, fraud patterns, high-risk transactions, amounts, transaction status.
+- vendor_agent: vendors, suppliers, vendor risk, vendor profile, vendor status, vendor contracts.
+- compliance_agent: compliance status, expired certifications, certifications, policies, regulatory violations, compliance frameworks.
+- approval_agent: approvals, approvers, approval workflow, authority limits, who approved a transaction.
+- investigation_agent: audit investigations, findings, evidence, citations, traceability, finding support.
+- general_agent: use only when none of the above are appropriate.
+
+Return JSON only with this exact shape:
+{
+  "agent": "transaction_agent",
+  "confidence": 0.95,
+  "reason": "Short reason for the selected agent."
+}
+
+Do not include markdown, prose, or extra keys.
+""".strip()
+
+
+class StructuredIntentService:
+    """Reusable semantic intent extraction for audit queries."""
+
+    def __init__(self) -> None:
+        self.settings = get_settings()
+
+    def extract(
+        self,
+        query: str,
+        *,
+        domain: str,
+        entity: str,
+        allowed_intents: list[str],
+    ) -> dict[str, Any]:
+        if not self.settings.openai_api_key:
+            logger.warning("OPENAI_API_KEY is not configured. Returning unsupported structured intent.")
+            return self._unsupported_intent(query, domain, entity, "OPENAI_API_KEY is not configured.")
+
+        try:
+            response_text = self._call_llm(query, domain=domain, entity=entity, allowed_intents=allowed_intents)
+            parsed = self._parse_response(
+                response_text,
+                original_query=query,
+                domain=domain,
+                entity=entity,
+                allowed_intents=allowed_intents,
+            )
+            logger.info("Intent extraction produced intent=%s supported=%s", parsed.get("intent"), parsed.get("supported"))
+            return parsed
+        except Exception as exc:
+            logger.warning("Intent extraction failed. Returning unsupported structured intent: %s", exc)
+            return self._unsupported_intent(query, domain, entity, f"Intent extraction failed: {exc}")
+
+    def _call_llm(self, query: str, *, domain: str, entity: str, allowed_intents: list[str]) -> str:
+        try:
+            from openai import OpenAI
+        except ImportError as exc:
+            raise RuntimeError("openai package is not installed. Run pip install -r backend/requirements.txt.") from exc
+
+        client = OpenAI(api_key=self.settings.openai_api_key)
+        response = client.chat.completions.create(
+            model=self.settings.openai_model,
+            temperature=0,
+            messages=[
+                {
+                    "role": "system",
+                    "content": self._system_prompt(domain=domain, entity=entity, allowed_intents=allowed_intents),
+                },
+                {
+                    "role": "user",
+                    "content": query,
+                },
+            ],
+        )
+
+        content = response.choices[0].message.content
+        if not content:
+            raise ValueError("LLM returned an empty intent extraction response.")
+        return content
+
+    def _parse_response(
+        self,
+        response_text: str,
+        *,
+        original_query: str,
+        domain: str,
+        entity: str,
+        allowed_intents: list[str],
+    ) -> dict[str, Any]:
+        cleaned = response_text.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+
+        payload = json.loads(cleaned)
+
+        supported = bool(payload.get("supported", False))
+        intent = payload.get("intent")
+        normalized_query = payload.get("normalized_query") or original_query.strip().lower()
+        confidence = float(payload.get("confidence", 0.0))
+        reason = payload.get("reason")
+        filters = payload.get("filters") if isinstance(payload.get("filters"), dict) else {}
+        query_type = payload.get("query_type") or "list"
+        extracted_domain = payload.get("domain") or domain
+        extracted_entity = payload.get("entity") or entity
+
+        if extracted_domain != domain:
+            supported = False
+        if extracted_entity != entity:
+            supported = False
+        if intent not in allowed_intents:
+            supported = False
+        if confidence < 0 or confidence > 1:
+            raise ValueError(f"Invalid confidence returned by LLM: {confidence}")
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValueError("LLM response must include a non-empty reason.")
+
+        if not supported:
+            intent = None
+
+        return {
+            "original_query": original_query,
+            "normalized_query": str(normalized_query).strip().lower(),
+            "domain": extracted_domain,
+            "entity": extracted_entity,
+            "intent": intent,
+            "query_type": query_type,
+            "filters": filters,
+            "supported": supported,
+            "confidence": confidence,
+            "reason": reason.strip(),
+        }
+
+    def _unsupported_intent(self, query: str, domain: str, entity: str, reason: str) -> dict[str, Any]:
+        return {
+            "original_query": query,
+            "normalized_query": query.strip().lower(),
+            "domain": domain,
+            "entity": entity,
+            "intent": None,
+            "query_type": "list",
+            "filters": {},
+            "supported": False,
+            "confidence": 0.0,
+            "reason": reason,
+        }
+
+    @staticmethod
+    def _system_prompt(*, domain: str, entity: str, allowed_intents: list[str]) -> str:
+        allowed = "\n".join(f"- {intent}" for intent in allowed_intents)
+        return f"""
+You extract structured business intent for an enterprise audit assistant.
+Do not generate SQL.
+Return JSON only.
+
+Domain: {domain}
+Entity: {entity}
+
+Allowed intents:
+{allowed}
+
+For comparison-based queries, use one reusable intent and express the business condition through filters.
+Prefer the generic filtered intent when the query can be represented with comparison filters.
+Comparison filters should use the shape:
+{{
+  "field_name": {{
+    "operator": ">",
+    "value": 1000
+  }}
+}}
+
+The operator must be one of: >, >=, <, <=.
+Use canonical, normalized business language in normalized_query.
+
+Return exactly this JSON shape:
+{{
+  "original_query": "The user's original query.",
+  "normalized_query": "A concise canonical business paraphrase.",
+  "domain": "{domain}",
+  "entity": "{entity}",
+  "intent": "one of the allowed intents, or null if unsupported",
+  "query_type": "list",
+  "filters": {{
+    "amount": {{
+      "operator": "<",
+      "value": 1000
+    }}
+  }},
+  "supported": true,
+  "confidence": 0.95,
+  "reason": "Short explanation of the mapping."
+}}
+
+If the query is unsupported, ambiguous, or cannot be mapped to one of the allowed intents, set supported to false and intent to null.
+Do not include markdown, prose, or extra keys.
+""".strip()

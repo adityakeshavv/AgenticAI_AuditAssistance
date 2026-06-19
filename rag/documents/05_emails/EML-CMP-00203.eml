@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-04597 -- NON_COMPLIANT under ISO 9001
+From: james.morgan@enterprise.com
+To: sharon.king@enterprise.com
+Date: Sat, 01 Feb 2025 13:45:00 -0000
+Message-ID: <5f04b0c2-b3c7-41a8-a9da-5ad20963423a@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Sharon,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            OpenBridge Systems (VND-04597)
+  Framework:         ISO 9001
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2022-05-26
+  Expiry Date:       2022-12-08
+  Compliance ID:     CMP-009748
+
+Findings summary: Incident response plan not tested within required 12-month =
+window.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-04597) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+James Morgan
+Deputy Manager
+Compliance Office

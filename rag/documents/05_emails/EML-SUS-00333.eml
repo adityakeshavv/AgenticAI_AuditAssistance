@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-718736 (Risk Score 0.85)
+From: christina.henry@enterprise.com
+To: jesse.mann@enterprise.com
+Date: Sat, 13 Sep 2025 18:38:00 -0000
+Message-ID: <a2197b63-25df-4fb7-8a5a-2f34af75c10b@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Jesse,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-718736
+  Date:              2023-09-30
+  Vendor:            IronPoint Manufacturing LLC (VND-00713)
+  Amount:            2,768.58 USD
+  Transaction Type:  TRANSFER
+  Risk Score:        0.85
+  Status:            COMPLETED
+
+Reason for flag: vendor flagged as high-risk with no recent compliance reasse=
+ssment.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Christina Henry
+Team Lead
+Fraud & Anomaly Detection Team

@@ -1,0 +1,30 @@
+Subject: ESCALATION: Transaction TXN-232025 requires senior approval
+From: joseph.johnson@enterprise.com
+To: sean.rice@enterprise.com
+Cc: tonya.harrison@enterprise.com
+Date: Sat, 04 Jan 2025 16:14:00 -0000
+Message-ID: <9fb9d8f6-5dc1-4bce-b445-6d5b223be9e7@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Sean,
+
+I need to escalate Approval ID APR-003148 (Transaction TXN-232025)
+to you because approval status is currently 'REJECTED' and policy requires se=
+nior sign-off before this can proceed further.
+
+  Transaction ID:    TXN-232025
+  Amount:            3,243.53
+  Approval Level:    L1
+  Approval Limit:    5,000.00
+  Current Status:    REJECTED
+  Delegation Ref:    nan
+
+This is time-sensitive and I'd appreciate your review by end of week. Please
+advise if you need additional context from the requesting department before
+making a decision.
+
+Regards,
+Joseph Johnson
+Senior Associate

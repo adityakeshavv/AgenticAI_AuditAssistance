@@ -1,0 +1,30 @@
+Subject: ESCALATION: Transaction TXN-C975347430 requires senior approval
+From: amanda.norris@enterprise.com
+To: jenny.larsen@enterprise.com
+Cc: christopher.schultz@enterprise.com
+Date: Sat, 01 Jun 2024 15:33:00 -0000
+Message-ID: <f0f058c5-4180-4f2f-b114-25e409e3c3c3@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Jenny,
+
+I need to escalate Approval ID APR-028827 (Transaction TXN-C975347430)
+to you because the transaction amount (394,936.99) exceeds the original appro=
+ver's authorised limit of 100,000.00.
+
+  Transaction ID:    TXN-C975347430
+  Amount:            394,936.99
+  Approval Level:    L3
+  Approval Limit:    100,000.00
+  Current Status:    ESCALATED
+  Delegation Ref:    ESC-tjH0033
+
+This is time-sensitive and I'd appreciate your review by end of week. Please
+advise if you need additional context from the requesting department before
+making a decision.
+
+Regards,
+Amanda Norris
+Senior Manager

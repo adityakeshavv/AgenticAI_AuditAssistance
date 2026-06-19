@@ -1,0 +1,30 @@
+Subject: ESCALATION: Transaction TXN-C1605651875 requires senior approval
+From: lindsey.palmer@enterprise.com
+To: thomas.calderon@enterprise.com
+Cc: sherri.johnson@enterprise.com
+Date: Sat, 25 Feb 2023 17:25:00 -0000
+Message-ID: <8eb078c8-08e9-400c-8d0e-2c33070b80f4@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Thomas,
+
+I need to escalate Approval ID APR-032933 (Transaction TXN-C1605651875)
+to you because approval status is currently 'REJECTED' and policy requires se=
+nior sign-off before this can proceed further.
+
+  Transaction ID:    TXN-C1605651875
+  Amount:            3,682.07
+  Approval Level:    L1
+  Approval Limit:    5,000.00
+  Current Status:    REJECTED
+  Delegation Ref:    nan
+
+This is time-sensitive and I'd appreciate your review by end of week. Please
+advise if you need additional context from the requesting department before
+making a decision.
+
+Regards,
+Lindsey Palmer
+Senior Analyst

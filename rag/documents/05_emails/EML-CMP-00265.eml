@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-03950 -- EXPIRED under ISO 27001
+From: rachael.ward@enterprise.com
+To: stephen.black@enterprise.com
+Date: Thu, 23 May 2024 09:52:00 -0000
+Message-ID: <7c878b90-b4fc-4ba0-afac-e5fd22f526fc@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Stephen,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            FusionCore Analytics Inc (VND-03950)
+  Framework:         ISO 27001
+  Compliance Status: EXPIRED
+  Assessment Date:   2024-03-15
+  Expiry Date:       2022-07-21
+  Compliance ID:     CMP-002513
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-03950) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Rachael Ward
+Senior Specialist
+Compliance Office

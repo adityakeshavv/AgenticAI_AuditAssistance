@@ -1,0 +1,33 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1199095941 (Risk Score 0.97)
+From: amber.lawrence@enterprise.com
+To: michael.smith@enterprise.com
+Date: Thu, 09 May 2024 14:03:00 -0000
+Message-ID: <d381bdd5-ad5d-4966-a8db-9bd09ce15cf9@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Michael,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1199095941
+  Date:              2021-07-03
+  Vendor:            InnoCore Dynamics LLC (VND-03235)
+  Amount:            45,278.16 CAD
+  Transaction Type:  ADVANCE
+  Risk Score:        0.97
+  Status:            FLAGGED
+
+Reason for flag: transaction processed outside standard business hours.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Amber Lawrence
+Senior Analyst
+Fraud & Anomaly Detection Team

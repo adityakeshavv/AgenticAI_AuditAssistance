@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-496999 (Risk Score 0.92)
+From: andrew.pitts@enterprise.com
+To: reginald.miles@enterprise.com
+Date: Fri, 09 Feb 2024 14:36:00 -0000
+Message-ID: <055d6af0-ca8a-4147-9d13-53f7709bdda6@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Reginald,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-496999
+  Date:              2022-03-04
+  Vendor:            GlobalNex Corp Inc (VND-03730)
+  Amount:            23,491.87 INR
+  Transaction Type:  REFUND
+  Risk Score:        0.92
+  Status:            REVERSED
+
+Reason for flag: multiple transactions to the same vendor within a short wind=
+ow (possible split payment).
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Andrew Pitts
+Senior Associate
+Fraud & Anomaly Detection Team

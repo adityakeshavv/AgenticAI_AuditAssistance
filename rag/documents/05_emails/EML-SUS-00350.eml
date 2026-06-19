@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-509358 (Risk Score 0.75)
+From: erin.smith@enterprise.com
+To: tiffany.washington@enterprise.com
+Date: Sat, 01 Jul 2023 09:22:00 -0000
+Message-ID: <17615173-7025-4691-958a-496243f1840e@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Tiffany,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-509358
+  Date:              2021-02-27
+  Vendor:            Beta_Supplies Inc (VND-02366)
+  Amount:            174,108.89 SGD
+  Transaction Type:  REIMBURSEMENT
+  Risk Score:        0.75
+  Status:            PENDING
+
+Reason for flag: round-number amount inconsistent with typical invoice patter=
+ns.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Erin Smith
+Senior Manager
+Fraud & Anomaly Detection Team

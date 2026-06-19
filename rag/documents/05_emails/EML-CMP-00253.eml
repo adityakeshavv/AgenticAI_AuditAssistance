@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-02599 -- NON_COMPLIANT under HIPAA
+From: kelly.smith@enterprise.com
+To: ryan.sharp@enterprise.com
+Date: Wed, 22 Mar 2023 15:11:00 -0000
+Message-ID: <c6b0f8b3-2d52-471f-b1d5-7573160684b7@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Ryan,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            Epsilon_Group Inc (VND-02599)
+  Framework:         HIPAA
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2019-12-02
+  Expiry Date:       2021-05-08
+  Compliance ID:     CMP-005865
+
+Findings summary: Incident response plan not tested within required 12-month =
+window.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-02599) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Kelly Smith
+Deputy Manager
+Compliance Office

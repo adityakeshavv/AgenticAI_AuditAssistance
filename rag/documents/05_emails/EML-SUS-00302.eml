@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1172535934 (Risk Score 0.85)
+From: meagan.bell@enterprise.com
+To: mark.patterson@enterprise.com
+Date: Thu, 02 Feb 2023 15:27:00 -0000
+Message-ID: <18626fce-c55a-4a05-a713-63538f855845@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Mark,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1172535934
+  Date:              2021-01-07
+  Vendor:            WavePath Inc LLC (VND-03807)
+  Amount:            163,498.56 SGD
+  Transaction Type:  SETTLEMENT
+  Risk Score:        0.85
+  Status:            COMPLETED
+
+Reason for flag: round-number amount inconsistent with typical invoice patter=
+ns.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Meagan Bell
+Senior Associate
+Fraud & Anomaly Detection Team

@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C1885430277 (Risk Score 0.65)
+From: samantha.anderson@enterprise.com
+To: rachel.price@enterprise.com
+Date: Wed, 13 Nov 2024 18:28:00 -0000
+Message-ID: <9b81289e-a5ef-42fc-ae53-dbac686db9fe@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Rachel,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C1885430277
+  Date:              2021-04-17
+  Vendor:            LucentBridge Technologies Ltd (VND-01806)
+  Amount:            2,038.57 EUR
+  Transaction Type:  INVOICE
+  Risk Score:        0.65
+  Status:            COMPLETED
+
+Reason for flag: unusually high transaction amount relative to vendor's histo=
+rical pattern.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Samantha Anderson
+Senior Associate
+Fraud & Anomaly Detection Team

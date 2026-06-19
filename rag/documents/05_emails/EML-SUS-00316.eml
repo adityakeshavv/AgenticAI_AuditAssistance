@@ -1,0 +1,34 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-C656028320 (Risk Score 0.93)
+From: gary.brooks@enterprise.com
+To: james.dunn@enterprise.com
+Date: Tue, 10 Feb 2026 18:50:00 -0000
+Message-ID: <96a73746-ae1e-4049-89e5-ae6258177641@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi James,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-C656028320
+  Date:              2021-07-16
+  Vendor:            SkyBridge Logistics Group (VND-02962)
+  Amount:            63,899.00 CAD
+  Transaction Type:  TRANSFER
+  Risk Score:        0.93
+  Status:            COMPLETED
+
+Reason for flag: unusually high transaction amount relative to vendor's histo=
+rical pattern.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Gary Brooks
+Senior Associate
+Fraud & Anomaly Detection Team

@@ -1,0 +1,35 @@
+Subject: Compliance Alert: Vendor VND-03175 -- NON_COMPLIANT under PCI-DSS
+From: christopher.patel@enterprise.com
+To: gina.erickson@enterprise.com
+Date: Sat, 11 Apr 2026 16:49:00 -0000
+Message-ID: <5a453866-b91a-4326-89be-7f8075391799@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+
+Hi Gina,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            MomentumCore Corp International (VND-03175)
+  Framework:         PCI-DSS
+  Compliance Status: NON_COMPLIANT
+  Assessment Date:   2019-05-29
+  Expiry Date:       2021-03-25
+  Compliance ID:     CMP-014278
+
+Findings summary: Insufficient audit trail documentation for transaction proc=
+essing.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-03175) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Christopher Patel
+Senior Analyst
+Compliance Office

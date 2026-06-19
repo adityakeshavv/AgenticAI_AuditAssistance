@@ -1,0 +1,34 @@
+Subject: Compliance Alert: Vendor VND-02142 -- EXPIRED under ISO 27001
+From: ryan.reynolds@enterprise.com
+To: jonathan.owens@enterprise.com
+Date: Tue, 30 Dec 2025 15:28:00 -0000
+Message-ID: <f67649bc-65c2-40e7-bf75-45c01e110eb0@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Jonathan,
+
+This is to flag a compliance issue identified during our routine monitoring:
+
+  Vendor:            WavePath Inc (VND-02142)
+  Framework:         ISO 27001
+  Compliance Status: EXPIRED
+  Assessment Date:   2021-08-11
+  Expiry Date:       2021-07-19
+  Compliance ID:     CMP-000687
+
+Findings summary: Compliance certificate expired. Re-assessment overdue.
+
+Per the Compliance Policy, any new purchase orders or payments to this vendor
+should be held until the certification is renewed or a risk acceptance is
+formally documented. Please confirm whether there are any open POs or
+contracts (e.g. against vendor_id VND-02142) that may be affected.
+
+I'll log this in the compliance tracker and follow up in 2 weeks if no
+update is received.
+
+Best,
+Ryan Reynolds
+Senior Analyst
+Compliance Office

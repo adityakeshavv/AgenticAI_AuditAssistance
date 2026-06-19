@@ -1,0 +1,33 @@
+Subject: SUSPICIOUS TRANSACTION ALERT -- TXN-269205 (Risk Score 0.70)
+From: melanie.cameron@enterprise.com
+To: shannon.brooks@enterprise.com
+Date: Fri, 06 Jun 2025 15:57:00 -0000
+Message-ID: <39557226-e216-4948-b8d9-8653f7ae1f2e@enterprise.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+Hi Shannon,
+
+Our automated monitoring system has flagged the following transaction for
+review:
+
+  Transaction ID:    TXN-269205
+  Date:              2023-01-16
+  Vendor:            Beta_Supplies Holdings (VND-00605)
+  Amount:            397,739.86 EUR
+  Transaction Type:  SETTLEMENT
+  Risk Score:        0.70
+  Status:            COMPLETED
+
+Reason for flag: transaction processed outside standard business hours.
+
+Could you confirm whether this transaction has a corresponding approved
+Purchase Order and whether the vendor's compliance status is current? If we
+don't receive a satisfactory explanation within 48 hours, I'll open a formal
+investigation referencing this transaction ID.
+
+Thanks,
+Melanie Cameron
+Team Lead
+Fraud & Anomaly Detection Team
