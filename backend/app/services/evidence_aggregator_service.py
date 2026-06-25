@@ -18,6 +18,6 @@ class EvidenceAggregatorService:
 
         return {
             "structured_evidence": structured_evidence,
-            "document_evidence": document_evidence,
+            "document_evidence": [dict(document) for document in document_evidence],
             "sources": merged_sources,
         }

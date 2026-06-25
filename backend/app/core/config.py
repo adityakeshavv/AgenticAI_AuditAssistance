@@ -46,10 +46,25 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("RAG_METADATA_DIR", "AUDIT_RAG_METADATA_DIR"),
         description="Directory containing document metadata CSV files.",
     )
+    document_source_uri_scheme: str = Field(
+        default="file",
+        validation_alias=AliasChoices("DOCUMENT_SOURCE_URI_SCHEME", "AUDIT_DOCUMENT_SOURCE_URI_SCHEME"),
+        description="URI scheme used when building document source links.",
+    )
+    document_source_uri_base: str = Field(
+        default="",
+        validation_alias=AliasChoices("DOCUMENT_SOURCE_URI_BASE", "AUDIT_DOCUMENT_SOURCE_URI_BASE"),
+        description="Optional base URI used when building document source links.",
+    )
 
     default_page: int = 1
     default_page_size: int = 50
     max_page_size: int = 500
+
+    finding_high_flagged_transaction_threshold: int = 5
+    finding_supporting_audit_document_bonus: bool = True
+    finding_supporting_investigation_document_bonus: bool = True
+    finding_no_evidence_risk: str = "LOW"
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

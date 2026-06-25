@@ -1,8 +1,10 @@
 from datetime import date
+from pathlib import Path
 from typing import Any
 
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.crud import document_metadata_crud
 from app.models import DocumentMetadata
 
@@ -20,10 +22,65 @@ def serialize_document_metadata(document: DocumentMetadata) -> dict[str, Any]:
         "creation_date": document.creation_date.isoformat() if isinstance(document.creation_date, date) else document.creation_date,
         "file_name": document.file_name,
         "file_path": document.file_path,
+        "source_uri": build_source_uri(
+            {
+                "document_id": document.document_id,
+                "file_path": document.file_path,
+                "file_name": document.file_name,
+            }
+        ),
         "source_metadata_file": document.source_metadata_file,
         "created_at": document.created_at.isoformat() if document.created_at else None,
         "updated_at": document.updated_at.isoformat() if document.updated_at else None,
     }
+
+
+def build_citation_record(
+    document: dict[str, Any],
+    *,
+    page_number: int | None = None,
+    section_title: str | None = None,
+    citation_text: str | None = None,
+    anchor_text: str | None = None,
+    start_offset: int | None = None,
+    end_offset: int | None = None,
+    chunk_id: str | None = None,
+    relevance_score: float | None = None,
+) -> dict[str, Any]:
+    source_uri = document.get("source_uri")
+    if not source_uri:
+        source_uri = build_source_uri(document)
+    return {
+        "document_id": document.get("document_id"),
+        "file_name": document.get("file_name"),
+        "source_uri": source_uri,
+        "page_number": page_number if page_number is not None else document.get("page_number"),
+        "section_title": section_title if section_title is not None else document.get("section_title"),
+        "anchor_text": anchor_text if anchor_text is not None else document.get("anchor_text"),
+        "start_offset": start_offset if start_offset is not None else document.get("start_offset"),
+        "end_offset": end_offset if end_offset is not None else document.get("end_offset"),
+        "chunk_id": chunk_id if chunk_id is not None else document.get("chunk_id"),
+        "citation_text": citation_text if citation_text is not None else document.get("citation_text"),
+        "relevance_score": relevance_score if relevance_score is not None else document.get("relevance_score"),
+    }
+
+
+def build_source_uri(document: dict[str, Any]) -> str:
+    settings = get_settings()
+    base_uri = str(settings.document_source_uri_base or "").strip()
+    file_path = document.get("file_path")
+    document_id = document.get("document_id") or ""
+
+    if base_uri:
+        return f"{base_uri.rstrip('/')}/{document_id}"
+
+    if file_path:
+        try:
+            return Path(str(file_path)).resolve().as_uri()
+        except Exception:
+            return str(file_path)
+
+    return document_id
 
 
 class DocumentMetadataService:

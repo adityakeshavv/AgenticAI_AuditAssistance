@@ -1,0 +1,145 @@
+import type { AuditResponse } from '../types/audit';
+
+export const mockAuditResponse: AuditResponse = {
+  success: true,
+  query: 'show flagged transactions and related documents',
+  intent: { intent: 'transaction_list', filters: { status: 'FLAGGED' } },
+  investigation_plan: {},
+  entities_investigated: [],
+  entity_type: 'transaction',
+  entity_id: null,
+  agents_used: ['Transaction Agent', 'Document Retrieval Agent'],
+  risk_rating: 'HIGH',
+  risk_score: 7,
+  risk_drivers: [
+    'Flagged transactions detected',
+    'Escalation email linked',
+    'Multiple supporting documents identified',
+  ],
+  document_intelligence_summary:
+    'Document Intelligence Summary: 1 escalation email, 1 investigation report, and 1 approval exception record were detected. Signals: escalation requested, approval review needed, and investigation opened.',
+  document_intelligence: {
+    escalation_email_count: 1,
+    investigation_report_count: 1,
+    approval_exception_count: 1,
+  },
+  investigation_summary:
+    'Flagged transactions were identified with supporting escalation documentation. The review linked an escalation email, an investigation report, and approval exception context, which together indicate the transactions should be reviewed under a heightened audit lens.',
+  investigation_metrics: {
+    transactions_reviewed: 10,
+    contracts_reviewed: 0,
+    documents_reviewed: 2,
+    flagged_transactions: 10,
+  },
+  top_supporting_evidence: [
+    {
+      document_id: 'INV-00421',
+      file_name: 'INV-00421.pdf',
+      summary: 'Investigation report references repeated flagged activity and recommends follow-up review.',
+      priority: '1',
+    },
+    {
+      document_id: 'EML-ESC-00186',
+      file_name: 'EML-ESC-00186.eml',
+      summary: 'Escalation email links the delayed approval to transaction TXN-C8972378.',
+      priority: '2',
+    },
+  ],
+  transaction_summary: '',
+  vendor_summary: '',
+  key_findings: [
+    'Flagged transactions detected',
+    'Escalation email linked to delayed approval',
+    'Investigation report corroborates the escalation trail',
+  ],
+  supporting_evidence: [
+    {
+      summary: 'Flagged transactions matched the query filter and returned supporting audit documents.',
+      detail: 'Transactions were reviewed alongside escalation and investigation evidence.',
+    },
+  ],
+  supporting_documents: [
+    {
+      document_id: 'INV-00421',
+      file_name: 'INV-00421.pdf',
+      linked_transaction: 'TXN-C8972378',
+      reason_selected: 'Investigation report references the retrieved transaction and escalation trail.',
+      content_snippet: 'The investigation identified repeated approval delays for TXN-C8972378 and recommended escalation review.',
+      page_number: 3,
+      section_title: 'Executive Summary',
+    },
+    {
+      document_id: 'EML-ESC-00186',
+      file_name: 'EML-ESC-00186.eml',
+      linked_transaction: 'TXN-C8972378',
+      reason_selected: 'Document references a transaction returned by the Transaction Agent.',
+      content_snippet: 'Escalation raised regarding delayed approval for transaction TXN-C8972378.',
+      page_number: 1,
+      section_title: 'Escalation Notes',
+    },
+  ],
+  citations: [
+    {
+      document_id: 'EML-ESC-00186',
+      file_name: 'EML-ESC-00186.eml',
+      source_uri: 'file:///rag/documents/05_emails/EML-ESC-00186.eml',
+      page_number: 1,
+      section_title: 'Escalation Notes',
+      anchor_text: 'delayed approval for transaction TXN-C8972378',
+      start_offset: 142,
+      end_offset: 188,
+      chunk_id: 'EML-ESC-00186#p1#0',
+      citation_text: 'Escalation raised regarding delayed approval for transaction TXN-C8972378.',
+      relevance_score: 0.94,
+    },
+  ],
+  navigation_payloads: [
+    {
+      document_id: 'EML-ESC-00186',
+      file_name: 'EML-ESC-00186.eml',
+      source_uri: 'file:///rag/documents/05_emails/EML-ESC-00186.eml',
+      page_number: 1,
+      section_title: 'Escalation Notes',
+      anchor_text: 'delayed approval for transaction TXN-C8972378',
+      start_offset: 142,
+      end_offset: 188,
+      chunk_id: 'EML-ESC-00186#p1#0',
+      citation_text: 'Escalation raised regarding delayed approval for transaction TXN-C8972378.',
+    },
+  ],
+  recommendations: [
+    'Review approval workflow and supporting documentation.',
+    'Validate escalation handling for flagged transactions.',
+  ],
+  structured_evidence: [],
+  document_evidence: [],
+  sources: ['transaction_master', 'document_metadata'],
+  reasoning: [
+    'Intent was extracted from the user query.',
+    'Transaction and document agents were invoked.',
+    'Evidence was combined and composed into an audit response.',
+    'Top supporting evidence was prioritized by risk contribution.',
+  ],
+  finding: {
+    title: 'Flagged Transactions Detected',
+    summary:
+      'Flagged transactions were identified and supported by escalation email evidence, an investigation report, and approval exception context.',
+    category: 'Transaction Monitoring',
+    severity: 'HIGH',
+    recommendation: 'Review approval workflow and supporting documentation.',
+  },
+  final_response: 'Flagged transactions were identified with supporting escalation documentation.',
+  traceability: {
+    agents_invoked: ['Transaction Agent', 'Document Retrieval Agent'],
+    agent_selection_reasoning: ['Query required transaction and supporting document evidence.'],
+    sources_used: ['transaction_master', 'document_metadata'],
+    evidence_used: [],
+    reasoning_path: [
+      'Intent extracted from user query.',
+      'Structured evidence retrieved.',
+      'Document evidence linked.',
+      'Finding composed.',
+    ],
+  },
+  message: null,
+};

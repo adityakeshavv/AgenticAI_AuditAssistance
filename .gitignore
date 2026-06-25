@@ -56,6 +56,18 @@ build/
 dist/
 *.egg-info/
 
+# Frontend / Vite
+
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.turbo/
+frontend/.cache/
+frontend/.env
+frontend/.env.*
+frontend/vite.svg
+frontend/coverage/
+
 # Jupyter
 
 .ipynb_checkpoints/
@@ -122,3 +134,10 @@ service_account.json
 
 # Large datasets (optional)
 datasets/raw/
+
+# Backend local/runtime artifacts
+backend/.env
+backend/.env.*
+backend/*.db
+backend/*.sqlite3
+backend/coverage/

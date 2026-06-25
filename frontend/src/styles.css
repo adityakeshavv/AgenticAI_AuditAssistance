@@ -1,0 +1,256 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f4f6f8;
+  color: #122033;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #f4f6f8;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 32px;
+}
+
+.hero {
+  max-width: 1200px;
+  margin: 0 auto 24px;
+  padding: 24px 28px;
+  background: #ffffff;
+  border: 1px solid #d9e2ec;
+  border-radius: 12px;
+}
+
+.eyebrow,
+.section-label {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  color: #5c6b7a;
+}
+
+.hero h1,
+.section-block h2,
+.modal-panel h3 {
+  margin: 0;
+  color: #102033;
+}
+
+.hero-copy,
+.body-copy,
+.small-copy,
+.citation-text,
+.query-meta,
+.citation-meta,
+.citation-details dd,
+.citation-details dt {
+  color: #425466;
+}
+
+.page-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+
+.panel {
+  background: #ffffff;
+  border: 1px solid #d9e2ec;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(16, 32, 51, 0.04);
+}
+
+.query-card {
+  padding: 20px 24px;
+}
+
+.query-form {
+  display: grid;
+  gap: 10px;
+}
+
+.query-row {
+  display: flex;
+  gap: 12px;
+}
+
+.query-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #c7d2dd;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.query-row button,
+.modal-close {
+  border: 0;
+  border-radius: 10px;
+  background: #143a66;
+  color: #fff;
+  padding: 12px 18px;
+  cursor: pointer;
+}
+
+.query-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+.response-panel {
+  padding: 24px;
+  display: grid;
+  gap: 24px;
+}
+
+.section-block,
+.metric-card {
+  padding: 18px 20px;
+  border: 1px solid #e3e8ef;
+  border-radius: 12px;
+  background: #fafcff;
+}
+
+.section-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.risk-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-weight: 600;
+  margin: 8px 0;
+}
+
+.risk-low { background: #e8f4ec; color: #23663b; }
+.risk-medium { background: #fff4db; color: #8a6100; }
+.risk-high { background: #ffe7d6; color: #9c3f00; }
+.risk-critical { background: #fce2e2; color: #a31616; }
+
+.list-block {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.citation-list {
+  display: grid;
+  gap: 12px;
+}
+
+.citation-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #dce5ee;
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px;
+  cursor: pointer;
+}
+
+.citation-card:hover {
+  border-color: #98b4d1;
+  box-shadow: 0 4px 16px rgba(16, 32, 51, 0.06);
+}
+
+.citation-card-top,
+.citation-meta,
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.citation-score {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eef3f8;
+}
+
+.citation-text {
+  margin: 10px 0 0;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 32, 51, 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal-panel {
+  width: min(720px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(16, 32, 51, 0.28);
+}
+
+.citation-details {
+  margin: 20px 0 0;
+  display: grid;
+  gap: 16px;
+}
+
+.citation-details div {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e3e8ef;
+}
+
+.citation-details dt {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.citation-details dd {
+  margin: 0;
+}
+
+.muted {
+  color: #6b7a8b;
+}
+
+@media (max-width: 960px) {
+  .section-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .query-row {
+    flex-direction: column;
+  }
+}

@@ -33,30 +33,64 @@ if st.button("Run Audit Query", type="primary"):
             response.raise_for_status()
             payload = response.json()
 
-            st.subheader("Final Response")
-            st.write(payload.get("final_response", ""))
+            finding = payload.get("finding", {})
+            st.subheader("Finding")
+            st.write(finding.get("finding_summary", ""))
+
+            st.subheader("Risk Rating")
+            st.write(finding.get("risk_rating", ""))
+
+            st.subheader("Evidence Summary")
+            st.write(finding.get("evidence_summary", ""))
+
+            st.subheader("Supporting Documents")
+            supporting_documents = finding.get("supporting_documents", [])
+            if supporting_documents:
+                for document in supporting_documents:
+                    st.markdown(f"**Document ID:** {document.get('document_id', '')}")
+                    st.markdown(f"**Linked Transaction:** {document.get('linked_transaction', '')}")
+                    st.markdown(f"**Evidence Snippet:** {document.get('content_snippet', '')}")
+                    st.markdown(f"**Reason Selected:** {document.get('reason_selected', '')}")
+                    st.divider()
+            else:
+                st.write("None")
+
+            st.subheader("Recommendation")
+            st.write(finding.get("recommendation", ""))
 
             col1, col2 = st.columns(2)
             with col1:
-                st.subheader("Extracted Intent")
-                st.json(payload.get("intent", {}))
+                st.subheader("Sources")
+                st.json(payload.get("sources", []))
             with col2:
-                st.subheader("Agents Invoked")
+                st.subheader("Agents Used")
                 st.json(payload.get("agents_used", []))
 
-            st.subheader("Structured Evidence")
-            st.json(payload.get("structured_evidence", []))
-
-            st.subheader("Document Evidence")
-            st.json(payload.get("document_evidence", []))
-
-            st.subheader("Sources Used")
-            st.json(payload.get("sources", []))
-
-            st.subheader("Reasoning Path")
+            st.subheader("Reasoning")
             st.json(payload.get("reasoning", []))
 
-            st.subheader("Traceability")
-            st.json(payload.get("traceability", {}))
+            st.subheader("Final Response")
+            st.code(payload.get("final_response", ""), language="text")
+
+            with st.expander("Raw Intent", expanded=False):
+                st.json(payload.get("intent", {}))
+
+            with st.expander("Structured Evidence", expanded=False):
+                st.json(payload.get("structured_evidence", []))
+
+            with st.expander("Document Evidence", expanded=False):
+                sanitized_documents = [
+                    {
+                        "document_id": document.get("document_id"),
+                        "linked_transaction": document.get("linked_transaction"),
+                        "reason_selected": document.get("reason_selected"),
+                        "content_snippet": document.get("content_snippet"),
+                    }
+                    for document in payload.get("document_evidence", [])
+                ]
+                st.json(sanitized_documents)
+
+            with st.expander("Traceability", expanded=False):
+                st.json(payload.get("traceability", {}))
         except requests.RequestException as exc:
             st.error(f"Request failed: {exc}")
