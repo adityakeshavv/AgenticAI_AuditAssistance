@@ -1,6 +1,7 @@
 # Python
 
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *.pyd
 *.pyo
@@ -39,16 +40,19 @@ logs/
 # Pytest
 
 .pytest_cache/
+backend/.pytest_cache/
 .coverage
 htmlcov/
 
 # Mypy
 
 .mypy_cache/
+backend/.mypy_cache/
 
 # Ruff
 
 .ruff_cache/
+backend/.ruff_cache/
 
 # Build
 
@@ -63,6 +67,8 @@ frontend/dist/
 frontend/.vite/
 frontend/.turbo/
 frontend/.cache/
+frontend/.eslintcache
+frontend/*.tsbuildinfo
 frontend/.env
 frontend/.env.*
 frontend/vite.svg
@@ -76,6 +82,8 @@ frontend/coverage/
 
 *.db
 *.sqlite3
+*.db-journal
+*.sqlite3-journal
 
 # Alembic
 
@@ -141,3 +149,9 @@ backend/.env.*
 backend/*.db
 backend/*.sqlite3
 backend/coverage/
+backend/logs/
+backend/.cache/
+
+# Agent/runtime state
+.conversation_memory/
+.audit_cache/
