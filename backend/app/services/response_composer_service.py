@@ -5,6 +5,7 @@ from typing import Any
 from app.services.risk_scoring_service import RiskScoringService
 from app.services.recommendation_service import RecommendationService
 from app.services.finding_generation_service import FindingGenerationService
+from app.services.response_evaluation_service import ResponseEvaluationService
 
 
 class ResponseComposerService:
@@ -12,6 +13,7 @@ class ResponseComposerService:
         self.finding_service = FindingGenerationService()
         self.risk_scoring_service = RiskScoringService()
         self.recommendation_service = RecommendationService()
+        self.response_evaluation_service = ResponseEvaluationService()
 
     def compose(self, response_contract: dict[str, Any]) -> dict[str, Any]:
         structured_evidence = list(response_contract.get("structured_evidence", []))
@@ -25,7 +27,11 @@ class ResponseComposerService:
                 structured_evidence=structured_evidence,
                 document_evidence=document_evidence,
                 intent=intent,
+                query=query,
+                citations=list(response_contract.get("citations", [])),
+                investigation_context=self._build_investigation_context(response_contract),
             )
+        finding = self._normalize_finding(finding)
         risk = self.risk_scoring_service.score(
             finding=finding,
             structured_evidence=structured_evidence,
@@ -40,10 +46,8 @@ class ResponseComposerService:
                 structured_evidence=structured_evidence,
                 document_evidence=document_evidence,
             )
-        if response_contract.get("entity_type") == "vendor" and not response_contract.get("recommendations"):
-            response_contract["recommendations"] = [finding.get("recommendation")] if finding.get("recommendation") else []
-        if response_contract.get("entity_type") == "transaction" and not response_contract.get("recommendations"):
-            response_contract["recommendations"] = [finding.get("recommendation")] if finding.get("recommendation") else []
+        if not response_contract.get("recommendations") and finding.get("recommendation"):
+            response_contract["recommendations"] = [finding.get("recommendation")]
 
         reasoning = list(response_contract.get("traceability", {}).get("reasoning_path", []))
         if not reasoning:
@@ -83,6 +87,7 @@ class ResponseComposerService:
                 supporting_section=supporting_section,
                 recommendations=list(response_contract.get("recommendations", [])),
                 traceability=response_contract.get("traceability", {}),
+                narrative=str(finding.get("narrative") or ""),
             )
         elif response_contract.get("entity_type") == "transaction":
             final_response = self._build_transaction_narrative(
@@ -103,6 +108,7 @@ class ResponseComposerService:
                 supporting_section=supporting_section,
                 recommendations=list(response_contract.get("recommendations", [])),
                 traceability=response_contract.get("traceability", {}),
+                narrative=str(finding.get("narrative") or ""),
             )
         elif response_contract.get("investigation_plan"):
             final_response = self._build_investigation_narrative(
@@ -121,6 +127,7 @@ class ResponseComposerService:
                 supporting_section=supporting_section,
                 recommendations=list(response_contract.get("recommendations", [])),
                 traceability=response_contract.get("traceability", {}),
+                narrative=str(finding.get("narrative") or ""),
             )
         else:
             final_response = self._build_narrative(
@@ -131,6 +138,7 @@ class ResponseComposerService:
                 finding=finding,
                 supporting_summary=supporting_summary,
                 supporting_section=supporting_section,
+                narrative=str(finding.get("narrative") or ""),
             )
 
         response_contract["finding"] = finding
@@ -138,6 +146,10 @@ class ResponseComposerService:
         if document_evidence:
             response_contract["document_intelligence_summary"] = self._build_document_intelligence_summary(document_evidence)
         response_contract["final_response"] = final_response
+        response_contract["evaluation"] = self.response_evaluation_service.evaluate(
+            query=query,
+            response_contract=response_contract,
+        )
         return response_contract
 
     def _format_supporting_documents(self, supporting_documents: list[dict[str, Any]]) -> str:
@@ -218,13 +230,22 @@ class ResponseComposerService:
     def _build_citations(self, documents: list[dict[str, Any]]) -> list[dict[str, Any]]:
         citations: list[dict[str, Any]] = []
         for document in documents:
-            if document.get("page_number") in (None, "") and not document.get("citation_text"):
+            if document.get("page_number") in (None, "") and not document.get("citation_text") and not document.get("content_snippet"):
                 continue
+            file_name = document.get("file_name") or document.get("document_id") or ""
+            source_type = document.get("source_type") or document.get("document_type") or document.get("document_category") or ""
+            linked_transaction = document.get("linked_transaction") or document.get("transaction_id")
+            related_vendor_id = document.get("related_vendor_id") or document.get("vendor_id")
+            selection_exp = document.get("selection_explanation")
+            if not isinstance(selection_exp, dict):
+                selection_exp = None
             citations.append(
                 {
                     "document_id": document.get("document_id"),
-                    "file_name": document.get("file_name"),
+                    "file_name": file_name,
+                    "document_name": document.get("document_name") or file_name,
                     "source_uri": document.get("source_uri"),
+                    "source_type": source_type,
                     "page_number": document.get("page_number"),
                     "section_title": document.get("section_title"),
                     "anchor_text": document.get("anchor_text"),
@@ -233,6 +254,14 @@ class ResponseComposerService:
                     "chunk_id": document.get("chunk_id"),
                     "citation_text": document.get("citation_text") or document.get("content_snippet") or document.get("content"),
                     "relevance_score": document.get("relevance_score"),
+                    "linked_transaction": linked_transaction,
+                    "related_vendor_id": related_vendor_id,
+                    "citation_origin": document.get("citation_origin") or "document_evidence",
+                    "selection_explanation": selection_exp,
+                    "selection_reason": document.get("reason_selected") or (selection_exp or {}).get("selection_reason"),
+                    "supports": document.get("supports") or (selection_exp or {}).get("supports"),
+                    "relevance_summary": document.get("relevance_summary") or (selection_exp or {}).get("relevance_summary"),
+                    "confidence_note": document.get("confidence_note") or (selection_exp or {}).get("confidence_note"),
                 }
             )
         return citations
@@ -266,9 +295,12 @@ class ResponseComposerService:
         finding: dict[str, Any],
         supporting_summary: str,
         supporting_section: str,
+        narrative: str = "",
     ) -> str:
         risk_driver_text = "\n".join(f"- {driver}" for driver in risk_drivers) if risk_drivers else "None"
         return (
+            f"Narrative:\n{narrative}\n\n" if narrative else ""
+        ) + (
             f"Finding: {finding.get('finding_summary', '')}\n"
             f"Risk Rating: {risk_rating}\n"
             f"Risk Drivers:\n{risk_driver_text}\n"
@@ -296,6 +328,7 @@ class ResponseComposerService:
         supporting_section: str,
         recommendations: list[str],
         traceability: dict[str, Any],
+        narrative: str = "",
     ) -> str:
         risk_driver_text = "\n".join(f"- {driver}" for driver in risk_drivers) if risk_drivers else "None"
         key_finding_text = "\n".join(f"- {finding}" for finding in key_findings) if key_findings else "None"
@@ -305,6 +338,8 @@ class ResponseComposerService:
         recommendation_text = "\n".join(f"- {item}" for item in recommendations) if recommendations else "None"
         return (
             "Vendor Investigation Report\n\n"
+            + (f"Narrative:\n{narrative}\n\n" if narrative else "")
+            + (
             f"Executive Summary:\n{investigation_summary}\n\n"
             f"Investigation Metrics:\n{metrics_text}\n\n"
             f"Risk Rating: {risk_rating}\n"
@@ -318,6 +353,7 @@ class ResponseComposerService:
             f"{self._format_traceability(traceability)}\n"
             f"Query: {query}\n"
             f"Intent: {intent.get('intent') or 'vendor_investigation'}"
+            )
         )
 
     def _build_transaction_narrative(
@@ -336,6 +372,7 @@ class ResponseComposerService:
         supporting_section: str,
         recommendations: list[str],
         traceability: dict[str, Any],
+        narrative: str = "",
     ) -> str:
         risk_driver_text = "\n".join(f"- {driver}" for driver in risk_drivers) if risk_drivers else "None"
         key_finding_text = "\n".join(f"- {finding}" for finding in key_findings) if key_findings else "None"
@@ -345,6 +382,8 @@ class ResponseComposerService:
         recommendation_text = "\n".join(f"- {item}" for item in recommendations) if recommendations else "None"
         return (
             "Transaction Investigation Report\n\n"
+            + (f"Narrative:\n{narrative}\n\n" if narrative else "")
+            + (
             f"Executive Summary:\n{transaction_summary}\n\n"
             f"Investigation Metrics:\n{metrics_text}\n\n"
             f"Risk Assessment: {risk_rating}\n"
@@ -358,6 +397,7 @@ class ResponseComposerService:
             f"{self._format_traceability(traceability)}\n"
             f"Query: {query}\n"
             f"Intent: {intent.get('intent') or 'transaction_investigation'}"
+            )
         )
 
     def _build_investigation_narrative(
@@ -378,6 +418,7 @@ class ResponseComposerService:
         supporting_section: str,
         recommendations: list[str],
         traceability: dict[str, Any],
+        narrative: str = "",
     ) -> str:
         agents_selected = investigation_plan.get("agents_required", [])
         reasoning = investigation_plan.get("reasoning", [])
@@ -392,6 +433,8 @@ class ResponseComposerService:
         recommendation_text = "\n".join(f"- {item}" for item in recommendations) if recommendations else "None"
         return (
             "Investigation Report\n\n"
+            + (f"Narrative:\n{narrative}\n\n" if narrative else "")
+            + (
             "Investigation Plan\n"
             f"Agents Selected:\n{plan_text}\n"
             f"Reasoning:\n{reasoning_text}\n\n"
@@ -409,6 +452,7 @@ class ResponseComposerService:
             f"{self._format_traceability(traceability)}\n"
             f"Query: {query}\n"
             f"Intent: {intent.get('intent') or 'investigation'}"
+            )
         )
 
     def _build_document_intelligence_summary(self, document_evidence: list[dict[str, Any]]) -> str:
@@ -511,3 +555,53 @@ class ResponseComposerService:
             f"Sources Used: {sources}\n"
             f"Reasoning Path:\n{reasoning_text}"
         )
+
+    def _normalize_finding(self, finding: dict[str, Any]) -> dict[str, Any]:
+        normalized = dict(finding)
+        title = str(normalized.get("title") or normalized.get("finding_title") or "Evidence Retrieved").strip()
+        summary = str(normalized.get("summary") or normalized.get("finding_summary") or "").strip()
+        recommendation = str(normalized.get("recommendation") or "").strip()
+        narrative = str(normalized.get("narrative") or "").strip()
+        if not narrative:
+            narrative = self._build_narrative(
+                query=str(normalized.get("query") or ""),
+                intent=normalized.get("intent") if isinstance(normalized.get("intent"), dict) else {},
+                risk_rating=str(normalized.get("risk_rating") or "LOW"),
+                risk_drivers=list(normalized.get("risk_drivers", [])) if isinstance(normalized.get("risk_drivers"), list) else [],
+                finding=normalized,
+                supporting_summary=str(normalized.get("supporting_summary") or normalized.get("evidence_summary") or ""),
+                supporting_section=str(normalized.get("supporting_section") or ""),
+            )
+        normalized.update(
+            {
+                "title": title,
+                "finding_title": title,
+                "summary": summary,
+                "finding_summary": summary,
+                "recommendation": recommendation,
+                "narrative": narrative,
+                "risk_reasoning": str(normalized.get("risk_reasoning") or normalized.get("evidence_summary") or "").strip(),
+            }
+        )
+        return normalized
+
+    def _build_investigation_context(self, response_contract: dict[str, Any]) -> dict[str, Any]:
+        traceability = response_contract.get("traceability", {})
+        context = {
+            "entity_type": response_contract.get("entity_type"),
+            "entity_id": response_contract.get("entity_id"),
+            "agents_used": list(response_contract.get("agents_used", [])),
+            "sources": list(response_contract.get("sources", [])),
+            "traceability": traceability if isinstance(traceability, dict) else {},
+            "investigation_plan": response_contract.get("investigation_plan", {}),
+            "investigation_summary": response_contract.get("investigation_summary", ""),
+            "key_findings": list(response_contract.get("key_findings", [])),
+            "top_supporting_evidence": list(response_contract.get("top_supporting_evidence", [])),
+            "supporting_documents": list(response_contract.get("supporting_documents", [])),
+            "investigation_metrics": dict(response_contract.get("investigation_metrics", {})),
+        }
+        if response_contract.get("document_intelligence_summary"):
+            context["document_intelligence_summary"] = response_contract.get("document_intelligence_summary")
+        if response_contract.get("policy_context"):
+            context["policy_context"] = response_contract.get("policy_context")
+        return context

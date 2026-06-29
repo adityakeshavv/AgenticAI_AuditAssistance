@@ -5,6 +5,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.services.document_retrieval_agent_service import DocumentRetrievalAgent
+from app.services.agent_orchestrator_service import AgentOrchestratorService
 from app.services.evidence_aggregator_service import EvidenceAggregatorService
 from app.services.investigation_planner_service import InvestigationPlannerService
 from app.services.llm_router_service import StructuredIntentService
@@ -26,6 +27,13 @@ class AgentService:
         self.transaction_investigation_service = TransactionInvestigationService(db)
         self.evidence_aggregator = EvidenceAggregatorService()
         self.response_composer = ResponseComposerService()
+        self.agent_orchestrator = AgentOrchestratorService(
+            db,
+            document_agent=self.document_agent,
+            vendor_investigation_service=self.vendor_investigation_service,
+            evidence_aggregator=self.evidence_aggregator,
+            investigation_planner=self.investigation_planner,
+        )
 
     def run(self, *, query: str, page: int = 1, page_size: int = 10) -> dict[str, Any]:
         traceability = self.traceability_service.initialize()
@@ -51,6 +59,7 @@ class AgentService:
             "document_evidence": [],
             "sources": [],
             "reasoning": [],
+            "execution_metadata": [],
             "finding": {},
             "final_response": "",
             "traceability": traceability,
@@ -111,9 +120,17 @@ class AgentService:
             response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
             return response_contract
 
-        investigation_plan = self.investigation_planner.plan(query)
-        execution_query = self.investigation_planner.build_execution_query(query)
-        if investigation_plan.get("investigation_type") != "unsupported" and execution_query:
+        investigation_plan = self.investigation_planner.plan(
+            query,
+            intent={},
+            available_agents=None,
+            investigation_context={
+                "query": query,
+                "page": page,
+                "page_size": page_size,
+            },
+        )
+        if investigation_plan.get("investigation_type") != "unsupported":
             response_contract["investigation_plan"] = investigation_plan
             response_contract["entities_investigated"] = list(investigation_plan.get("entities_required", []))
             response_contract["entity_type"] = "investigation"
@@ -126,106 +143,55 @@ class AgentService:
             for reason in investigation_plan.get("reasoning", []):
                 self.traceability_service.record_reasoning(traceability, reason)
 
-            transaction_result = execute_transaction_query(self.db, execution_query, page=page, page_size=page_size)
-            transaction_rows = list(transaction_result.get("results", []))
-            response_contract["intent"] = transaction_result.get("structured_intent", {})
-            response_contract["structured_evidence"] = transaction_rows
-
-            if transaction_result.get("success", False):
-                self.traceability_service.record_agent(
-                    traceability,
-                    "transaction_agent",
-                    "Planner selected transaction evidence for scenario-level investigation.",
-                )
-                self.traceability_service.record_source(traceability, "transaction_master")
-                self.traceability_service.record_reasoning(
-                    traceability,
-                    f"Planner-driven transaction query returned {len(transaction_rows)} record(s).",
-                )
-            else:
-                response_contract["success"] = False
-                response_contract["message"] = transaction_result.get("message")
-                self.traceability_service.record_reasoning(
-                    traceability,
-                    "Planner-driven transaction query did not return evidence.",
-                )
-
-            document_result = self.document_agent.retrieve(
+            orchestration = self.agent_orchestrator.run(
                 query=query,
+                investigation_plan=investigation_plan,
                 structured_intent=response_contract.get("intent", {}),
-                transaction_results=transaction_rows,
+                page=page,
+                page_size=page_size,
             )
-            response_contract["document_evidence"] = list(document_result.get("documents", []))
-            if response_contract["document_evidence"]:
-                self.traceability_service.record_agent(
-                    traceability,
-                    "document_retrieval_agent",
-                    "Planner-selected scenario required supporting documents.",
-                )
-                self.traceability_service.record_source(traceability, "document_metadata")
-                for source in document_result.get("sources", []):
-                    self.traceability_service.record_source(traceability, source)
-                self.traceability_service.record_reasoning(
-                    traceability,
-                    f"Document retrieval returned {len(response_contract['document_evidence'])} related record(s).",
-                )
+            response_contract.update(orchestration)
+            response_contract["execution_metadata"] = list(orchestration.get("execution_metadata", []))
+            response_contract["intent"] = orchestration.get("structured_intent", response_contract.get("intent", {}))
+            traceability["execution_metadata"] = response_contract["execution_metadata"]
 
-            scenario_vendor_ids = self._top_vendor_ids(transaction_rows, limit=3)
-            vendor_investigations: list[dict[str, Any]] = []
-            if "vendor" in response_contract["entities_investigated"] and scenario_vendor_ids:
-                self.traceability_service.record_agent(
-                    traceability,
-                    "vendor_investigation_agent",
-                    "Planner required vendor-level follow-up for suspicious transaction clusters.",
-                )
-                for vendor_id_value in scenario_vendor_ids:
-                    vendor_result = self.vendor_investigation_service.investigate(
-                        query=f"review vendor {vendor_id_value}",
-                        vendor_id=vendor_id_value,
+            for step in response_contract["execution_metadata"]:
+                agent_name = str(step.get("agent") or "").strip()
+                reason_selected = str(step.get("reason_selected") or "").strip()
+                if agent_name:
+                    self.traceability_service.record_agent(
+                        traceability,
+                        agent_name,
+                        reason_selected or "Planner-selected investigation step.",
                     )
-                    if vendor_result.get("success"):
-                        vendor_investigations.append(vendor_result)
-                        for reason in vendor_result.get("reasoning", []):
-                            self.traceability_service.record_reasoning(traceability, reason)
-                        for source in vendor_result.get("sources", []):
-                            self.traceability_service.record_source(traceability, source)
+                outputs = step.get("outputs", {}) if isinstance(step.get("outputs", {}), dict) else {}
+                if agent_name == "transaction_agent" and outputs.get("success"):
+                    self.traceability_service.record_source(traceability, "transaction_master")
+                    self.traceability_service.record_reasoning(
+                        traceability,
+                        f"Transaction agent returned {outputs.get('result_count', 0)} record(s).",
+                    )
+                elif agent_name in {"vendor_agent", "vendor_investigation_agent"} and outputs.get("success"):
+                    self.traceability_service.record_source(traceability, "vendor")
+                    self.traceability_service.record_reasoning(
+                        traceability,
+                        f"Vendor investigation executed for {len(outputs.get('vendor_ids', []))} vendor(s).",
+                    )
+                elif agent_name == "document_retrieval_agent" and outputs.get("success"):
+                    self.traceability_service.record_source(traceability, "document_metadata")
+                    for source in outputs.get("sources", []):
+                        self.traceability_service.record_source(traceability, source)
+                    self.traceability_service.record_reasoning(
+                        traceability,
+                        f"Document retrieval returned {outputs.get('document_count', 0)} related record(s).",
+                    )
 
-            aggregated_sources = ["transaction_master"]
-            if response_contract["document_evidence"]:
-                aggregated_sources.append("document_metadata")
-            aggregated_sources.extend(document_result.get("sources", []))
+            transaction_rows = list(response_contract.get("transaction_rows", []))
+            vendor_investigations = list(response_contract.get("vendor_investigations", []))
 
-            scenario_structured_evidence = list(response_contract["structured_evidence"])
-            scenario_document_evidence = list(response_contract["document_evidence"])
-            scenario_supporting_evidence: list[dict[str, Any]] = []
-            scenario_key_findings: list[str] = []
-            scenario_recommendations: list[str] = []
-
-            for vendor_result in vendor_investigations:
-                scenario_structured_evidence.extend(vendor_result.get("structured_evidence", []))
-                scenario_document_evidence.extend(vendor_result.get("document_evidence", []))
-                scenario_supporting_evidence.extend(vendor_result.get("supporting_evidence", []))
-                scenario_key_findings.extend(vendor_result.get("key_findings", []))
-                scenario_recommendations.extend(vendor_result.get("recommendations", []))
-                aggregated_sources.extend(vendor_result.get("sources", []))
-
-            scenario_structured_evidence = self._dedupe_records(
-                scenario_structured_evidence,
-                fields=("source_type", "transaction_id", "vendor_id", "contract_id", "finding_id", "approval_id"),
-            )
-            scenario_document_evidence = self._dedupe_records(
-                scenario_document_evidence,
-                fields=("document_id",),
-            )
-
-            aggregator_output = self.evidence_aggregator.aggregate(
-                structured_evidence=scenario_structured_evidence,
-                document_evidence=scenario_document_evidence,
-                sources=aggregated_sources,
-            )
-            response_contract["structured_evidence"] = aggregator_output["structured_evidence"]
-            response_contract["document_evidence"] = aggregator_output["document_evidence"]
-            response_contract["sources"] = aggregator_output["sources"]
+            response_contract["structured_evidence"] = list(response_contract.get("structured_evidence", []))
+            response_contract["document_evidence"] = list(response_contract.get("document_evidence", []))
+            response_contract["sources"] = list(response_contract.get("sources", []))
 
             risk = self.response_composer.risk_scoring_service.score(
                 finding={
@@ -235,28 +201,6 @@ class AgentService:
                 structured_evidence=response_contract["structured_evidence"],
                 document_evidence=response_contract["document_evidence"],
             )
-
-            for source in response_contract["sources"]:
-                self.traceability_service.record_source(traceability, source)
-            for item in response_contract["structured_evidence"]:
-                reference = item.get("transaction_id") or item.get("vendor_id") or item.get("contract_id") or item.get("finding_id")
-                self.traceability_service.record_evidence(
-                    traceability,
-                    {
-                        "type": "structured",
-                        "reference": reference,
-                        "source": item.get("source_type", "investigation"),
-                    },
-                )
-            for item in response_contract["document_evidence"]:
-                self.traceability_service.record_evidence(
-                    traceability,
-                    {
-                        "type": "document",
-                        "reference": item.get("document_id"),
-                        "source": "document_metadata",
-                    },
-                )
 
             response_contract["investigation_metrics"] = self._build_investigation_metrics(
                 transaction_rows=transaction_rows,
@@ -275,7 +219,7 @@ class AgentService:
                 document_rows=response_contract["document_evidence"],
                 vendor_investigations=vendor_investigations,
                 planner_reasoning=investigation_plan.get("reasoning", []),
-                existing_key_findings=scenario_key_findings,
+                existing_key_findings=list(response_contract.get("key_findings", [])),
             )
             response_contract["top_supporting_evidence"] = self._rank_documents(response_contract["document_evidence"])[:5]
             response_contract["supporting_evidence"] = self._build_scenario_supporting_evidence(
@@ -286,7 +230,7 @@ class AgentService:
             response_contract["recommendations"] = self._build_scenario_recommendations(
                 transaction_rows=transaction_rows,
                 vendor_investigations=vendor_investigations,
-                existing_recommendations=scenario_recommendations,
+                existing_recommendations=list(response_contract.get("recommendations", [])),
             )
             response_contract["supporting_documents"] = response_contract["document_evidence"]
             response_contract["finding"] = {

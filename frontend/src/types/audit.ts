@@ -4,6 +4,25 @@ export interface TraceabilityRecord {
   sources_used: string[];
   evidence_used: Record<string, unknown>[];
   reasoning_path: string[];
+  execution_metadata?: ExecutionMetadataRecord[];
+}
+
+export interface ExecutionMetadataRecord {
+  agent?: string | null;
+  reason_selected?: string | null;
+  status?: string | null;
+  started_at?: string | null;
+  ended_at?: string | null;
+  inputs?: Record<string, unknown>;
+  outputs?: Record<string, unknown>;
+}
+
+export interface DocumentSelectionExplanation {
+  document_id?: string | null;
+  selection_reason?: string | null;
+  supports?: string | null;
+  relevance_summary?: string | null;
+  confidence_note?: string | null;
 }
 
 export interface CitationRecord {
@@ -23,6 +42,11 @@ export interface CitationRecord {
   linked_transaction?: string | null;
   related_vendor_id?: string | null;
   citation_origin?: string | null;
+  selection_explanation?: DocumentSelectionExplanation | null;
+  selection_reason?: string | null;
+  supports?: string | null;
+  relevance_summary?: string | null;
+  confidence_note?: string | null;
 }
 
 export interface NavigationPayload {
@@ -79,5 +103,55 @@ export interface AuditResponse {
   finding: Finding;
   final_response: string;
   traceability: TraceabilityRecord;
+  evaluation?: {
+    retrieval_relevance?: string;
+    grounding_quality?: string;
+    faithfulness?: string;
+    citation_coverage?: string;
+    summary?: string;
+  };
+  execution_metadata?: ExecutionMetadataRecord[];
   message?: string | null;
+}
+
+// ── Chat / Conversation types ──────────────────────────────────────────────
+
+export interface SuggestedAction {
+  id: string;
+  label: string;
+  description: string;
+}
+
+export interface InvestigationState {
+  entity_type?: string | null;
+  entity_ids: string[];
+  transaction_ids: string[];
+  topics: string[];
+  risk_rating?: string | null;
+  transaction_count: number;
+  document_count: number;
+  finding_count: number;
+  key_findings: string[];
+  recommendations: string[];
+  status: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  response?: ChatResponse;
+  isLoading?: boolean;
+}
+
+export interface ChatResponse extends AuditResponse {
+  session_id: string;
+  is_followup: boolean;
+  resolved_query: string;
+  original_query: string;
+  injected_context: Record<string, unknown>;
+  suggested_actions: SuggestedAction[];
+  investigation_state: InvestigationState;
+  turn_count: number;
 }

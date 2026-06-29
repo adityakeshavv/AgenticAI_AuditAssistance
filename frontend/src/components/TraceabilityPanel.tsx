@@ -1,104 +1,131 @@
-import type { AuditResponse } from '../types/audit';
-import { ReasoningTimeline } from './ReasoningTimeline';
-import { SourceTraceCard } from './SourceTraceCard';
+import type { AuditResponse, ExecutionMetadataRecord } from '../types/audit';
+import { AgentWorkflow } from './workflow/AgentWorkflow';
 
-interface TraceabilityPanelProps {
-  response: AuditResponse;
+interface Props { response: AuditResponse; }
+
+function prettyAgent(a: string) {
+  return a.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).trim();
+}
+function statusBadge(v?: string | null) {
+  const n = (v || '').toLowerCase();
+  if (n.includes('fail')) return 'badge-failed';
+  if (n.includes('skip')) return 'badge-skipped';
+  if (n.includes('run') || n.includes('act')) return 'badge-running';
+  return 'badge-completed';
+}
+function statusLabel(v?: string | null) {
+  const n = (v || '').toLowerCase();
+  if (n.includes('fail')) return 'Failed';
+  if (n.includes('skip')) return 'Skipped';
+  if (n.includes('run') || n.includes('act')) return 'Running';
+  return 'Completed';
 }
 
-function prettifyAgentName(agent: string) {
-  return agent
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+function buildExecution(meta: ExecutionMetadataRecord[], fallback: string[]) {
+  const entries = meta.length > 0
+    ? meta
+    : fallback.map((a) => ({ agent: a, status: 'completed', reason_selected: 'Planner-selected execution step.' }));
+  return entries.map((e) => ({
+    name: prettyAgent(String(e.agent || 'Unknown')),
+    status: statusLabel(e.status),
+    badgeClass: statusBadge(e.status),
+    reason: String(e.reason_selected || 'Planner-selected execution step.'),
+  }));
 }
 
-function buildAgentOutput(agent: string, response: AuditResponse) {
-  const lower = agent.toLowerCase();
-  if (lower.includes('transaction')) {
-    return `Produced ${response.investigation_metrics.transactions_reviewed ?? 0} reviewed transactions.`;
-  }
-  if (lower.includes('document')) {
-    return `Linked ${response.supporting_documents.length} supporting document${response.supporting_documents.length === 1 ? '' : 's'}.`;
-  }
-  return `Produced audit evidence used in the response.`;
-}
-
-function buildEvidenceFlow(response: AuditResponse) {
-  return [
-    ['Structured Evidence Count', response.structured_evidence.length],
-    ['Document Evidence Count', response.document_evidence.length],
-    ['Citations Generated', response.citations.length],
-    ['Finding Produced', response.finding.title || 'Audit finding'],
-  ] as const;
-}
-
-export function TraceabilityPanel({ response }: TraceabilityPanelProps) {
-  const workflowAgents = response.agents_used.length > 0 ? response.agents_used : response.traceability.agents_invoked;
-  const sources = response.sources.length > 0 ? response.sources : response.traceability.sources_used;
-  const evidenceFlow = buildEvidenceFlow(response);
+export function TraceabilityPanel({ response }: Props) {
+  const execMeta = response.execution_metadata || response.traceability.execution_metadata || [];
+  const execution = buildExecution(execMeta, response.agents_used);
+  const reasoningSteps = response.traceability.reasoning_path;
+  const sourcesPills = (response.traceability.sources_used || []).filter(Boolean);
 
   return (
-    <div className="section-block">
-      <p className="section-label">Traceability</p>
-
-      <div className="section-block">
-        <p className="section-label">Explainability Summary</p>
-        <p className="body-copy">
-          This finding was generated using {workflowAgents.length > 0 ? workflowAgents.join(' and ') : 'the audit workflow'}.
-          {` ${response.structured_evidence.length} structured records and ${response.document_evidence.length} document evidence item${
-            response.document_evidence.length === 1 ? '' : 's'
-          } contributed to the result.`}
-          {` The response was supported by ${response.citations.length} citation${response.citations.length === 1 ? '' : 's'}.`}
-        </p>
-      </div>
-
-      <div className="section-block">
-        <p className="section-label">Agent Participation</p>
-        {workflowAgents.length > 0 ? (
-          <div className="supporting-document-list">
-            {workflowAgents.map((agent) => (
-              <article key={agent} className="supporting-document-item">
-                <p className="supporting-document-title">{prettifyAgentName(agent)}</p>
-                <p className="supporting-document-detail">{buildAgentOutput(agent, response)}</p>
-                <p className="supporting-document-snippet">{response.traceability.agent_selection_reasoning[0] || 'Agent participated in the audit workflow.'}</p>
-              </article>
+    <div className="stack">
+      {/* Execution Summary */}
+      <div className="card-sm">
+        <p className="label" style={{ marginBottom: '0.75rem' }}>Execution Summary — Agent Order & Status</p>
+        {execution.length > 0 ? (
+          <div className="stack-sm">
+            {execution.map((e, i) => (
+              <div
+                key={`${e.name}-${i}`}
+                style={{
+                  display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+                  background: 'var(--bg-panel)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem',
+                }}
+              >
+                <span style={{
+                  width: 26, height: 26, borderRadius: '50%',
+                  background: 'rgba(59,130,246,0.12)', color: 'var(--accent-blue)',
+                  display: 'grid', placeItems: 'center', fontSize: '0.75rem',
+                  fontWeight: 700, flexShrink: 0,
+                }}>{i + 1}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                    <strong style={{ fontSize: '0.88rem' }}>{e.name}</strong>
+                    <span className={`badge ${e.badgeClass}`}>{e.status}</span>
+                  </div>
+                  <p className="small-copy">{e.reason}</p>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <p className="body-copy">No agent participation details were returned.</p>
+          <p className="body-copy">No execution metadata was returned.</p>
         )}
       </div>
 
-      <div className="section-block">
-        <p className="section-label">Source Traceability</p>
-        {sources.length > 0 ? (
-          <div className="supporting-document-list">
-            {sources.map((source) => (
-              <SourceTraceCard key={source} source={source} />
+      {/* Sources */}
+      {sourcesPills.length > 0 && (
+        <div className="card-sm">
+          <p className="label" style={{ marginBottom: '0.5rem' }}>Data Sources Used</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {sourcesPills.map((s) => (
+              <span key={s} className="source-pill">{String(s)}</span>
             ))}
           </div>
-        ) : (
-          <p className="body-copy">No source traceability data was returned.</p>
-        )}
-      </div>
+        </div>
+      )}
 
-      <div className="section-block">
-        <p className="section-label">Evidence Flow</p>
-        <ol className="list-block">
-          {evidenceFlow.map(([label, value], index) => (
-            <li key={label}>
-              <strong>{label}:</strong> {value as string | number}
-              {index < evidenceFlow.length - 1 ? <div className="small-copy">↓</div> : null}
-            </li>
-          ))}
-        </ol>
-      </div>
+      {/* Reasoning Path */}
+      {reasoningSteps.length > 0 && (
+        <div className="card-sm">
+          <p className="label" style={{ marginBottom: '0.75rem' }}>Reasoning Path ({reasoningSteps.length} steps)</p>
+          <div className="timeline">
+            {reasoningSteps.map((step, i) => (
+              <div key={i} className="timeline-item">
+                <div className="timeline-dot">{i + 1}</div>
+                <div className="timeline-body">{step}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-      <div className="section-block">
-        <p className="section-label">Reasoning Timeline</p>
-        <ReasoningTimeline steps={response.reasoning.length > 0 ? response.reasoning : response.traceability.reasoning_path} />
-      </div>
+      {/* Interactive Workflow */}
+      <AgentWorkflow response={response} />
 
+      {/* Developer Details */}
+      <details style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>
+        <summary style={{ cursor: 'pointer', listStyle: 'none', color: 'var(--text-secondary)', fontSize: '0.87rem', fontWeight: 600 }}>
+          ▶ Developer Details — Raw Response Metadata
+        </summary>
+        <div className="stack-sm" style={{ marginTop: '1rem' }}>
+          <div>
+            <p className="label">Intent</p>
+            <pre style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              {JSON.stringify(response.intent, null, 2)}
+            </pre>
+          </div>
+          <div>
+            <p className="label">Traceability</p>
+            <pre style={{ whiteSpace: 'pre-wrap', margin: 0, fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              {JSON.stringify(response.traceability, null, 2)}
+            </pre>
+          </div>
+        </div>
+      </details>
     </div>
   );
 }

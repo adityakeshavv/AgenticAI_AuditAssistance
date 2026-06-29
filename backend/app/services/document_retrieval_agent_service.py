@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import email
 import base64
+import json
 import re
 import zlib
 from email import policy
@@ -13,6 +14,8 @@ from xml.etree import ElementTree as ET
 
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
+from app.prompts.document_selection_prompt import build_document_selection_messages
 from app.services.document_metadata_service import DocumentMetadataService
 from app.services.document_metadata_service import build_citation_record, build_source_uri
 from app.services.document_intelligence_service import DocumentIntelligenceService
@@ -33,6 +36,7 @@ class DocumentRetrievalAgent:
         self.service = DocumentMetadataService(db)
         self.intelligence_service = DocumentIntelligenceService()
         self.semantic_service = SemanticRetrievalService(db)
+        self.settings = get_settings()
 
     def retrieve(
         self,
@@ -68,6 +72,12 @@ class DocumentRetrievalAgent:
         document_list = [self._attach_content_snippet(document) for document in document_list]
         document_list = [self._attach_intelligence(document) for document in document_list]
         document_list = [self._attach_citation_metadata(document) for document in document_list]
+        document_list = self._attach_selection_explanations(
+            query=query,
+            structured_intent=structured_intent,
+            transaction_results=transaction_results,
+            documents=document_list,
+        )
 
         semantic_documents: list[dict[str, Any]] = []
         semantic_sources: list[str] = []
@@ -95,6 +105,222 @@ class DocumentRetrievalAgent:
             "sources": sources,
             "document_intelligence": document_intelligence,
             "semantic_evidence": semantic_documents,
+        }
+
+    def _attach_selection_explanations(
+        self,
+        *,
+        query: str,
+        structured_intent: dict[str, Any],
+        transaction_results: list[dict[str, Any]],
+        documents: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        if not documents:
+            return []
+
+        explanations = self._generate_selection_explanations(
+            query=query,
+            structured_intent=structured_intent,
+            transaction_results=transaction_results,
+            documents=documents,
+        )
+        explanation_by_id = {
+            str(item.get("document_id")): item
+            for item in explanations
+            if isinstance(item, dict) and item.get("document_id") not in (None, "")
+        }
+
+        enriched_documents: list[dict[str, Any]] = []
+        for document in documents:
+            document_id = str(document.get("document_id") or "")
+            explanation = explanation_by_id.get(document_id)
+            if not explanation:
+                explanation = self._deterministic_selection_explanation(
+                    query=query,
+                    structured_intent=structured_intent,
+                    transaction_results=transaction_results,
+                    document=document,
+                )
+            enriched_documents.append(
+                {
+                    **document,
+                    "selection_explanation": explanation,
+                    "selection_reason": explanation.get("selection_reason", ""),
+                    "supports": explanation.get("supports", ""),
+                    "relevance_summary": explanation.get("relevance_summary", ""),
+                    "confidence_note": explanation.get("confidence_note", ""),
+                }
+            )
+        return enriched_documents
+
+    def _generate_selection_explanations(
+        self,
+        *,
+        query: str,
+        structured_intent: dict[str, Any],
+        transaction_results: list[dict[str, Any]],
+        documents: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        if not self.settings.openai_api_key:
+            return [
+                self._deterministic_selection_explanation(
+                    query=query,
+                    structured_intent=structured_intent,
+                    transaction_results=transaction_results,
+                    document=document,
+                )
+                for document in documents
+            ]
+
+        try:
+            from openai import OpenAI
+        except ImportError:
+            return [
+                self._deterministic_selection_explanation(
+                    query=query,
+                    structured_intent=structured_intent,
+                    transaction_results=transaction_results,
+                    document=document,
+                )
+                for document in documents
+            ]
+
+        payload_documents = [self._build_document_selection_payload(document) for document in documents]
+        payload_evidence = [self._build_structured_evidence_payload(row) for row in transaction_results]
+
+        try:
+            client = OpenAI(api_key=self.settings.openai_api_key)
+            response = client.chat.completions.create(
+                model=self.settings.openai_model,
+                temperature=0,
+                messages=build_document_selection_messages(
+                    query=query,
+                    intent=structured_intent,
+                    structured_evidence=payload_evidence,
+                    documents=payload_documents,
+                ),
+            )
+            content = response.choices[0].message.content
+            if not content:
+                raise ValueError("LLM returned an empty document selection explanation.")
+            parsed = self._parse_selection_explanations(content)
+            if parsed:
+                return parsed
+        except Exception:
+            pass
+
+        return [
+            self._deterministic_selection_explanation(
+                query=query,
+                structured_intent=structured_intent,
+                transaction_results=transaction_results,
+                document=document,
+            )
+            for document in documents
+        ]
+
+    def _parse_selection_explanations(self, response_text: str) -> list[dict[str, Any]]:
+        cleaned = response_text.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+
+        payload = json.loads(cleaned)
+        if not isinstance(payload, dict):
+            return []
+        documents = payload.get("documents")
+        if not isinstance(documents, list):
+            return []
+
+        parsed: list[dict[str, Any]] = []
+        for item in documents:
+            if not isinstance(item, dict):
+                continue
+            document_id = str(item.get("document_id") or "").strip()
+            if not document_id:
+                continue
+            parsed.append(
+                {
+                    "document_id": document_id,
+                    "selection_reason": str(item.get("selection_reason") or "").strip(),
+                    "supports": str(item.get("supports") or "").strip(),
+                    "relevance_summary": str(item.get("relevance_summary") or "").strip(),
+                    "confidence_note": str(item.get("confidence_note") or "").strip(),
+                }
+            )
+        return parsed
+
+    def _deterministic_selection_explanation(
+        self,
+        *,
+        query: str,
+        structured_intent: dict[str, Any],
+        transaction_results: list[dict[str, Any]],
+        document: dict[str, Any],
+    ) -> dict[str, Any]:
+        document_id = str(document.get("document_id") or "")
+        reason_selected = str(document.get("reason_selected") or "Document was selected from the retrieved evidence.").strip()
+        document_category = str(document.get("document_category") or document.get("document_type") or "document").strip()
+        query_focus = self._query_focus_label(query, structured_intent)
+        linked_transaction = document.get("linked_transaction")
+        relevance_bits = [f"selected for {query_focus}"]
+        if linked_transaction:
+            relevance_bits.append(f"linked to transaction {linked_transaction}")
+        if transaction_results:
+            relevance_bits.append(f"derived from {len(transaction_results)} structured record(s)")
+        relevance_bits.append(f"document category {document_category}")
+
+        support_bits = [reason_selected]
+        citation_text = str(document.get("citation_text") or document.get("content_snippet") or "").strip()
+        if citation_text:
+            support_bits.append("citation text supports the retrieved audit evidence")
+        if document.get("document_signals"):
+            support_bits.append("document signals reinforce the audit context")
+
+        confidence_note = "Grounded in retrieved document metadata and cited evidence."
+        if not citation_text:
+            confidence_note = "Grounded in metadata linkage; no citation text was available."
+
+        return {
+            "document_id": document_id,
+            "selection_reason": reason_selected,
+            "supports": "; ".join(dict.fromkeys(support_bits)),
+            "relevance_summary": "; ".join(dict.fromkeys(relevance_bits)),
+            "confidence_note": confidence_note,
+        }
+
+    def _query_focus_label(self, query: str, structured_intent: dict[str, Any]) -> str:
+        intent = str(structured_intent.get("intent") or "").strip()
+        if intent:
+            return intent.replace("_", " ")
+        compact_query = re.sub(r"\s+", " ", query).strip()
+        return compact_query[:60] if compact_query else "the audit question"
+
+    def _build_document_selection_payload(self, document: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "document_id": document.get("document_id"),
+            "document_type": document.get("document_type"),
+            "document_category": document.get("document_category"),
+            "file_name": document.get("file_name"),
+            "source_uri": document.get("source_uri"),
+            "page_number": document.get("page_number"),
+            "section_title": document.get("section_title"),
+            "citation_text": document.get("citation_text") or document.get("content_snippet") or "",
+            "linked_transaction": document.get("linked_transaction"),
+            "reason_selected": document.get("reason_selected"),
+            "relevance_score": document.get("relevance_score"),
+        }
+
+    def _build_structured_evidence_payload(self, row: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "transaction_id": row.get("transaction_id"),
+            "vendor_id": row.get("vendor_id"),
+            "contract_id": row.get("contract_id"),
+            "approval_id": row.get("approval_id"),
+            "finding_id": row.get("finding_id"),
+            "status": row.get("status"),
+            "risk_score": row.get("risk_score"),
+            "amount": row.get("amount"),
+            "currency": row.get("currency"),
         }
 
     def _collect_lookup_values(
