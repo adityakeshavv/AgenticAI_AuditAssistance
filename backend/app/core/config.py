@@ -31,6 +31,94 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("OPENAI_MODEL", "AUDIT_OPENAI_MODEL"),
         description="OpenAI-compatible model used by the LLM router.",
     )
+    agent_runtime: str = Field(
+        default="legacy",
+        validation_alias=AliasChoices("AGENT_RUNTIME", "AUDIT_AGENT_RUNTIME"),
+        description="Workflow runtime to use. Set to gemini_adk to enable the ADK adapter path.",
+    )
+    google_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("GOOGLE_API_KEY", "AUDIT_GOOGLE_API_KEY"),
+        description="Google API key for Gemini-based agent workflows when applicable.",
+    )
+    google_cloud_project_id: str = Field(
+        default="",
+        validation_alias=AliasChoices("GOOGLE_CLOUD_PROJECT_ID", "AUDIT_GOOGLE_CLOUD_PROJECT_ID"),
+        description="Google Cloud project for Gemini ADK / Vertex AI workflows.",
+    )
+    google_cloud_location: str = Field(
+        default="us-central1",
+        validation_alias=AliasChoices("GOOGLE_CLOUD_LOCATION", "AUDIT_GOOGLE_CLOUD_LOCATION"),
+        description="Google Cloud region for Gemini ADK / Vertex AI workflows.",
+    )
+    gemini_model: str = Field(
+        default="gemini-2.5-pro",
+        validation_alias=AliasChoices("GEMINI_MODEL", "AUDIT_GEMINI_MODEL"),
+        description="Gemini model used by the ADK adapter path.",
+    )
+    langfuse_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("LANGFUSE_ENABLED", "AUDIT_LANGFUSE_ENABLED"),
+        description="Enable Langfuse tracing when credentials are available.",
+    )
+    langfuse_public_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("LANGFUSE_PUBLIC_KEY", "AUDIT_LANGFUSE_PUBLIC_KEY"),
+        description="Public key for Langfuse tracing.",
+    )
+    langfuse_secret_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("LANGFUSE_SECRET_KEY", "AUDIT_LANGFUSE_SECRET_KEY"),
+        description="Secret key for Langfuse tracing.",
+    )
+    langfuse_host: str = Field(
+        default="",
+        validation_alias=AliasChoices("LANGFUSE_HOST", "LANGFUSE_BASE_URL", "AUDIT_LANGFUSE_HOST", "AUDIT_LANGFUSE_BASE_URL"),
+        description="Langfuse host URL.",
+    )
+    langfuse_trace_url_template: str = Field(
+        default="",
+        validation_alias=AliasChoices("LANGFUSE_TRACE_URL_TEMPLATE", "AUDIT_LANGFUSE_TRACE_URL_TEMPLATE"),
+        description="Optional template for direct Langfuse trace links. Use {trace_id} as a placeholder.",
+    )
+    database_connection_encryption_key: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "DATABASE_CONNECTION_ENCRYPTION_KEY",
+            "AUDIT_DATABASE_CONNECTION_ENCRYPTION_KEY",
+        ),
+        description="Optional Fernet key used to encrypt saved database connection passwords.",
+    )
+    auth_token_secret: str = Field(
+        default="change-me-in-env",
+        validation_alias=AliasChoices("AUTH_TOKEN_SECRET", "AUDIT_AUTH_TOKEN_SECRET"),
+        description="Secret used to sign application auth tokens and OAuth state.",
+    )
+    auth_token_expiry_minutes: int = Field(
+        default=12 * 60,
+        validation_alias=AliasChoices("AUTH_TOKEN_EXPIRY_MINUTES", "AUDIT_AUTH_TOKEN_EXPIRY_MINUTES"),
+        description="Lifetime for signed application auth tokens.",
+    )
+    google_client_id: str = Field(
+        default="",
+        validation_alias=AliasChoices("GOOGLE_CLIENT_ID", "AUDIT_GOOGLE_CLIENT_ID"),
+        description="Google OAuth client ID for Google sign-in.",
+    )
+    google_client_secret: str = Field(
+        default="",
+        validation_alias=AliasChoices("GOOGLE_CLIENT_SECRET", "AUDIT_GOOGLE_CLIENT_SECRET"),
+        description="Google OAuth client secret for Google sign-in.",
+    )
+    google_redirect_uri: str = Field(
+        default="http://localhost:8000/auth/google/callback",
+        validation_alias=AliasChoices("GOOGLE_REDIRECT_URI", "AUDIT_GOOGLE_REDIRECT_URI"),
+        description="Backend callback URI configured in Google OAuth console.",
+    )
+    frontend_auth_redirect_uri: str = Field(
+        default="http://localhost:5173/",
+        validation_alias=AliasChoices("FRONTEND_AUTH_REDIRECT_URI", "AUDIT_FRONTEND_AUTH_REDIRECT_URI"),
+        description="Frontend URL used after completing Google sign-in.",
+    )
     rag_root_dir: Path = Field(
         default=REPO_ROOT / "rag",
         validation_alias=AliasChoices("RAG_ROOT_DIR", "AUDIT_RAG_ROOT_DIR"),

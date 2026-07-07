@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import type { AuditResponse, CitationRecord } from '../types/audit';
 import { CitationList } from './CitationList';
+import { LangfusePanel } from './LangfusePanel';
 import { TraceabilityPanel } from './TraceabilityPanel';
 
 interface Props { response: AuditResponse; onCitationSelect: (c: CitationRecord) => void; }
-type Tab = 'summary' | 'evidence' | 'traceability';
+type Tab = 'summary' | 'evidence' | 'traceability' | 'langfuse';
 
 function txt(v: string | undefined, fallback: string) {
   return v?.trim() || fallback;
@@ -71,9 +72,12 @@ export function AuditResponsePanel({ response, onCitationSelect }: Props) {
         <div className="tab-bar" style={{ marginTop: '0.5rem', marginBottom: '-1px' }}>
           {(['summary', 'evidence', 'traceability'] as Tab[]).map((t) => (
             <button key={t} className={`tab-btn${tab === t ? ' active' : ''}`} onClick={() => setTab(t)}>
-              {t === 'summary' ? '📋 Summary' : t === 'evidence' ? '📁 Evidence' : '🔍 Traceability'}
+              {t === 'summary' ? 'Summary' : t === 'evidence' ? 'Evidence' : 'Traceability'}
             </button>
           ))}
+          <button className={`tab-btn${tab === 'langfuse' ? ' active' : ''}`} onClick={() => setTab('langfuse')}>
+            Langfuse
+          </button>
         </div>
       </div>
 
@@ -235,14 +239,14 @@ export function AuditResponsePanel({ response, onCitationSelect }: Props) {
                     return (
                       <div key={String(d.document_id ?? i)} className="doc-item">
                         <div className="flex-between">
-                          <span className="doc-item-title">{String(d.document_id ?? 'Unknown document')}{d.file_name ? ` — ${String(d.file_name)}` : ''}</span>
+                        <span className="doc-item-title">{String(d.document_id ?? 'Unknown document')}{d.file_name ? ` | ${String(d.file_name)}` : ''}</span>
                           {d.relevance_score != null && (
                             <span className="citation-score">{(Number(d.relevance_score) * 100).toFixed(0)}% relevance</span>
                           )}
                         </div>
                         <div className="doc-item-detail">
                           {[d.page_number != null && `Page ${d.page_number}`, d.section_title, d.linked_transaction && `Linked: ${d.linked_transaction}`]
-                            .filter(Boolean).join(' · ')}
+                            .filter(Boolean).join(' | ')}
                         </div>
                         {(d.content_snippet || d.citation_text) && (
                           <p className="doc-item-snippet">{String(d.content_snippet ?? d.citation_text)}</p>
@@ -322,6 +326,9 @@ export function AuditResponsePanel({ response, onCitationSelect }: Props) {
 
         {/* ── TRACEABILITY TAB ── */}
         {tab === 'traceability' && <TraceabilityPanel response={response} />}
+
+        {/* ── LANGFUSE TAB ── */}
+        {tab === 'langfuse' && <LangfusePanel response={response} />}
       </div>
     </div>
   );

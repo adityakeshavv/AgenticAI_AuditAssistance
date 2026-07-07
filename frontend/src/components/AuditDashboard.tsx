@@ -13,8 +13,8 @@ interface AuditDashboardProps {
 const SAMPLE_QUERIES = [
   'Investigate vendor VND-02731 for compliance issues',
   'Show all flagged transactions above $50,000',
-  'Investigate transaction TXN-C8972378',
-  'Which vendors have high-risk payment patterns?',
+  'Show vendors with expired compliance certifications',
+  'Which approvals exceeded authority limits?',
 ];
 
 const workflow = [

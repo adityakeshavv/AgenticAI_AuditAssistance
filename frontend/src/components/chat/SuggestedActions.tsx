@@ -20,18 +20,18 @@ export function SuggestedActions({ actions, onSelect, disabled }: Props) {
             title={a.description}
             style={{
               padding: '0.4rem 0.85rem',
-              background: 'rgba(59,130,246,0.08)',
-              border: '1px solid rgba(59,130,246,0.2)',
+              background: 'rgba(95,111,232,0.08)',
+              border: '1px solid rgba(95,111,232,0.18)',
               borderRadius: '999px',
               fontSize: '0.82rem',
-              color: '#93c5fd',
+              color: '#5f6fe8',
               cursor: disabled ? 'not-allowed' : 'pointer',
               opacity: disabled ? 0.5 : 1,
               transition: 'all 0.15s',
               whiteSpace: 'nowrap',
             }}
-            onMouseEnter={(e) => { if (!disabled) (e.currentTarget.style.background = 'rgba(59,130,246,0.16)'); }}
-            onMouseLeave={(e) => { (e.currentTarget.style.background = 'rgba(59,130,246,0.08)'); }}
+            onMouseEnter={(e) => { if (!disabled) (e.currentTarget.style.background = 'rgba(95,111,232,0.14)'); }}
+            onMouseLeave={(e) => { (e.currentTarget.style.background = 'rgba(95,111,232,0.08)'); }}
           >
             {a.label}
           </button>

@@ -15,34 +15,90 @@ class ResponseEvaluationService:
     def __init__(self) -> None:
         self.settings = get_settings()
 
-    def evaluate(self, *, query: str, response_contract: dict[str, Any]) -> dict[str, Any]:
+    def evaluate(
+        self,
+        *,
+        query: str,
+        response_contract: dict[str, Any],
+        trace_context: Any | None = None,
+    ) -> dict[str, Any]:
+        return self._evaluate(query=query, response_contract=response_contract, trace_context=trace_context)
+
+    def _evaluate(
+        self,
+        *,
+        query: str,
+        response_contract: dict[str, Any],
+        trace_context: Any | None = None,
+    ) -> dict[str, Any]:
         structured_evidence = list(response_contract.get("structured_evidence", []))
         document_evidence = list(response_contract.get("document_evidence", []))
         citations = list(response_contract.get("citations", []))
         final_response = str(response_contract.get("final_response") or "")
 
         if not self.settings.openai_api_key:
-            return self._deterministic_evaluation(
+            evaluation = self._deterministic_evaluation(
                 query=query,
                 final_response=final_response,
                 structured_evidence=structured_evidence,
                 document_evidence=document_evidence,
                 citations=citations,
             )
+            if trace_context:
+                trace_context.log_generation(
+                    "response_evaluation",
+                    model="deterministic",
+                    input_payload={
+                        "query": query,
+                        "final_response": final_response,
+                        "structured_evidence_count": len(structured_evidence),
+                        "document_evidence_count": len(document_evidence),
+                        "citation_count": len(citations),
+                    },
+                    output_payload=evaluation,
+                    metadata={"service": "ResponseEvaluationService", "mode": "deterministic"},
+                )
+            return evaluation
 
         try:
             from openai import OpenAI
         except ImportError:
-            return self._deterministic_evaluation(
+            evaluation = self._deterministic_evaluation(
                 query=query,
                 final_response=final_response,
                 structured_evidence=structured_evidence,
                 document_evidence=document_evidence,
                 citations=citations,
             )
+            if trace_context:
+                trace_context.log_generation(
+                    "response_evaluation",
+                    model="deterministic",
+                    input_payload={
+                        "query": query,
+                        "final_response": final_response,
+                        "structured_evidence_count": len(structured_evidence),
+                        "document_evidence_count": len(document_evidence),
+                        "citation_count": len(citations),
+                    },
+                    output_payload=evaluation,
+                    metadata={"service": "ResponseEvaluationService", "mode": "deterministic"},
+                )
+            return evaluation
 
         try:
             client = OpenAI(api_key=self.settings.openai_api_key)
+            llm_span = trace_context.begin_span(
+                "response_evaluation",
+                input_payload={
+                    "query": query,
+                    "final_response": final_response,
+                    "structured_evidence": structured_evidence,
+                    "document_evidence": document_evidence,
+                    "citations": citations,
+                },
+                metadata={"service": "ResponseEvaluationService", "model": self.settings.openai_model},
+            ) if trace_context else None
             response = client.chat.completions.create(
                 model=self.settings.openai_model,
                 temperature=0,
@@ -59,17 +115,45 @@ class ResponseEvaluationService:
                 raise ValueError("LLM returned an empty response evaluation.")
             parsed = self._parse_response(content)
             if parsed:
+                usage = getattr(response, "usage", None)
+                usage_payload = {}
+                if usage is not None:
+                    usage_payload = {
+                        "prompt_tokens": getattr(usage, "prompt_tokens", None),
+                        "completion_tokens": getattr(usage, "completion_tokens", None),
+                        "total_tokens": getattr(usage, "total_tokens", None),
+                    }
+                if llm_span:
+                    llm_span.finish(
+                        output=parsed,
+                        metadata={"service": "ResponseEvaluationService", "usage": usage_payload, "model": self.settings.openai_model},
+                    )
                 return parsed
         except Exception as exc:
             logger.warning("LLM response evaluation failed. Falling back to deterministic evaluation: %s", exc)
 
-        return self._deterministic_evaluation(
+        evaluation = self._deterministic_evaluation(
             query=query,
             final_response=final_response,
             structured_evidence=structured_evidence,
             document_evidence=document_evidence,
             citations=citations,
         )
+        if trace_context:
+            trace_context.log_generation(
+                "response_evaluation",
+                model="deterministic",
+                input_payload={
+                    "query": query,
+                    "final_response": final_response,
+                    "structured_evidence_count": len(structured_evidence),
+                    "document_evidence_count": len(document_evidence),
+                    "citation_count": len(citations),
+                },
+                output_payload=evaluation,
+                metadata={"service": "ResponseEvaluationService", "mode": "deterministic"},
+            )
+        return evaluation
 
     def _parse_response(self, response_text: str) -> dict[str, Any]:
         cleaned = response_text.strip()

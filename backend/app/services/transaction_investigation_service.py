@@ -38,10 +38,19 @@ class TransactionInvestigationService(BaseInvestigationService):
             return None
         return match.group(0).replace(" ", "-")
 
-    def investigate(self, *, query: str, transaction_id: str) -> dict[str, Any]:
+    def investigate(self, *, query: str, transaction_id: str, trace_context: Any | None = None) -> dict[str, Any]:
+        span = trace_context.begin_span(
+            "transaction_investigation_agent",
+            input_payload={"query": query, "transaction_id": transaction_id},
+            metadata={"service": "TransactionInvestigationService"},
+        ) if trace_context else None
+
         transaction = self.db.get(TransactionMaster, transaction_id)
         if not transaction:
-            return self._not_found_response(query=query, transaction_id=transaction_id)
+            result = self._not_found_response(query=query, transaction_id=transaction_id)
+            if span:
+                span.finish(output=result, metadata={"status": "not_found"})
+            return result
 
         vendor = self.vendor_service.get_vendor_profile(transaction.vendor_id)
         contracts = self._get_related_contracts(transaction.vendor_id)
@@ -66,6 +75,7 @@ class TransactionInvestigationService(BaseInvestigationService):
             query=query,
             structured_intent=structured_intent,
             transaction_results=[transaction_row],
+            trace_context=trace_context,
         )
 
         structured_evidence = self._build_structured_evidence(
@@ -86,12 +96,14 @@ class TransactionInvestigationService(BaseInvestigationService):
                 "audit_finding",
                 *document_result.get("sources", []),
             ],
+            trace_context=trace_context,
         )
 
         risk = self.risk_scoring_service.score(
             finding={"finding_title": "Transaction Investigation Summary", "finding_summary": transaction.transaction_id},
             structured_evidence=aggregated["structured_evidence"],
             document_evidence=aggregated["document_evidence"],
+            trace_context=trace_context,
         )
 
         metrics = self.calculate_metrics(
@@ -165,7 +177,7 @@ class TransactionInvestigationService(BaseInvestigationService):
             "supporting_documents": supporting_documents,
         }
 
-        return {
+        result = {
             "success": True,
             "intent": structured_intent,
             "entity_type": "transaction",
@@ -194,6 +206,21 @@ class TransactionInvestigationService(BaseInvestigationService):
                 "Evidence was aggregated and scored for transaction investigation.",
             ],
         }
+        if span:
+            span.finish(
+                output={
+                    "success": True,
+                    "risk_rating": result["risk_rating"],
+                    "structured_count": len(result["structured_evidence"]),
+                    "document_count": len(result["document_evidence"]),
+                },
+                metadata={
+                    "risk_rating": result["risk_rating"],
+                    "structured_count": len(result["structured_evidence"]),
+                    "document_count": len(result["document_evidence"]),
+                },
+            )
+        return result
 
     def _not_found_response(self, *, query: str, transaction_id: str) -> dict[str, Any]:
         return {

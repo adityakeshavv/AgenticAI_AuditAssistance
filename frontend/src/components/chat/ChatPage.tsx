@@ -10,9 +10,9 @@ import { InvestigationSidebar } from './InvestigationSidebar';
 const STARTER_QUERIES = [
   'Investigate vendor VND-02731 for compliance issues',
   'Show all flagged transactions above $50,000',
-  'Investigate transaction TXN-C8972378',
-  'Which vendors have high-risk payment patterns?',
-  'Show me the top risk drivers in the current investigation',
+  'Show vendors with expired compliance certifications',
+  'Which approvals exceeded the approver authority limit?',
+  'Show expense claims with missing receipts',
 ];
 
 const EMPTY_INVESTIGATION: InvestigationState = {
@@ -117,7 +117,7 @@ export function ChatPage() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0.75rem 1.25rem',
           borderBottom: '1px solid var(--border)',
-          background: 'rgba(11,22,41,0.8)', backdropFilter: 'blur(8px)',
+          background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)',
           gap: '1rem', flexShrink: 0,
         }}>
           <div>
@@ -191,7 +191,7 @@ export function ChatPage() {
         <div style={{
           padding: '0.75rem 1.25rem 1rem',
           borderTop: '1px solid var(--border)',
-          background: 'rgba(6,13,26,0.9)',
+          background: 'rgba(255,255,255,0.95)',
           backdropFilter: 'blur(8px)',
           flexShrink: 0,
         }}>

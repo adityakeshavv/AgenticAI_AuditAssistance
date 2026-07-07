@@ -5,6 +5,15 @@ export interface TraceabilityRecord {
   evidence_used: Record<string, unknown>[];
   reasoning_path: string[];
   execution_metadata?: ExecutionMetadataRecord[];
+  langfuse?: {
+    enabled?: boolean;
+    trace_id?: string | null;
+    trace_url?: string | null;
+    session_id?: string | null;
+    name?: string | null;
+    started_at?: string | null;
+    ended_at?: string | null;
+  };
 }
 
 export interface ExecutionMetadataRecord {

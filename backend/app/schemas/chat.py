@@ -16,6 +16,7 @@ class ChatRequest(BaseModel):
     session_id: str | None = None
     page: int = 1
     page_size: int = 10
+    connection_id: str | None = None
 
 
 class SuggestedAction(BaseModel):

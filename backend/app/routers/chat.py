@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.dependencies.auth import get_current_user
 from app.dependencies.database import get_db
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.services.chat_service import ChatService
@@ -11,24 +12,30 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 @router.post("/message", response_model=ChatResponse)
-def chat_message(payload: ChatRequest, db: Session = Depends(get_db)) -> dict:
+def chat_message(
+    payload: ChatRequest,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+) -> dict:
     svc = ChatService(db)
     return svc.chat(
         message=payload.message,
         session_id=payload.session_id,
         page=payload.page,
         page_size=payload.page_size,
+        user_id=current_user.user_id,
+        connection_id=payload.connection_id,
     )
 
 
 @router.post("/session")
-def create_session() -> dict:
+def create_session(_current_user = Depends(get_current_user)) -> dict:
     session_id = ConversationMemoryService.create_session()
     return {"session_id": session_id}
 
 
 @router.get("/session/{session_id}/history")
-def get_session_history(session_id: str) -> dict:
+def get_session_history(session_id: str, _current_user = Depends(get_current_user)) -> dict:
     session = ConversationMemoryService.get_session(session_id)
     if not session:
         return {"error": "Session not found", "session_id": session_id}
@@ -55,7 +62,7 @@ def get_session_history(session_id: str) -> dict:
 
 
 @router.delete("/session/{session_id}")
-def clear_session(session_id: str) -> dict:
+def clear_session(session_id: str, _current_user = Depends(get_current_user)) -> dict:
     from app.services.conversation_memory_service import ConversationMemoryService as CMS
     if session_id in CMS._sessions:
         del CMS._sessions[session_id]

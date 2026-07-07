@@ -44,7 +44,18 @@ class DocumentRetrievalAgent:
         query: str,
         structured_intent: dict[str, Any],
         transaction_results: list[dict[str, Any]],
+        trace_context: Any | None = None,
     ) -> dict[str, Any]:
+        retrieval_span = trace_context.begin_span(
+            "document_retrieval_agent",
+            input_payload={
+                "query": query,
+                "structured_intent": structured_intent,
+                "transaction_count": len(transaction_results),
+            },
+            metadata={"service": "DocumentRetrievalAgent"},
+        ) if trace_context else None
+
         lookup_values = self._collect_lookup_values(structured_intent, transaction_results)
         documents: dict[str, dict[str, Any]] = {}
 
@@ -77,6 +88,7 @@ class DocumentRetrievalAgent:
             structured_intent=structured_intent,
             transaction_results=transaction_results,
             documents=document_list,
+            trace_context=trace_context,
         )
 
         semantic_documents: list[dict[str, Any]] = []
@@ -95,6 +107,19 @@ class DocumentRetrievalAgent:
             if source not in sources:
                 sources.append(source)
         document_intelligence = self.intelligence_service.summarize_documents(document_list)
+        if retrieval_span:
+            retrieval_span.finish(
+                output={
+                    "document_count": len(document_list),
+                    "sources": sources,
+                    "semantic_evidence_count": len(semantic_documents),
+                },
+                metadata={
+                    "document_count": len(document_list),
+                    "semantic_evidence_count": len(semantic_documents),
+                    "sources": sources,
+                },
+            )
 
         return {
             "agent": "document_retrieval_agent",
@@ -114,6 +139,7 @@ class DocumentRetrievalAgent:
         structured_intent: dict[str, Any],
         transaction_results: list[dict[str, Any]],
         documents: list[dict[str, Any]],
+        trace_context: Any | None = None,
     ) -> list[dict[str, Any]]:
         if not documents:
             return []
@@ -123,6 +149,7 @@ class DocumentRetrievalAgent:
             structured_intent=structured_intent,
             transaction_results=transaction_results,
             documents=documents,
+            trace_context=trace_context,
         )
         explanation_by_id = {
             str(item.get("document_id")): item
@@ -160,6 +187,7 @@ class DocumentRetrievalAgent:
         structured_intent: dict[str, Any],
         transaction_results: list[dict[str, Any]],
         documents: list[dict[str, Any]],
+        trace_context: Any | None = None,
     ) -> list[dict[str, Any]]:
         if not self.settings.openai_api_key:
             return [
@@ -190,6 +218,16 @@ class DocumentRetrievalAgent:
 
         try:
             client = OpenAI(api_key=self.settings.openai_api_key)
+            llm_span = trace_context.begin_span(
+                "document_selection_llm",
+                input_payload={
+                    "query": query,
+                    "intent": structured_intent,
+                    "structured_evidence": payload_evidence,
+                    "documents": payload_documents,
+                },
+                metadata={"service": "DocumentRetrievalAgent", "model": self.settings.openai_model},
+            ) if trace_context else None
             response = client.chat.completions.create(
                 model=self.settings.openai_model,
                 temperature=0,
@@ -203,6 +241,19 @@ class DocumentRetrievalAgent:
             content = response.choices[0].message.content
             if not content:
                 raise ValueError("LLM returned an empty document selection explanation.")
+            usage = getattr(response, "usage", None)
+            usage_payload = {}
+            if usage is not None:
+                usage_payload = {
+                    "prompt_tokens": getattr(usage, "prompt_tokens", None),
+                    "completion_tokens": getattr(usage, "completion_tokens", None),
+                    "total_tokens": getattr(usage, "total_tokens", None),
+                }
+            if llm_span:
+                llm_span.finish(
+                    output=content,
+                    metadata={"service": "DocumentRetrievalAgent", "usage": usage_payload, "model": self.settings.openai_model},
+                )
             parsed = self._parse_selection_explanations(content)
             if parsed:
                 return parsed
@@ -212,10 +263,10 @@ class DocumentRetrievalAgent:
         return [
             self._deterministic_selection_explanation(
                 query=query,
-                structured_intent=structured_intent,
-                transaction_results=transaction_results,
-                document=document,
-            )
+            structured_intent=structured_intent,
+            transaction_results=transaction_results,
+            document=document,
+        )
             for document in documents
         ]
 

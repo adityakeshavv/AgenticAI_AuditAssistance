@@ -1,4 +1,6 @@
 import type { AuditResponse } from '../types/audit';
+import { buildAuthHeaders } from './authApi';
+import { getSelectedDatabaseConnectionId } from './databaseConnectionsApi';
 
 export async function submitAuditQuery(query: string): Promise<AuditResponse> {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -10,11 +12,13 @@ export async function submitAuditQuery(query: string): Promise<AuditResponse> {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...buildAuthHeaders(),
     },
     body: JSON.stringify({
       query,
       page: 1,
       page_size: 10,
+      connection_id: getSelectedDatabaseConnectionId(),
     }),
   });
 
@@ -53,8 +57,14 @@ export async function sendChatMessage(
 
   const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/chat/message`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, session_id: sessionId, page: 1, page_size: 10 }),
+    headers: { 'Content-Type': 'application/json', ...buildAuthHeaders() },
+    body: JSON.stringify({
+      message,
+      session_id: sessionId,
+      page: 1,
+      page_size: 10,
+      connection_id: getSelectedDatabaseConnectionId(),
+    }),
   });
 
   if (!response.ok) {
@@ -69,7 +79,16 @@ export async function sendChatMessage(
 export async function createChatSession(): Promise<string> {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
   if (!apiBaseUrl) throw new Error('VITE_API_BASE_URL is not configured.');
-  const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/chat/session`, { method: 'POST' });
+  const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/chat/session`, {
+    method: 'POST',
+    headers: {
+      ...buildAuthHeaders(),
+    },
+  });
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new Error(errorText || `Chat session request failed with status ${response.status}`);
+  }
   const data = await response.json();
   return data.session_id as string;
 }
@@ -77,6 +96,14 @@ export async function createChatSession(): Promise<string> {
 export async function getChatHistory(sessionId: string): Promise<unknown> {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
   if (!apiBaseUrl) throw new Error('VITE_API_BASE_URL is not configured.');
-  const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/chat/session/${sessionId}/history`);
+  const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/chat/session/${sessionId}/history`, {
+    headers: {
+      ...buildAuthHeaders(),
+    },
+  });
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new Error(errorText || `Chat history request failed with status ${response.status}`);
+  }
   return response.json();
 }

@@ -5,9 +5,10 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.services.document_retrieval_agent_service import DocumentRetrievalAgent
-from app.services.agent_orchestrator_service import AgentOrchestratorService
 from app.services.evidence_aggregator_service import EvidenceAggregatorService
 from app.services.investigation_planner_service import InvestigationPlannerService
+from app.services.gemini_adk_workflow_service import GeminiAdkWorkflowService
+from app.services.langfuse_service import LangfuseService
 from app.services.llm_router_service import StructuredIntentService
 from app.services.response_composer_service import ResponseComposerService
 from app.services.traceability_service import TraceabilityService
@@ -22,12 +23,13 @@ class AgentService:
         self.intent_service = StructuredIntentService()
         self.investigation_planner = InvestigationPlannerService()
         self.traceability_service = TraceabilityService()
+        self.langfuse_service = LangfuseService()
         self.document_agent = DocumentRetrievalAgent(db)
         self.vendor_investigation_service = VendorInvestigationService(db)
         self.transaction_investigation_service = TransactionInvestigationService(db)
         self.evidence_aggregator = EvidenceAggregatorService()
         self.response_composer = ResponseComposerService()
-        self.agent_orchestrator = AgentOrchestratorService(
+        self.agent_orchestrator = GeminiAdkWorkflowService(
             db,
             document_agent=self.document_agent,
             vendor_investigation_service=self.vendor_investigation_service,
@@ -37,6 +39,18 @@ class AgentService:
 
     def run(self, *, query: str, page: int = 1, page_size: int = 10) -> dict[str, Any]:
         traceability = self.traceability_service.initialize()
+        trace_context = self.langfuse_service.start_trace(
+            name="audit_query",
+            input_payload={"query": query, "page": page, "page_size": page_size},
+            metadata={"agent_runtime": self.langfuse_service.settings.agent_runtime},
+        )
+        self.traceability_service.attach_langfuse(
+            traceability,
+            enabled=self.langfuse_service.is_enabled(),
+            trace_id=trace_context.trace_id,
+            trace_url=trace_context.as_traceability().get("trace_url"),
+            session_id=trace_context.as_traceability().get("session_id"),
+        )
         response_contract: dict[str, Any] = {
             "success": True,
             "query": query,
@@ -78,7 +92,28 @@ class AgentService:
                 "Query requested transaction investigation and contained a transaction identifier.",
             )
 
-            transaction_result = self.transaction_investigation_service.investigate(query=query, transaction_id=transaction_id)
+            tx_span = trace_context.begin_span(
+                "transaction_investigation_agent",
+                input_payload={"query": query, "transaction_id": transaction_id},
+                metadata={"service": "AgentService"},
+            )
+            transaction_result = self.transaction_investigation_service.investigate(
+                query=query,
+                transaction_id=transaction_id,
+                trace_context=trace_context,
+            )
+            tx_span.finish(
+                output={
+                    "success": transaction_result.get("success"),
+                    "risk_rating": transaction_result.get("risk_rating"),
+                    "transaction_count": len(transaction_result.get("structured_evidence", [])),
+                    "document_count": len(transaction_result.get("document_evidence", [])),
+                },
+                metadata={
+                    "transaction_count": len(transaction_result.get("structured_evidence", [])),
+                    "document_count": len(transaction_result.get("document_evidence", [])),
+                },
+            )
             response_contract.update(transaction_result)
 
             for reason in transaction_result.get("reasoning", []):
@@ -116,8 +151,10 @@ class AgentService:
                 )
 
             response_contract["traceability"] = traceability
-            response_contract = self.response_composer.compose(response_contract)
+            response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
             response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
+            trace_context.finalize(output=response_contract, metadata={"result": "transaction_investigation"})
+            traceability["langfuse"] = trace_context.as_traceability()
             return response_contract
 
         investigation_plan = self.investigation_planner.plan(
@@ -129,6 +166,7 @@ class AgentService:
                 "page": page,
                 "page_size": page_size,
             },
+            trace_context=trace_context,
         )
         if investigation_plan.get("investigation_type") != "unsupported":
             response_contract["investigation_plan"] = investigation_plan
@@ -143,12 +181,34 @@ class AgentService:
             for reason in investigation_plan.get("reasoning", []):
                 self.traceability_service.record_reasoning(traceability, reason)
 
+            orchestration_span = trace_context.begin_span(
+                "investigation_orchestration",
+                input_payload={
+                    "query": query,
+                    "investigation_plan": investigation_plan,
+                    "structured_intent": response_contract.get("intent", {}),
+                },
+                metadata={"service": "AgentService"},
+            )
             orchestration = self.agent_orchestrator.run(
                 query=query,
                 investigation_plan=investigation_plan,
                 structured_intent=response_contract.get("intent", {}),
                 page=page,
                 page_size=page_size,
+                trace_context=trace_context,
+            )
+            orchestration_span.finish(
+                output={
+                    "success": orchestration.get("success"),
+                    "transaction_count": orchestration.get("transaction_result_count"),
+                    "document_count": orchestration.get("document_result_count"),
+                    "agents_used": orchestration.get("agents_used", []),
+                },
+                metadata={
+                    "transaction_count": orchestration.get("transaction_result_count"),
+                    "document_count": orchestration.get("document_result_count"),
+                },
             )
             response_contract.update(orchestration)
             response_contract["execution_metadata"] = list(orchestration.get("execution_metadata", []))
@@ -200,6 +260,7 @@ class AgentService:
                 },
                 structured_evidence=response_contract["structured_evidence"],
                 document_evidence=response_contract["document_evidence"],
+                trace_context=trace_context,
             )
 
             response_contract["investigation_metrics"] = self._build_investigation_metrics(
@@ -246,8 +307,10 @@ class AgentService:
             response_contract["risk_drivers"] = risk["risk_drivers"]
 
             response_contract["traceability"] = traceability
-            response_contract = self.response_composer.compose(response_contract)
+            response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
             response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
+            trace_context.finalize(output=response_contract, metadata={"result": "investigation"})
+            traceability["langfuse"] = trace_context.as_traceability()
             return response_contract
 
         vendor_id = self.vendor_investigation_service.extract_vendor_id(query)
@@ -262,7 +325,28 @@ class AgentService:
                 "Query requested vendor investigation and contained a vendor identifier.",
             )
 
-            vendor_result = self.vendor_investigation_service.investigate(query=query, vendor_id=vendor_id)
+            vendor_span = trace_context.begin_span(
+                "vendor_investigation_agent",
+                input_payload={"query": query, "vendor_id": vendor_id},
+                metadata={"service": "AgentService"},
+            )
+            vendor_result = self.vendor_investigation_service.investigate(
+                query=query,
+                vendor_id=vendor_id,
+                trace_context=trace_context,
+            )
+            vendor_span.finish(
+                output={
+                    "success": vendor_result.get("success"),
+                    "risk_rating": vendor_result.get("risk_rating"),
+                    "transaction_count": len(vendor_result.get("structured_evidence", [])),
+                    "document_count": len(vendor_result.get("document_evidence", [])),
+                },
+                metadata={
+                    "transaction_count": len(vendor_result.get("structured_evidence", [])),
+                    "document_count": len(vendor_result.get("document_evidence", [])),
+                },
+            )
             response_contract.update(vendor_result)
 
             for reason in vendor_result.get("reasoning", []):
@@ -300,8 +384,10 @@ class AgentService:
                 )
 
             response_contract["traceability"] = traceability
-            response_contract = self.response_composer.compose(response_contract)
+            response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
             response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
+            trace_context.finalize(output=response_contract, metadata={"result": "vendor_investigation"})
+            traceability["langfuse"] = trace_context.as_traceability()
             return response_contract
 
         structured_intent = self.intent_service.extract(
@@ -309,6 +395,7 @@ class AgentService:
             domain="transaction",
             entity="transaction",
             allowed_intents=TRANSACTION_ALLOWED_INTENTS,
+            trace_context=trace_context,
         )
         response_contract["intent"] = structured_intent
         self.traceability_service.record_reasoning(
@@ -329,7 +416,10 @@ class AgentService:
                 traceability,
                 "Query was rejected because the extracted intent was unsupported.",
             )
-            return self.response_composer.compose(response_contract)
+            response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
+            trace_context.finalize(output=response_contract, metadata={"result": "unsupported_query"})
+            traceability["langfuse"] = trace_context.as_traceability()
+            return response_contract
 
         self.traceability_service.record_agent(
             traceability,
@@ -337,7 +427,7 @@ class AgentService:
             "Structured intent mapped to transaction retrieval.",
         )
 
-        transaction_result = execute_transaction_query(self.db, query, page=page, page_size=page_size)
+        transaction_result = execute_transaction_query(self.db, query, page=page, page_size=page_size, trace_context=trace_context)
         response_contract["structured_evidence"] = list(transaction_result.get("results", []))
 
         if not transaction_result.get("success", False):
@@ -353,7 +443,10 @@ class AgentService:
                 traceability,
                 "Transaction retrieval did not return a supported result set.",
             )
-            return self.response_composer.compose(response_contract)
+            response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
+            trace_context.finalize(output=response_contract, metadata={"result": "transaction_retrieval_failed"})
+            traceability["langfuse"] = trace_context.as_traceability()
+            return response_contract
 
         self.traceability_service.record_source(traceability, "transaction_master")
         self.traceability_service.record_reasoning(
@@ -365,6 +458,7 @@ class AgentService:
             query=query,
             structured_intent=structured_intent,
             transaction_results=response_contract["structured_evidence"],
+            trace_context=trace_context,
         )
         response_contract["document_evidence"] = list(document_result.get("documents", []))
 
@@ -391,6 +485,7 @@ class AgentService:
             structured_evidence=response_contract["structured_evidence"],
             document_evidence=response_contract["document_evidence"],
             sources=aggregated_sources,
+            trace_context=trace_context,
         )
         response_contract["structured_evidence"] = aggregator_output["structured_evidence"]
         response_contract["document_evidence"] = aggregator_output["document_evidence"]
@@ -424,8 +519,10 @@ class AgentService:
                 },
             )
 
-        response_contract = self.response_composer.compose(response_contract)
+        response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
         response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
+        trace_context.finalize(output=response_contract, metadata={"result": "transaction_query"})
+        traceability["langfuse"] = trace_context.as_traceability()
         return response_contract
 
     def _top_vendor_ids(self, transaction_rows: list[dict[str, Any]], limit: int = 3) -> list[str]:

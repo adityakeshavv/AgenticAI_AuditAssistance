@@ -36,11 +36,17 @@ class VendorInvestigationService(BaseInvestigationService):
             return None
         return match.group(0).replace(" ", "-")
 
-    def investigate(self, *, query: str, vendor_id: str) -> dict[str, Any]:
+    def investigate(self, *, query: str, vendor_id: str, trace_context: Any | None = None) -> dict[str, Any]:
+        span = trace_context.begin_span(
+            "vendor_investigation_agent",
+            input_payload={"query": query, "vendor_id": vendor_id},
+            metadata={"service": "VendorInvestigationService"},
+        ) if trace_context else None
+
         bundle = self.vendor_service.build_bundle(vendor_id)
         vendor = bundle["vendor"]
         if not vendor:
-            return {
+            result = {
                 "success": False,
                 "reason": "vendor_not_found",
                 "message": f"Vendor {vendor_id} was not found.",
@@ -76,6 +82,9 @@ class VendorInvestigationService(BaseInvestigationService):
                 "final_response": f"Vendor {vendor_id} was not found.",
                 "reasoning": [f"Vendor lookup failed for {vendor_id}."],
             }
+            if span:
+                span.finish(output=result, metadata={"status": "not_found"})
+            return result
 
         structured_intent = {
             "original_query": query,
@@ -94,6 +103,7 @@ class VendorInvestigationService(BaseInvestigationService):
             query=query,
             structured_intent=structured_intent,
             transaction_results=bundle["transactions"],
+            trace_context=trace_context,
         )
 
         structured_evidence = self._build_structured_evidence(bundle)
@@ -107,12 +117,14 @@ class VendorInvestigationService(BaseInvestigationService):
                 "audit_finding",
                 *document_result.get("sources", []),
             ],
+            trace_context=trace_context,
         )
 
         risk = self.risk_scoring_service.score(
             finding={"finding_title": "Vendor Investigation Summary", "finding_summary": vendor["vendor_name"]},
             structured_evidence=aggregated["structured_evidence"],
             document_evidence=aggregated["document_evidence"],
+            trace_context=trace_context,
         )
 
         metrics = self.calculate_metrics(
@@ -160,7 +172,7 @@ class VendorInvestigationService(BaseInvestigationService):
             "supporting_documents": supporting_documents,
         }
 
-        return {
+        result = {
             "success": True,
             "intent": structured_intent,
             "entity_type": "vendor",
@@ -189,6 +201,21 @@ class VendorInvestigationService(BaseInvestigationService):
                 "Evidence was aggregated and scored for vendor investigation.",
             ],
         }
+        if span:
+            span.finish(
+                output={
+                    "success": True,
+                    "risk_rating": result["risk_rating"],
+                    "transaction_count": len(result["structured_evidence"]),
+                    "document_count": len(result["document_evidence"]),
+                },
+                metadata={
+                    "risk_rating": result["risk_rating"],
+                    "transaction_count": len(result["structured_evidence"]),
+                    "document_count": len(result["document_evidence"]),
+                },
+            )
+        return result
 
     def _build_structured_evidence(self, bundle: dict[str, Any]) -> list[dict[str, Any]]:
         evidence: list[dict[str, Any]] = []

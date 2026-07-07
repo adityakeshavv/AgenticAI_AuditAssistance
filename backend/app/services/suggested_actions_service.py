@@ -115,29 +115,42 @@ class SuggestedActionsService:
 
     @staticmethod
     def _deterministic_suggest(r: dict[str, Any]) -> list[dict[str, str]]:
-        actions: list[dict[str, str]] = []
+        domain_actions: list[dict[str, str]] = []
+        general_actions: list[dict[str, str]] = []
 
         has_docs    = bool(r.get("document_evidence") or r.get("supporting_documents"))
         has_vendor  = bool(r.get("vendor_summary") or r.get("entity_type") == "vendor")
         has_tx      = bool(r.get("structured_evidence"))
         has_find    = bool(r.get("key_findings"))
         risk        = (r.get("risk_rating") or "LOW").upper()
+        agents_used = set(r.get("agents_used") or [])
+        has_compliance = "compliance_agent" in agents_used
+        has_approval   = "approval_agent" in agents_used
+        has_expense    = "expense_agent" in agents_used
+
+        if has_compliance:
+            domain_actions.append({"id": "review_compliance_framework", "label": "Review Compliance Framework", "description": "Check which regulatory framework this compliance record relates to."})
+        if has_approval:
+            domain_actions.append({"id": "review_approval_chain", "label": "Review Approval Chain", "description": "Walk through the full approval chain for this transaction."})
+        if has_expense:
+            domain_actions.append({"id": "review_expense_policy", "label": "Review Expense Policy", "description": "Check the travel/expense policy this claim was evaluated against."})
 
         if has_find:
-            actions.append(_DETERMINISTIC_ACTIONS[0])   # summarise findings
+            general_actions.append(_DETERMINISTIC_ACTIONS[0])   # summarise findings
         if has_docs:
-            actions.append(_DETERMINISTIC_ACTIONS[1])   # show citations
+            general_actions.append(_DETERMINISTIC_ACTIONS[1])   # show citations
         if risk in ("HIGH", "CRITICAL", "MEDIUM"):
-            actions.append(_DETERMINISTIC_ACTIONS[2])   # explain risk
+            general_actions.append(_DETERMINISTIC_ACTIONS[2])   # explain risk
         if has_vendor:
-            actions.append(_DETERMINISTIC_ACTIONS[4])   # investigate vendor
+            general_actions.append(_DETERMINISTIC_ACTIONS[4])   # investigate vendor
         if has_tx:
-            actions.append(_DETERMINISTIC_ACTIONS[6])   # show flagged
+            general_actions.append(_DETERMINISTIC_ACTIONS[6])   # show flagged
         if has_docs:
-            actions.append(_DETERMINISTIC_ACTIONS[9])   # open document
+            general_actions.append(_DETERMINISTIC_ACTIONS[9])   # open document
         if has_find:
-            actions.append(_DETERMINISTIC_ACTIONS[7])   # generate audit report
+            general_actions.append(_DETERMINISTIC_ACTIONS[7])   # generate audit report
 
+        actions = domain_actions + general_actions
         if not actions:
             actions = _DETERMINISTIC_ACTIONS[:4]
 

@@ -24,12 +24,16 @@ const PIPELINE_DEFINITIONS: Record<string, { description: string; purpose: strin
     purpose: 'Looks up vendor records, risk scores, payment history, and compliance flags.',
   },
   'Compliance Agent': {
-    description: 'Checks applicable policy and regulatory rules.',
-    purpose: 'Evaluates whether the retrieved data violates company policy, regulatory thresholds, or known fraud patterns.',
+    description: 'Reviews vendor compliance records and certification status.',
+    purpose: 'Queries compliance records for expired certifications, non-compliant status, and regulatory framework violations (SOX, GDPR, ISO 27001, etc).',
   },
   'Approval Agent': {
-    description: 'Validates approval chains and authority levels.',
-    purpose: 'Checks whether transactions were properly approved within authorization limits.',
+    description: 'Analyses approval workflows and authority limits.',
+    purpose: 'Checks whether transactions exceeded approver authority limits, were escalated, or were rejected.',
+  },
+  'Expense Agent': {
+    description: 'Reviews employee expense claims and policy compliance.',
+    purpose: 'Identifies flagged expense claims, missing receipts, and travel/expense policy violations.',
   },
   'Document Retrieval Agent': {
     description: 'Performs semantic search over the enterprise document store.',

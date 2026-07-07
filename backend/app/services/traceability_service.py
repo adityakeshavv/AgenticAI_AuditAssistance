@@ -11,6 +11,12 @@ class TraceabilityService:
             "sources_used": [],
             "evidence_used": [],
             "reasoning_path": [],
+            "langfuse": {
+                "enabled": False,
+                "trace_id": None,
+                "trace_url": None,
+                "session_id": None,
+            },
         }
 
     def record_agent(self, traceability: dict[str, Any], agent: str, reason: str) -> None:
@@ -25,6 +31,22 @@ class TraceabilityService:
 
     def record_reasoning(self, traceability: dict[str, Any], reasoning: str) -> None:
         self._append_unique(traceability, "reasoning_path", reasoning)
+
+    def attach_langfuse(
+        self,
+        traceability: dict[str, Any],
+        *,
+        enabled: bool,
+        trace_id: str | None = None,
+        trace_url: str | None = None,
+        session_id: str | None = None,
+    ) -> None:
+        traceability["langfuse"] = {
+            "enabled": enabled,
+            "trace_id": trace_id,
+            "trace_url": trace_url,
+            "session_id": session_id,
+        }
 
     def _append_unique(self, traceability: dict[str, Any], key: str, value: str) -> None:
         items = traceability.setdefault(key, [])

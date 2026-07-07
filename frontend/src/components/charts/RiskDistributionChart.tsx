@@ -40,8 +40,8 @@ export function RiskDistributionChart({ data = fallbackData }: { data?: typeof f
             offset += dash;
             return seg;
           })}
-          <text x="60" y="57" textAnchor="middle" fill="#e8f0fe" fontSize="18" fontWeight="800">{total}</text>
-          <text x="60" y="73" textAnchor="middle" fill="#8fa8cc" fontSize="10">cases</text>
+          <text x="60" y="57" textAnchor="middle" fill="#132033" fontSize="18" fontWeight="800">{total}</text>
+          <text x="60" y="73" textAnchor="middle" fill="#4d5a73" fontSize="10">cases</text>
         </svg>
         <div className="donut-legend">
           {data.map((item) => (

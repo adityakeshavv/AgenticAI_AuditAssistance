@@ -29,9 +29,21 @@ class FindingGenerationService:
         query: str | None = None,
         citations: list[dict[str, Any]] | None = None,
         investigation_context: dict[str, Any] | None = None,
+        trace_context: Any | None = None,
     ) -> dict[str, Any]:
+        finding_span = trace_context.begin_span(
+            "finding_generation",
+            input_payload={
+                "query": query,
+                "intent": intent or {},
+                "structured_evidence_count": len(structured_evidence),
+                "document_evidence_count": len(document_evidence),
+            },
+            metadata={"service": "FindingGenerationService"},
+        ) if trace_context else None
+
         if not structured_evidence and not document_evidence:
-            return self._normalize_finding(
+            finding = self._normalize_finding(
                 {
                     "title": "No Significant Findings",
                     "summary": "No structured evidence or supporting document evidence was found.",
@@ -49,6 +61,9 @@ class FindingGenerationService:
                     "supporting_documents": [],
                 }
             )
+            if finding_span:
+                finding_span.finish(output=finding, metadata={"title": finding.get("title"), "mode": "deterministic_no_evidence"})
+            return finding
 
         deterministic = self._generate_deterministic(
             structured_evidence=structured_evidence,
@@ -59,7 +74,10 @@ class FindingGenerationService:
 
         if not self.settings.openai_api_key:
             logger.warning("OPENAI_API_KEY is not configured. Falling back to deterministic finding generation.")
-            return self._normalize_finding(deterministic)
+            finding = self._normalize_finding(deterministic)
+            if finding_span:
+                finding_span.finish(output=finding, metadata={"title": finding.get("title"), "mode": "deterministic"})
+            return finding
 
         try:
             llm_finding = self._generate_llm_finding(
@@ -70,11 +88,18 @@ class FindingGenerationService:
                 citations=citations or [],
                 investigation_context=investigation_context or {},
                 deterministic=deterministic,
+                trace_context=trace_context,
             )
-            return self._normalize_finding({**deterministic, **llm_finding})
+            finding = self._normalize_finding({**deterministic, **llm_finding})
+            if finding_span:
+                finding_span.finish(output=finding, metadata={"title": finding.get("title"), "mode": "llm"})
+            return finding
         except Exception as exc:
             logger.warning("LLM-based finding generation failed. Falling back to deterministic logic: %s", exc)
-            return self._normalize_finding(deterministic)
+            finding = self._normalize_finding(deterministic)
+            if finding_span:
+                finding_span.finish(output=finding, metadata={"title": finding.get("title"), "mode": "fallback"}, error=str(exc))
+            return finding
 
     def _generate_deterministic(
         self,
@@ -171,6 +196,7 @@ class FindingGenerationService:
         citations: list[dict[str, Any]],
         investigation_context: dict[str, Any],
         deterministic: dict[str, Any],
+        trace_context: Any | None = None,
     ) -> dict[str, Any]:
         finding_messages = build_finding_generation_messages(
             query=query,
@@ -196,9 +222,9 @@ class FindingGenerationService:
             investigation_context=investigation_context,
         )
 
-        finding_output = self._call_llm_json(finding_messages)
-        recommendation_output = self._call_llm_json(recommendation_messages)
-        narrative_output = self._call_llm_json(narrative_messages)
+        finding_output = self._call_llm_json(finding_messages, trace_context=trace_context, span_name="finding_generation_llm")
+        recommendation_output = self._call_llm_json(recommendation_messages, trace_context=trace_context, span_name="recommendation_generation_llm")
+        narrative_output = self._call_llm_json(narrative_messages, trace_context=trace_context, span_name="narrative_generation_llm")
 
         return {
             "title": str(finding_output.get("title") or deterministic.get("title") or deterministic.get("finding_title") or "Evidence Retrieved"),
@@ -393,13 +419,24 @@ class FindingGenerationService:
             parts.append(f"Investigation documents: {', '.join(investigation_documents)}.")
         return " ".join(parts) if parts else "No supporting documents were linked."
 
-    def _call_llm_json(self, messages: list[dict[str, str]]) -> dict[str, Any]:
+    def _call_llm_json(
+        self,
+        messages: list[dict[str, str]],
+        *,
+        trace_context: Any | None = None,
+        span_name: str = "llm_generation",
+    ) -> dict[str, Any]:
         try:
             from openai import OpenAI
         except ImportError as exc:
             raise RuntimeError("openai package is not installed. Run pip install -r backend/requirements.txt.") from exc
 
         client = OpenAI(api_key=self.settings.openai_api_key)
+        llm_span = trace_context.begin_span(
+            span_name,
+            input_payload=messages,
+            metadata={"service": "FindingGenerationService", "model": self.settings.openai_model},
+        ) if trace_context else None
         response = client.chat.completions.create(
             model=self.settings.openai_model,
             temperature=0,
@@ -409,6 +446,19 @@ class FindingGenerationService:
         content = response.choices[0].message.content
         if not content:
             raise ValueError("LLM returned an empty response.")
+        usage = getattr(response, "usage", None)
+        usage_payload = {}
+        if usage is not None:
+            usage_payload = {
+                "prompt_tokens": getattr(usage, "prompt_tokens", None),
+                "completion_tokens": getattr(usage, "completion_tokens", None),
+                "total_tokens": getattr(usage, "total_tokens", None),
+            }
+        if llm_span:
+            llm_span.finish(
+                output=content,
+                metadata={"service": "FindingGenerationService", "usage": usage_payload, "model": self.settings.openai_model},
+            )
         return self._parse_llm_json(content)
 
     @staticmethod

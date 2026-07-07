@@ -11,11 +11,11 @@ interface Props {
 
 function statusStyle(s: WorkflowStatus) {
   switch (s) {
-    case 'Completed': return { bg: 'rgba(16,185,129,0.1)', color: '#34d399', border: 'rgba(16,185,129,0.3)' };
-    case 'Active':    return { bg: 'rgba(59,130,246,0.1)', color: '#93c5fd', border: 'rgba(59,130,246,0.3)' };
-    case 'Skipped':   return { bg: 'rgba(100,116,139,0.1)', color: '#94a3b8', border: 'rgba(100,116,139,0.2)' };
-    case 'Failed':    return { bg: 'rgba(239,68,68,0.1)', color: '#f87171', border: 'rgba(239,68,68,0.3)' };
-    default:          return { bg: 'rgba(245,158,11,0.1)', color: '#fbbf24', border: 'rgba(245,158,11,0.3)' };
+    case 'Completed': return { bg: 'rgba(24,167,125,0.1)', color: '#0f8a66', border: 'rgba(24,167,125,0.28)' };
+    case 'Active':    return { bg: 'rgba(95,111,232,0.1)', color: '#5f6fe8', border: 'rgba(95,111,232,0.28)' };
+    case 'Skipped':   return { bg: 'rgba(100,116,139,0.1)', color: '#64748b', border: 'rgba(100,116,139,0.2)' };
+    case 'Failed':    return { bg: 'rgba(217,79,112,0.1)', color: '#c0264d', border: 'rgba(217,79,112,0.28)' };
+    default:          return { bg: 'rgba(217,119,6,0.1)', color: '#b45309', border: 'rgba(217,119,6,0.28)' };
   }
 }
 

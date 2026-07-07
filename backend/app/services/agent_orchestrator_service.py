@@ -10,6 +10,9 @@ from app.services.evidence_aggregator_service import EvidenceAggregatorService
 from app.services.investigation_planner_service import InvestigationPlannerService
 from app.services.transaction_service import execute_transaction_query
 from app.services.vendor_investigation_service import VendorInvestigationService
+from app.services.compliance_service import execute_compliance_query
+from app.services.approval_service import execute_approval_query
+from app.services.expense_service import execute_expense_query
 
 
 class AgentOrchestratorService:
@@ -36,6 +39,7 @@ class AgentOrchestratorService:
         structured_intent: dict[str, Any] | None = None,
         page: int = 1,
         page_size: int = 10,
+        trace_context: Any | None = None,
     ) -> dict[str, Any]:
         structured_intent = structured_intent or {}
         plan_steps = list(investigation_plan.get("plan", []))
@@ -43,6 +47,7 @@ class AgentOrchestratorService:
         execution_metadata: list[dict[str, Any]] = []
         transaction_rows: list[dict[str, Any]] = []
         vendor_investigations: list[dict[str, Any]] = []
+        structured_evidence_extra: list[dict[str, Any]] = []
         document_result: dict[str, Any] = {"documents": [], "sources": []}
         transaction_intent: dict[str, Any] = structured_intent
 
@@ -54,7 +59,13 @@ class AgentOrchestratorService:
             started_at = self._timestamp()
             if agent == "transaction_agent":
                 execution_query = self._resolve_execution_query(query=query, step=step)
-                result = execute_transaction_query(self.db, execution_query, page=page, page_size=page_size)
+                result = execute_transaction_query(
+                    self.db,
+                    execution_query,
+                    page=page,
+                    page_size=page_size,
+                    trace_context=trace_context,
+                )
                 transaction_rows = list(result.get("results", [])) if result.get("success", False) else []
                 transaction_intent = result.get("structured_intent", transaction_intent) or transaction_intent
                 self._append_execution_metadata(
@@ -95,6 +106,7 @@ class AgentOrchestratorService:
                     vendor_result = self.vendor_investigation_service.investigate(
                         query=f"review vendor {vendor_id}",
                         vendor_id=vendor_id,
+                        trace_context=trace_context,
                     )
                     vendor_results.append(vendor_result)
                     if vendor_result.get("success"):
@@ -123,6 +135,7 @@ class AgentOrchestratorService:
                     query=query,
                     structured_intent=transaction_intent,
                     transaction_results=transaction_rows,
+                    trace_context=trace_context,
                 )
                 self._append_execution_metadata(
                     execution_metadata,
@@ -142,6 +155,57 @@ class AgentOrchestratorService:
                 )
                 continue
 
+            if agent == "compliance_agent":
+                execution_query = self._resolve_execution_query(query=query, step=step)
+                result = execute_compliance_query(self.db, execution_query, page=page, page_size=page_size)
+                compliance_rows = list(result.get("results", [])) if result.get("success", False) else []
+                if compliance_rows:
+                    structured_evidence_extra.extend(compliance_rows)
+                self._append_execution_metadata(
+                    execution_metadata,
+                    agent=agent,
+                    reason=step.get("reason"),
+                    started_at=started_at,
+                    result=result,
+                    inputs={"query": query, "execution_query": execution_query},
+                    status="completed" if result.get("success", False) else "failed",
+                )
+                continue
+
+            if agent == "approval_agent":
+                execution_query = self._resolve_execution_query(query=query, step=step)
+                result = execute_approval_query(self.db, execution_query, page=page, page_size=page_size)
+                approval_rows = list(result.get("results", [])) if result.get("success", False) else []
+                if approval_rows:
+                    structured_evidence_extra.extend(approval_rows)
+                self._append_execution_metadata(
+                    execution_metadata,
+                    agent=agent,
+                    reason=step.get("reason"),
+                    started_at=started_at,
+                    result=result,
+                    inputs={"query": query, "execution_query": execution_query},
+                    status="completed" if result.get("success", False) else "failed",
+                )
+                continue
+
+            if agent == "expense_agent":
+                execution_query = self._resolve_execution_query(query=query, step=step)
+                result = execute_expense_query(self.db, execution_query, page=page, page_size=page_size)
+                expense_rows = list(result.get("results", [])) if result.get("success", False) else []
+                if expense_rows:
+                    structured_evidence_extra.extend(expense_rows)
+                self._append_execution_metadata(
+                    execution_metadata,
+                    agent=agent,
+                    reason=step.get("reason"),
+                    started_at=started_at,
+                    result=result,
+                    inputs={"query": query, "execution_query": execution_query},
+                    status="completed" if result.get("success", False) else "failed",
+                )
+                continue
+
             self._append_execution_metadata(
                 execution_metadata,
                 agent=agent,
@@ -152,7 +216,7 @@ class AgentOrchestratorService:
                 status="skipped",
             )
 
-        structured_evidence = list(transaction_rows)
+        structured_evidence = list(transaction_rows) + list(structured_evidence_extra)
         document_evidence = list(document_result.get("documents", []))
         aggregated_sources = ["transaction_master"]
         if document_evidence:
@@ -166,7 +230,7 @@ class AgentOrchestratorService:
 
         structured_evidence = self._dedupe_records(
             structured_evidence,
-            fields=("source_type", "transaction_id", "vendor_id", "contract_id", "finding_id", "approval_id"),
+            fields=("source_type", "transaction_id", "vendor_id", "contract_id", "finding_id", "approval_id", "compliance_id", "claim_id"),
         )
         document_evidence = self._dedupe_records(document_evidence, fields=("document_id",))
 
@@ -174,6 +238,7 @@ class AgentOrchestratorService:
             structured_evidence=structured_evidence,
             document_evidence=document_evidence,
             sources=aggregated_sources,
+            trace_context=trace_context,
         )
 
         return {

@@ -15,7 +15,17 @@ class ResponseComposerService:
         self.recommendation_service = RecommendationService()
         self.response_evaluation_service = ResponseEvaluationService()
 
-    def compose(self, response_contract: dict[str, Any]) -> dict[str, Any]:
+    def compose(self, response_contract: dict[str, Any], trace_context: Any | None = None) -> dict[str, Any]:
+        compose_span = trace_context.begin_span(
+            "response_composition",
+            input_payload={
+                "query": response_contract.get("query", ""),
+                "entity_type": response_contract.get("entity_type"),
+                "entity_id": response_contract.get("entity_id"),
+            },
+            metadata={"service": "ResponseComposerService"},
+        ) if trace_context else None
+
         structured_evidence = list(response_contract.get("structured_evidence", []))
         document_evidence = list(response_contract.get("document_evidence", []))
         intent = response_contract.get("intent", {})
@@ -30,12 +40,14 @@ class ResponseComposerService:
                 query=query,
                 citations=list(response_contract.get("citations", [])),
                 investigation_context=self._build_investigation_context(response_contract),
+                trace_context=trace_context,
             )
         finding = self._normalize_finding(finding)
         risk = self.risk_scoring_service.score(
             finding=finding,
             structured_evidence=structured_evidence,
             document_evidence=document_evidence,
+            trace_context=trace_context,
         )
         response_contract["risk_rating"] = risk["risk_rating"]
         response_contract["risk_score"] = risk["risk_score"]
@@ -149,7 +161,21 @@ class ResponseComposerService:
         response_contract["evaluation"] = self.response_evaluation_service.evaluate(
             query=query,
             response_contract=response_contract,
+            trace_context=trace_context,
         )
+        if compose_span:
+            compose_span.finish(
+                output={
+                    "final_response_length": len(str(final_response)),
+                    "finding_title": finding.get("finding_title"),
+                    "risk_rating": response_contract.get("risk_rating"),
+                },
+                metadata={
+                    "finding_title": finding.get("finding_title"),
+                    "risk_rating": response_contract.get("risk_rating"),
+                    "risk_score": response_contract.get("risk_score"),
+                },
+            )
         return response_contract
 
     def _format_supporting_documents(self, supporting_documents: list[dict[str, Any]]) -> str:

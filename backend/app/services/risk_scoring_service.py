@@ -10,7 +10,18 @@ class RiskScoringService:
         finding: dict[str, Any] | None = None,
         structured_evidence: list[dict[str, Any]],
         document_evidence: list[dict[str, Any]],
+        trace_context: Any | None = None,
     ) -> dict[str, Any]:
+        span = trace_context.begin_span(
+            "risk_scoring",
+            input_payload={
+                "finding_title": (finding or {}).get("finding_title") if isinstance(finding, dict) else None,
+                "structured_count": len(structured_evidence),
+                "document_count": len(document_evidence),
+            },
+            metadata={"service": "RiskScoringService"},
+        ) if trace_context else None
+
         risk_score = 0
         risk_drivers: list[str] = []
 
@@ -26,11 +37,14 @@ class RiskScoringService:
         evidence_volume_score, evidence_volume_driver = self._evidence_volume_score(len(structured_evidence))
 
         if not self._has_meaningful_evidence(finding, structured_evidence, document_evidence):
-            return {
+            result = {
                 "risk_rating": "LOW",
                 "risk_score": 0,
                 "risk_drivers": [],
             }
+            if span:
+                span.finish(output=result, metadata=result)
+            return result
 
         if flagged_transactions:
             flagged_score, flagged_driver = self._flagged_transaction_score(len(flagged_transactions))
@@ -82,11 +96,14 @@ class RiskScoringService:
             risk_drivers.append("Multiple supporting documents identified")
 
         risk_rating = self._rating_from_score(risk_score)
-        return {
+        result = {
             "risk_rating": risk_rating,
             "risk_score": risk_score,
             "risk_drivers": risk_drivers,
         }
+        if span:
+            span.finish(output=result, metadata=result)
+        return result
 
     def _flagged_transactions(self, structured_evidence: list[dict[str, Any]]) -> list[dict[str, Any]]:
         return [row for row in structured_evidence if str(row.get("status", "")).upper() == "FLAGGED"]

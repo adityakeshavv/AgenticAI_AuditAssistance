@@ -23,6 +23,7 @@ def execute_transaction_query(
     *,
     page: int = DEFAULT_PAGE,
     page_size: int = DEFAULT_PAGE_SIZE,
+    trace_context: Any | None = None,
 ) -> dict[str, Any]:
     intent_service = StructuredIntentService()
     structured_intent = intent_service.extract(
@@ -30,6 +31,7 @@ def execute_transaction_query(
         domain="transaction",
         entity="transaction",
         allowed_intents=TRANSACTION_ALLOWED_INTENTS,
+        trace_context=trace_context,
     )
 
     if not structured_intent.get("supported"):
@@ -88,6 +90,17 @@ def execute_transaction_query(
             ],
         }
 
+    sql_span = trace_context.begin_span(
+        "transaction_sql_execution",
+        input_payload={
+            "structured_intent": structured_intent,
+            "intent": intent,
+            "page": page,
+            "page_size": page_size,
+        },
+        metadata={"service": "transaction_service"},
+    ) if trace_context else None
+
     generated_sql = compile_sql(statement, db)
     transactions = db.scalars(statement).all()
     result_count = len(transactions)
@@ -98,6 +111,19 @@ def execute_transaction_query(
         generated_sql=generated_sql,
         results=results,
     )
+    if sql_span:
+        sql_span.finish(
+            output={
+                "generated_sql": generated_sql,
+                "result_count": result_count,
+                "validation": validation,
+            },
+            metadata={
+                "generated_sql": generated_sql,
+                "result_count": result_count,
+                "validation_passed": validation.get("passed"),
+            },
+        )
 
     return {
         "success": True,

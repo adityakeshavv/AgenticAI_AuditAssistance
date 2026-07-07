@@ -18,6 +18,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.services.agent_service import AgentService
+from app.services.database_connector_service import DatabaseConnectorService
 from app.services.conversation_memory_service import ConversationMemoryService
 from app.services.conversation_context_manager import ConversationContextManager
 from app.services.suggested_actions_service import SuggestedActionsService
@@ -38,6 +39,8 @@ class ChatService:
         session_id: str | None = None,
         page: int = 1,
         page_size: int = 10,
+        user_id: str | None = None,
+        connection_id: str | None = None,
     ) -> dict[str, Any]:
         # 1. Get / create session
         session_id, _session = ConversationMemoryService.get_or_create(session_id)
@@ -54,57 +57,59 @@ class ChatService:
         )
 
         # 3. Run audit agent pipeline (with context injected into planner)
-        agent_svc = AgentService(self.db)
-        # Patch the planner so it receives conversation context
-        _original_plan = agent_svc.investigation_planner.plan
+        connector = DatabaseConnectorService(self.db)
+        with connector.open_session(user_id=user_id or "anonymous", connection_id=connection_id) as data_db:
+            agent_svc = AgentService(data_db)
+            # Patch the planner so it receives conversation context
+            _original_plan = agent_svc.investigation_planner.plan
 
-        def _plan_with_context(query: str, **kwargs: Any) -> dict[str, Any]:
-            existing_ctx = kwargs.get("investigation_context") or {}
-            existing_ctx["conversation_context"] = memory_context
-            kwargs["investigation_context"] = existing_ctx
-            return _original_plan(query, **kwargs)
+            def _plan_with_context(query: str, **kwargs: Any) -> dict[str, Any]:
+                existing_ctx = kwargs.get("investigation_context") or {}
+                existing_ctx["conversation_context"] = memory_context
+                kwargs["investigation_context"] = existing_ctx
+                return _original_plan(query, **kwargs)
 
-        agent_svc.investigation_planner.plan = _plan_with_context  # type: ignore[method-assign]
+            agent_svc.investigation_planner.plan = _plan_with_context  # type: ignore[method-assign]
 
-        audit_response = agent_svc.run(
-            query=resolved_query,
-            page=page,
-            page_size=page_size,
-        )
+            audit_response = agent_svc.run(
+                query=resolved_query,
+                page=page,
+                page_size=page_size,
+            )
 
         # 4. Generate suggested actions
-        suggested_actions = self.suggested_actions_service.suggest(
-            query=resolved_query,
-            response_contract=audit_response,
-            memory_context=memory_context,
-        )
+            suggested_actions = self.suggested_actions_service.suggest(
+                query=resolved_query,
+                response_contract=audit_response,
+                memory_context=memory_context,
+            )
 
-        # 5. Persist turn
-        ConversationMemoryService.add_turn(
-            session_id,
-            user_message=message,
-            assistant_response=audit_response,
-        )
+            # 5. Persist turn
+            ConversationMemoryService.add_turn(
+                session_id,
+                user_message=message,
+                assistant_response=audit_response,
+            )
 
-        # 6. Build investigation state for frontend
-        investigation_state = ConversationMemoryService.get_investigation_state(session_id)
-        # Convert sets to lists for JSON serialisation
-        investigation_state["entity_ids"] = list(investigation_state.get("entity_ids", set()))
-        investigation_state["transaction_ids"] = list(investigation_state.get("transaction_ids", set()))
+            # 6. Build investigation state for frontend
+            investigation_state = ConversationMemoryService.get_investigation_state(session_id)
+            # Convert sets to lists for JSON serialisation
+            investigation_state["entity_ids"] = list(investigation_state.get("entity_ids", set()))
+            investigation_state["transaction_ids"] = list(investigation_state.get("transaction_ids", set()))
 
-        # 7. Return enriched response
-        return {
-            **audit_response,
-            # Conversation metadata
-            "session_id": session_id,
-            "is_followup": is_followup,
-            "resolved_query": resolved_query,
-            "original_query": message,
-            "injected_context": ctx.get("injected_context", {}),
-            # Suggested next actions
-            "suggested_actions": suggested_actions,
-            # Live investigation state
-            "investigation_state": investigation_state,
-            # Conversation history summary
-            "turn_count": len(ConversationMemoryService.get_session(session_id)["session"]["turns"]),
-        }
+            # 7. Return enriched response
+            return {
+                **audit_response,
+                # Conversation metadata
+                "session_id": session_id,
+                "is_followup": is_followup,
+                "resolved_query": resolved_query,
+                "original_query": message,
+                "injected_context": ctx.get("injected_context", {}),
+                # Suggested next actions
+                "suggested_actions": suggested_actions,
+                # Live investigation state
+                "investigation_state": investigation_state,
+                # Conversation history summary
+                "turn_count": len(ConversationMemoryService.get_session(session_id)["session"]["turns"]),
+            }

@@ -3,6 +3,7 @@ import logging
 from typing import Any, Protocol
 
 from app.core.config import get_settings
+from app.services.gemini_client_service import GeminiClientService
 
 
 logger = logging.getLogger(__name__)
@@ -13,6 +14,7 @@ VALID_AGENTS = {
     "vendor_agent",
     "compliance_agent",
     "approval_agent",
+    "expense_agent",
     "investigation_agent",
     "general_agent",
 }
@@ -29,14 +31,38 @@ class LLMRouterService:
     def __init__(self, fallback_router: FallbackRouter | None = None) -> None:
         self.settings = get_settings()
         self.fallback_router = fallback_router
+        self.gemini_client = GeminiClientService()
 
-    def route(self, query: str) -> dict[str, Any]:
+    def route(self, query: str, trace_context: Any | None = None) -> dict[str, Any]:
+        if self.settings.agent_runtime == "gemini_adk" and self.gemini_client.is_configured():
+            llm_span = None
+            try:
+                llm_span = trace_context.begin_span(
+                    "query_router_llm",
+                    input_payload={"system_prompt": self._system_prompt(), "user_prompt": query},
+                    metadata={"service": "LLMRouterService", "model": self.settings.gemini_model},
+                ) if trace_context else None
+                response_text = self.gemini_client.generate_json(
+                    system_prompt=self._system_prompt(),
+                    user_prompt=query,
+                    model=self.settings.gemini_model,
+                )
+                parsed = self._parse_response(response_text)
+                if llm_span:
+                    llm_span.finish(output=response_text, metadata={"service": "LLMRouterService", "model": self.settings.gemini_model})
+                logger.info("Gemini router selected %s with confidence %.2f", parsed["agent"], parsed["confidence"])
+                return parsed
+            except Exception as exc:
+                if llm_span:
+                    llm_span.finish(output={"error": str(exc)}, metadata={"service": "LLMRouterService", "model": self.settings.gemini_model}, error=str(exc))
+                logger.warning("Gemini router failed. Falling back to OpenAI/keyword router: %s", exc)
+
         if not self.settings.openai_api_key:
             logger.warning("OPENAI_API_KEY is not configured. Falling back to keyword router.")
             return self._fallback(query, "OPENAI_API_KEY is not configured.")
 
         try:
-            response_text = self._call_llm(query)
+            response_text = self._call_llm(query, trace_context=trace_context)
             parsed = self._parse_response(response_text)
             logger.info("LLM router selected %s with confidence %.2f", parsed["agent"], parsed["confidence"])
             return parsed
@@ -44,31 +70,69 @@ class LLMRouterService:
             logger.warning("LLM router failed. Falling back to keyword router: %s", exc)
             return self._fallback(query, f"LLM router failed: {exc}")
 
-    def _call_llm(self, query: str) -> str:
+    def _call_llm(self, query: str, trace_context: Any | None = None) -> str:
+        if self.settings.agent_runtime == "gemini_adk" and self.gemini_client.is_configured():
+            llm_span = trace_context.begin_span(
+                "query_router_llm",
+                input_payload={"system_prompt": self._system_prompt(), "user_prompt": query},
+                metadata={"service": "StructuredIntentService", "model": self.settings.gemini_model},
+            ) if trace_context else None
+            response_text = self.gemini_client.generate_json(
+                system_prompt=self._system_prompt(),
+                user_prompt=query,
+                model=self.settings.gemini_model,
+            )
+            if llm_span:
+                llm_span.finish(output=response_text, metadata={"service": "StructuredIntentService", "model": self.settings.gemini_model})
+            return response_text
+
         try:
             from openai import OpenAI
         except ImportError as exc:
             raise RuntimeError("openai package is not installed. Run pip install -r backend/requirements.txt.") from exc
 
         client = OpenAI(api_key=self.settings.openai_api_key)
-        response = client.chat.completions.create(
-            model=self.settings.openai_model,
-            temperature=0,
-            messages=[
-                {
-                    "role": "system",
-                    "content": self._system_prompt(),
-                },
-                {
-                    "role": "user",
-                    "content": query,
-                },
-            ],
-        )
+        llm_span = trace_context.begin_span(
+            "query_router_llm",
+            input_payload={"system_prompt": self._system_prompt(), "user_prompt": query},
+            metadata={"service": "LLMRouterService", "model": self.settings.openai_model},
+        ) if trace_context else None
+        try:
+            response = client.chat.completions.create(
+                model=self.settings.openai_model,
+                temperature=0,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": self._system_prompt(),
+                    },
+                    {
+                        "role": "user",
+                        "content": query,
+                    },
+                ],
+            )
+        except Exception as exc:
+            if llm_span:
+                llm_span.finish(output={"error": str(exc)}, metadata={"service": "LLMRouterService", "model": self.settings.openai_model}, error=str(exc))
+            raise
 
         content = response.choices[0].message.content
         if not content:
             raise ValueError("LLM returned an empty routing response.")
+        usage = getattr(response, "usage", None)
+        usage_payload = {}
+        if usage is not None:
+            usage_payload = {
+                "prompt_tokens": getattr(usage, "prompt_tokens", None),
+                "completion_tokens": getattr(usage, "completion_tokens", None),
+                "total_tokens": getattr(usage, "total_tokens", None),
+            }
+        if llm_span:
+            llm_span.finish(
+                output=content,
+                metadata={"service": "LLMRouterService", "usage": usage_payload, "model": self.settings.openai_model},
+            )
         return content
 
     def _parse_response(self, response_text: str) -> dict[str, Any]:
@@ -121,6 +185,7 @@ Available agents:
 - vendor_agent: vendors, suppliers, vendor risk, vendor profile, vendor status, vendor contracts.
 - compliance_agent: compliance status, expired certifications, certifications, policies, regulatory violations, compliance frameworks.
 - approval_agent: approvals, approvers, approval workflow, authority limits, who approved a transaction.
+- expense_agent: expense claims, travel policy violations, missing receipts, flagged expenses, reimbursement.
 - investigation_agent: audit investigations, findings, evidence, citations, traceability, finding support.
 - general_agent: use only when none of the above are appropriate.
 
@@ -148,13 +213,29 @@ class StructuredIntentService:
         domain: str,
         entity: str,
         allowed_intents: list[str],
+        trace_context: Any | None = None,
     ) -> dict[str, Any]:
+        extraction_span = trace_context.begin_span(
+            "query_router_intent",
+            input_payload={"query": query, "domain": domain, "entity": entity, "allowed_intents": allowed_intents},
+            metadata={"service": "StructuredIntentService"},
+        ) if trace_context else None
+
         if not self.settings.openai_api_key:
             logger.warning("OPENAI_API_KEY is not configured. Returning unsupported structured intent.")
-            return self._unsupported_intent(query, domain, entity, "OPENAI_API_KEY is not configured.")
+            unsupported = self._unsupported_intent(query, domain, entity, "OPENAI_API_KEY is not configured.")
+            if extraction_span:
+                extraction_span.finish(output=unsupported, metadata={"supported": False, "reason": unsupported.get("reason")})
+            return unsupported
 
         try:
-            response_text = self._call_llm(query, domain=domain, entity=entity, allowed_intents=allowed_intents)
+            response_text = self._call_llm(
+                query,
+                domain=domain,
+                entity=entity,
+                allowed_intents=allowed_intents,
+                trace_context=trace_context,
+            )
             parsed = self._parse_response(
                 response_text,
                 original_query=query,
@@ -163,18 +244,28 @@ class StructuredIntentService:
                 allowed_intents=allowed_intents,
             )
             logger.info("Intent extraction produced intent=%s supported=%s", parsed.get("intent"), parsed.get("supported"))
+            if extraction_span:
+                extraction_span.finish(output=parsed, metadata={"supported": parsed.get("supported"), "intent": parsed.get("intent")})
             return parsed
         except Exception as exc:
             logger.warning("Intent extraction failed. Returning unsupported structured intent: %s", exc)
-            return self._unsupported_intent(query, domain, entity, f"Intent extraction failed: {exc}")
+            unsupported = self._unsupported_intent(query, domain, entity, f"Intent extraction failed: {exc}")
+            if extraction_span:
+                extraction_span.finish(output=unsupported, metadata={"supported": False, "reason": unsupported.get("reason")}, error=str(exc))
+            return unsupported
 
-    def _call_llm(self, query: str, *, domain: str, entity: str, allowed_intents: list[str]) -> str:
+    def _call_llm(self, query: str, *, domain: str, entity: str, allowed_intents: list[str], trace_context: Any | None = None) -> str:
         try:
             from openai import OpenAI
         except ImportError as exc:
             raise RuntimeError("openai package is not installed. Run pip install -r backend/requirements.txt.") from exc
 
         client = OpenAI(api_key=self.settings.openai_api_key)
+        llm_span = trace_context.begin_span(
+            "query_router_llm",
+            input_payload={"system_prompt": self._system_prompt(domain=domain, entity=entity, allowed_intents=allowed_intents), "user_prompt": query},
+            metadata={"service": "StructuredIntentService", "model": self.settings.openai_model},
+        ) if trace_context else None
         response = client.chat.completions.create(
             model=self.settings.openai_model,
             temperature=0,
@@ -193,6 +284,19 @@ class StructuredIntentService:
         content = response.choices[0].message.content
         if not content:
             raise ValueError("LLM returned an empty intent extraction response.")
+        usage = getattr(response, "usage", None)
+        usage_payload = {}
+        if usage is not None:
+            usage_payload = {
+                "prompt_tokens": getattr(usage, "prompt_tokens", None),
+                "completion_tokens": getattr(usage, "completion_tokens", None),
+                "total_tokens": getattr(usage, "total_tokens", None),
+            }
+        if llm_span:
+            llm_span.finish(
+                output=content,
+                metadata={"service": "StructuredIntentService", "usage": usage_payload, "model": self.settings.openai_model},
+            )
         return content
 
     def _parse_response(
