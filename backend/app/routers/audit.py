@@ -18,6 +18,10 @@ def audit_query(
     current_user = Depends(get_current_user),
 ) -> AuditResponse:
     connector = DatabaseConnectorService(db)
-    with connector.open_session(user_id=current_user.user_id, connection_id=payload.connection_id) as data_db:
+    with connector.open_session(
+        user_id=current_user.user_id,
+        connection_id=payload.connection_id,
+        workspace_id=payload.workspace_id,
+    ) as data_db:
         service = AgentService(data_db)
         return service.run(query=payload.query, page=payload.page, page_size=payload.page_size)

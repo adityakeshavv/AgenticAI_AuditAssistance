@@ -99,6 +99,11 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AUTH_TOKEN_EXPIRY_MINUTES", "AUDIT_AUTH_TOKEN_EXPIRY_MINUTES"),
         description="Lifetime for signed application auth tokens.",
     )
+    admin_email_allowlist: str = Field(
+        default="",
+        validation_alias=AliasChoices("ADMIN_EMAILS", "AUDIT_ADMIN_EMAILS"),
+        description="Comma-separated list of email addresses that should receive admin access.",
+    )
     google_client_id: str = Field(
         default="",
         validation_alias=AliasChoices("GOOGLE_CLIENT_ID", "AUDIT_GOOGLE_CLIENT_ID"),

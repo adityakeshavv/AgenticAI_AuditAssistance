@@ -1,18 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AuthPage } from './components/AuthPage';
 import { AuditDashboard } from './components/AuditDashboard';
 import { DatabaseConnectionsPage } from './components/DatabaseConnectionsPage';
 import { AuditQueryPage } from './components/AuditQueryPage';
+import { WorkspaceManagementPage } from './components/WorkspaceManagementPage';
 import { ChatPage } from './components/chat/ChatPage';
 import { clearAuthSession, fetchCurrentUser, getStoredAuthToken, saveAuthSession } from './services/authApi';
+import { getSelectedDatabaseConnectionId, setSelectedDatabaseConnectionId } from './services/databaseConnectionsApi';
+import { getSelectedWorkspaceId, listWorkspaces, setSelectedWorkspaceId } from './services/workspacesApi';
 import type { AuthResponse, AuthUser } from './types/auth';
+import type { WorkspaceRecord } from './types/workspace';
 
-type Page = 'dashboard' | 'workspace' | 'chat' | 'connections';
+type Page = 'dashboard' | 'workspace' | 'chat' | 'connections' | 'workspaces' | 'admin';
 
 export default function App() {
   const [page, setPage] = useState<Page>('dashboard');
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [workspaces, setWorkspaces] = useState<WorkspaceRecord[]>([]);
+  const [activeWorkspaceId, setActiveWorkspaceIdState] = useState<string | null>(getSelectedWorkspaceId());
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -27,6 +33,7 @@ export default function App() {
         full_name: callbackName || callbackEmail || 'Google User',
         email: callbackEmail || 'user@example.com',
         auth_provider: 'GOOGLE',
+        role: 'user',
         is_active: true,
         last_login_at: null,
       });
@@ -59,6 +66,25 @@ export default function App() {
       .finally(() => setAuthLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (!authUser) return;
+    listWorkspaces()
+      .then((items) => {
+        setWorkspaces(items);
+        const current = getSelectedWorkspaceId();
+        const workspace = items.find((item) => item.workspace_id === current) || items.find((item) => item.is_default) || items[0] || null;
+        if (workspace) {
+          setActiveWorkspaceIdState(workspace.workspace_id);
+          setSelectedWorkspaceId(workspace.workspace_id);
+          const activeSource = workspace.active_connection_id || workspace.selected_connection_ids[0] || null;
+          setSelectedDatabaseConnectionId(activeSource);
+        }
+      })
+      .catch(() => {
+        setWorkspaces([]);
+      });
+  }, [authUser]);
+
   const handleAuthenticated = (session: AuthResponse) => {
     setAuthUser(session.user);
     setAuthLoading(false);
@@ -69,6 +95,24 @@ export default function App() {
     clearAuthSession();
     setAuthUser(null);
     setPage('dashboard');
+  };
+
+  const activeWorkspace = useMemo(
+    () => workspaces.find((item) => item.workspace_id === activeWorkspaceId) || null,
+    [activeWorkspaceId, workspaces],
+  );
+  const isAdmin = authUser?.role === 'admin';
+
+  const handleWorkspaceChange = (workspaceId: string) => {
+    const workspace = workspaces.find((item) => item.workspace_id === workspaceId) || null;
+    setActiveWorkspaceIdState(workspaceId || null);
+    setSelectedWorkspaceId(workspaceId || null);
+    if (workspace) {
+      const activeSource = workspace.active_connection_id || workspace.selected_connection_ids[0] || null;
+      setSelectedDatabaseConnectionId(activeSource);
+    } else {
+      setSelectedDatabaseConnectionId(null);
+    }
   };
 
   if (authLoading) {
@@ -125,9 +169,44 @@ export default function App() {
           >
             Connections
           </button>
+          <button
+            className={`topnav-tab${page === 'workspaces' ? ' active' : ''}`}
+            onClick={() => setPage('workspaces')}
+          >
+            Workspaces
+          </button>
+          {isAdmin && (
+            <button
+              className={`topnav-tab${page === 'admin' ? ' active' : ''}`}
+              onClick={() => setPage('admin')}
+            >
+              Admin
+            </button>
+          )}
         </div>
 
         <div className="topnav-actions">
+          <div style={{ display: 'grid', gap: '0.15rem', minWidth: 220 }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Active Workspace</span>
+            <select
+              className="input"
+              value={activeWorkspaceId || ''}
+              onChange={(e) => handleWorkspaceChange(e.target.value)}
+              style={{ minWidth: 220, padding: '0.55rem 0.75rem' }}
+            >
+              <option value="">No workspace selected</option>
+              {workspaces.map((workspace) => (
+                <option key={workspace.workspace_id} value={workspace.workspace_id}>
+                  {workspace.workspace_name}
+                </option>
+              ))}
+            </select>
+            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+              {activeWorkspace
+                ? `Source: ${activeWorkspace.active_connection_id || activeWorkspace.selected_connection_ids[0] || 'not set'}`
+                : 'Select a workspace to scope queries'}
+            </span>
+          </div>
           <div className="status-dot" title="System operational" />
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Operational</span>
           <div style={{ display: 'grid', gap: '0.1rem', textAlign: 'right' }}>
@@ -149,6 +228,14 @@ export default function App() {
       ) : page === 'connections' ? (
         <div className="page-content" style={{ overflow: 'auto' }}>
           <DatabaseConnectionsPage />
+        </div>
+      ) : page === 'workspaces' ? (
+        <div className="page-content" style={{ overflow: 'auto' }}>
+          <WorkspaceManagementPage />
+        </div>
+      ) : page === 'admin' ? (
+        <div className="page-content" style={{ overflow: 'auto' }}>
+          <DatabaseConnectionsPage isAdminView />
         </div>
       ) : (
         <div className="page-content" style={{ overflow: 'auto' }}>

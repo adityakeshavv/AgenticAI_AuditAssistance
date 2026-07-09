@@ -6,6 +6,7 @@ import { ChatBubble } from './ChatBubble';
 import { ChatInput } from './ChatInput';
 import { SuggestedActions } from './SuggestedActions';
 import { InvestigationSidebar } from './InvestigationSidebar';
+import { getSelectedWorkspaceId } from '../../services/workspacesApi';
 
 const STARTER_QUERIES = [
   'Investigate vendor VND-02731 for compliance issues',
@@ -31,6 +32,7 @@ export function ChatPage() {
   const [turnCount, setTurnCount] = useState(0);
   const [showSidebar, setShowSidebar] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const activeWorkspaceId = getSelectedWorkspaceId();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -125,6 +127,9 @@ export function ChatPage() {
             <h2 style={{ margin: '0.1rem 0 0', fontSize: '1rem', fontWeight: 700 }}>
               {sessionId ? `Session · Turn ${turnCount}` : 'New Investigation'}
             </h2>
+            <p className="small-copy" style={{ marginTop: '0.2rem' }}>
+              {activeWorkspaceId ? `Workspace scoped · ${activeWorkspaceId}` : 'No workspace selected'}
+            </p>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             {sessionId && (

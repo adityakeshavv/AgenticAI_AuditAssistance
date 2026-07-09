@@ -41,6 +41,7 @@ class ChatService:
         page_size: int = 10,
         user_id: str | None = None,
         connection_id: str | None = None,
+        workspace_id: str | None = None,
     ) -> dict[str, Any]:
         # 1. Get / create session
         session_id, _session = ConversationMemoryService.get_or_create(session_id)
@@ -58,7 +59,11 @@ class ChatService:
 
         # 3. Run audit agent pipeline (with context injected into planner)
         connector = DatabaseConnectorService(self.db)
-        with connector.open_session(user_id=user_id or "anonymous", connection_id=connection_id) as data_db:
+        with connector.open_session(
+            user_id=user_id or "anonymous",
+            connection_id=connection_id,
+            workspace_id=workspace_id,
+        ) as data_db:
             agent_svc = AgentService(data_db)
             # Patch the planner so it receives conversation context
             _original_plan = agent_svc.investigation_planner.plan

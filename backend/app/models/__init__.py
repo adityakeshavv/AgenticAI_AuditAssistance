@@ -8,6 +8,7 @@ from app.models.employee import EmployeeMaster
 from app.models.evidence import Evidence
 from app.models.expense import ExpenseClaim
 from app.models.finding import AuditFinding
+from app.models.audit_workspace import AuditWorkspace
 from app.models.investigation import AuditInvestigation
 from app.models.transaction import TransactionMaster
 from app.models.user import AppUser
@@ -17,6 +18,7 @@ __all__ = [
     "ApprovalWorkflow",
     "AuditFinding",
     "AuditInvestigation",
+    "AuditWorkspace",
     "ComplianceRecord",
     "Contract",
     "DepartmentMaster",

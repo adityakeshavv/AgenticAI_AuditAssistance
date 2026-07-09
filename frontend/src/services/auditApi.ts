@@ -1,6 +1,7 @@
 import type { AuditResponse } from '../types/audit';
 import { buildAuthHeaders } from './authApi';
 import { getSelectedDatabaseConnectionId } from './databaseConnectionsApi';
+import { getSelectedWorkspaceId } from './workspacesApi';
 
 export async function submitAuditQuery(query: string): Promise<AuditResponse> {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -14,12 +15,13 @@ export async function submitAuditQuery(query: string): Promise<AuditResponse> {
       'Content-Type': 'application/json',
       ...buildAuthHeaders(),
     },
-    body: JSON.stringify({
-      query,
-      page: 1,
-      page_size: 10,
-      connection_id: getSelectedDatabaseConnectionId(),
-    }),
+      body: JSON.stringify({
+        query,
+        page: 1,
+        page_size: 10,
+        connection_id: getSelectedDatabaseConnectionId(),
+        workspace_id: getSelectedWorkspaceId(),
+      }),
   });
 
   if (!response.ok) {
@@ -58,13 +60,14 @@ export async function sendChatMessage(
   const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/chat/message`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...buildAuthHeaders() },
-    body: JSON.stringify({
-      message,
-      session_id: sessionId,
-      page: 1,
-      page_size: 10,
-      connection_id: getSelectedDatabaseConnectionId(),
-    }),
+      body: JSON.stringify({
+        message,
+        session_id: sessionId,
+        page: 1,
+        page_size: 10,
+        connection_id: getSelectedDatabaseConnectionId(),
+        workspace_id: getSelectedWorkspaceId(),
+      }),
   });
 
   if (!response.ok) {

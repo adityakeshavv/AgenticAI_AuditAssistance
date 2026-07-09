@@ -10,6 +10,7 @@ class AuthUser(BaseModel):
     full_name: str
     email: str
     auth_provider: str
+    role: str = "user"
     is_active: bool = True
     last_login_at: datetime | None = None
 

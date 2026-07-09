@@ -3,6 +3,7 @@ export interface AuthUser {
   full_name: string;
   email: string;
   auth_provider: string;
+  role?: 'user' | 'admin';
   is_active: boolean;
   last_login_at: string | null;
 }
@@ -24,4 +25,3 @@ export interface SignupRequest {
   email: string;
   password: string;
 }
-

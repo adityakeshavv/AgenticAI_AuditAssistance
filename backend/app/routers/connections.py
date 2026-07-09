@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.dependencies.auth import get_current_user
+from app.dependencies.auth import get_current_user, require_connection_access
 from app.dependencies.database import get_db
 from app.schemas.auth import AuthUser
 from app.schemas.database_connection import (
@@ -71,7 +71,7 @@ def create_connection(
 def get_connection(
     connection_id: str,
     db: Session = Depends(get_db),
-    current_user: AuthUser = Depends(get_current_user),
+    current_user: AuthUser = Depends(require_connection_access),
 ) -> dict:
     svc = DatabaseConnectorService(db)
     connection = svc.get_connection(current_user.user_id, connection_id)
@@ -91,7 +91,7 @@ def get_connection(
 def list_schemas(
     connection_id: str,
     db: Session = Depends(get_db),
-    current_user: AuthUser = Depends(get_current_user),
+    current_user: AuthUser = Depends(require_connection_access),
 ) -> list[DatabaseConnectionSchemaInfo]:
     svc = DatabaseConnectorService(db)
     schemas = svc.list_schema_overview(user_id=current_user.user_id, connection_id=connection_id)
@@ -103,7 +103,7 @@ def list_tables(
     connection_id: str,
     schema_name: str | None = Query(default=None),
     db: Session = Depends(get_db),
-    current_user: AuthUser = Depends(get_current_user),
+    current_user: AuthUser = Depends(require_connection_access),
 ) -> list[DatabaseConnectionTableInfo]:
     svc = DatabaseConnectorService(db)
     tables = svc.list_table_overview(user_id=current_user.user_id, connection_id=connection_id, schema_name=schema_name)
@@ -115,7 +115,7 @@ def update_selection(
     connection_id: str,
     payload: DatabaseConnectionSelectionUpdate,
     db: Session = Depends(get_db),
-    current_user: AuthUser = Depends(get_current_user),
+    current_user: AuthUser = Depends(require_connection_access),
 ) -> dict:
     svc = DatabaseConnectorService(db)
     result = svc.update_selection(
@@ -138,7 +138,7 @@ def update_selection(
 def activate_connection(
     connection_id: str,
     db: Session = Depends(get_db),
-    current_user: AuthUser = Depends(get_current_user),
+    current_user: AuthUser = Depends(require_connection_access),
 ) -> dict:
     svc = DatabaseConnectorService(db)
     result = svc.activate_connection(user_id=current_user.user_id, connection_id=connection_id)
@@ -154,7 +154,7 @@ def activate_connection(
 def delete_connection(
     connection_id: str,
     db: Session = Depends(get_db),
-    current_user: AuthUser = Depends(get_current_user),
+    current_user: AuthUser = Depends(require_connection_access),
 ) -> dict:
     svc = DatabaseConnectorService(db)
     result = svc.delete_connection(user_id=current_user.user_id, connection_id=connection_id)

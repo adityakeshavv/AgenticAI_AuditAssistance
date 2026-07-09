@@ -29,6 +29,13 @@ from app.schemas.chat import (
     InvestigationState,
     SuggestedAction,
 )
+from app.schemas.workspace import (
+    WorkspaceCreate,
+    WorkspaceListResponse,
+    WorkspaceMutationResponse,
+    WorkspaceResponse,
+    WorkspaceSelectionUpdate,
+)
 
 __all__ = [
     "AuditQueryRequest",
@@ -58,4 +65,9 @@ __all__ = [
     "ChatResponse",
     "InvestigationState",
     "SuggestedAction",
+    "WorkspaceCreate",
+    "WorkspaceListResponse",
+    "WorkspaceMutationResponse",
+    "WorkspaceResponse",
+    "WorkspaceSelectionUpdate",
 ]

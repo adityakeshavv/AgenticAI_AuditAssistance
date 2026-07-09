@@ -8,6 +8,7 @@ class AuditQueryRequest(BaseModel):
     page: int = 1
     page_size: int = 10
     connection_id: str | None = None
+    workspace_id: str | None = None
 
 
 class TraceabilityRecord(BaseModel):

@@ -4,29 +4,22 @@ import base64
 import hashlib
 import logging
 from contextlib import contextmanager
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Iterator
 
-from cryptography.fernet import Fernet, InvalidToken
-from sqlalchemy import create_engine, inspect, text
-from sqlalchemy.engine import Engine, URL
+from cryptography.fernet import Fernet
+from sqlalchemy import inspect
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
+from app.crud import audit_workspace_crud
 from app.crud import database_connection_crud
 from app.models.database_connection import DatabaseConnection
+from app.services.connectors import ConnectionTestResult, get_connector, supported_database_types
 
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True)
-class ConnectionTestResult:
-    success: bool
-    message: str
-    schemas: list[dict[str, Any]]
-    tables: list[dict[str, Any]]
 
 
 class DatabaseConnectorService:
@@ -37,6 +30,9 @@ class DatabaseConnectorService:
 
     def list_connections(self, user_id: str) -> list[dict[str, Any]]:
         return [self.serialize_connection(connection) for connection in database_connection_crud.list_connections_for_user(self.db, user_id)]
+
+    def list_supported_database_types(self) -> list[dict[str, str]]:
+        return supported_database_types()
 
     def get_connection(self, user_id: str, connection_id: str) -> DatabaseConnection | None:
         return database_connection_crud.get_connection_by_id(self.db, connection_id, user_id=user_id)
@@ -86,19 +82,10 @@ class DatabaseConnectorService:
         }
 
     def test_connection(self, payload: dict[str, Any]) -> ConnectionTestResult:
+        database_type = str(payload.get("database_type", "postgresql")).strip().lower()
         try:
-            engine = self._build_engine_from_payload(payload)
-            with engine.connect() as connection:
-                connection.execute(text("SELECT 1"))
-                inspector = inspect(connection)
-                schemas = self._schema_overview(inspector)
-                tables = self._table_overview(inspector)
-            return ConnectionTestResult(
-                success=True,
-                message="Connection successful.",
-                schemas=schemas,
-                tables=tables,
-            )
+            connector = get_connector(database_type)
+            return connector.test_connection(payload)
         except Exception as exc:
             logger.warning("Database connection test failed: %s", exc)
             return ConnectionTestResult(
@@ -161,19 +148,27 @@ class DatabaseConnectorService:
         self._reset_engine_cache()
         return {"success": True}
 
-    def list_schema_overview(self, *, user_id: str, connection_id: str | None = None) -> list[dict[str, Any]]:
-        with self.open_session(user_id=user_id, connection_id=connection_id) as session:
+    def list_schema_overview(self, *, user_id: str, connection_id: str | None = None, workspace_id: str | None = None) -> list[dict[str, Any]]:
+        with self.open_session(user_id=user_id, connection_id=connection_id, workspace_id=workspace_id) as session:
+            connection = self._resolve_connection(user_id=user_id, connection_id=connection_id, workspace_id=workspace_id)
             inspector = inspect(session.get_bind())
-            return self._schema_overview(inspector)
+            if connection is None:
+                return self._schema_overview(inspector)
+            connector = get_connector(connection.database_type)
+            return connector.schema_overview(inspector)
 
-    def list_table_overview(self, *, user_id: str, connection_id: str | None = None, schema_name: str | None = None) -> list[dict[str, Any]]:
-        with self.open_session(user_id=user_id, connection_id=connection_id) as session:
+    def list_table_overview(self, *, user_id: str, connection_id: str | None = None, workspace_id: str | None = None, schema_name: str | None = None) -> list[dict[str, Any]]:
+        with self.open_session(user_id=user_id, connection_id=connection_id, workspace_id=workspace_id) as session:
+            connection = self._resolve_connection(user_id=user_id, connection_id=connection_id, workspace_id=workspace_id)
             inspector = inspect(session.get_bind())
-            return self._table_overview(inspector, schema_name=schema_name)
+            if connection is None:
+                return self._table_overview(inspector, schema_name=schema_name)
+            connector = get_connector(connection.database_type)
+            return connector.table_overview(inspector, schema_name=schema_name)
 
     @contextmanager
-    def open_session(self, *, user_id: str, connection_id: str | None = None) -> Iterator[Session]:
-        connection = self._resolve_connection(user_id=user_id, connection_id=connection_id)
+    def open_session(self, *, user_id: str, connection_id: str | None = None, workspace_id: str | None = None) -> Iterator[Session]:
+        connection = self._resolve_connection(user_id=user_id, connection_id=connection_id, workspace_id=workspace_id)
         if connection is None:
             yield self.db
             return
@@ -212,25 +207,20 @@ class DatabaseConnectorService:
     def decrypt_secret(self, value: str) -> str:
         return self._fernet().decrypt(value.encode("utf-8")).decode("utf-8")
 
-    def _resolve_connection(self, *, user_id: str, connection_id: str | None) -> DatabaseConnection | None:
+    def _resolve_connection(self, *, user_id: str, connection_id: str | None, workspace_id: str | None = None) -> DatabaseConnection | None:
+        if workspace_id:
+            workspace = audit_workspace_crud.get_workspace_by_id(self.db, workspace_id, user_id=user_id)
+            if workspace is not None:
+                active_connection_id = workspace.active_connection_id or (workspace.selected_connection_ids[0] if workspace.selected_connection_ids else None)
+                if active_connection_id:
+                    workspace_connection = database_connection_crud.get_connection_by_id(self.db, active_connection_id, user_id=user_id)
+                    if workspace_connection is not None:
+                        return workspace_connection
         if connection_id:
-            return database_connection_crud.get_connection_by_id(self.db, connection_id, user_id=user_id)
+            direct_connection = database_connection_crud.get_connection_by_id(self.db, connection_id, user_id=user_id)
+            if direct_connection is not None:
+                return direct_connection
         return database_connection_crud.get_default_connection_for_user(self.db, user_id)
-
-    def _build_engine_from_payload(self, payload: dict[str, Any]) -> Engine:
-        database_type = str(payload.get("database_type", "postgresql")).strip().lower()
-        if database_type != "postgresql":
-            raise ValueError("Only PostgreSQL connections are supported in this sprint.")
-
-        url = URL.create(
-            "postgresql+psycopg",
-            username=str(payload.get("username", "")).strip() or None,
-            password=str(payload.get("password", "")).strip() or None,
-            host=str(payload.get("host", "")).strip() or None,
-            port=int(payload.get("port", 5432)),
-            database=str(payload.get("database_name", "")).strip() or None,
-        )
-        return create_engine(url, pool_pre_ping=True)
 
     def _engine_for_connection(self, connection: DatabaseConnection) -> Engine:
         cache_key = connection.connection_id
@@ -238,15 +228,17 @@ class DatabaseConnectorService:
             return self._engine_cache[cache_key]
 
         password = self.decrypt_secret(connection.password_ciphertext)
-        url = URL.create(
-            "postgresql+psycopg",
-            username=connection.username,
-            password=password,
-            host=connection.host,
-            port=connection.port,
-            database=connection.database_name,
+        connector = get_connector(connection.database_type)
+        engine = connector.build_engine_from_connection(
+            {
+                "database_type": connection.database_type,
+                "username": connection.username,
+                "password": password,
+                "host": connection.host,
+                "port": connection.port,
+                "database_name": connection.database_name,
+            }
         )
-        engine = create_engine(url, pool_pre_ping=True)
         self._engine_cache[cache_key] = engine
         return engine
 

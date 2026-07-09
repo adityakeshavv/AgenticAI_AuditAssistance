@@ -25,6 +25,7 @@ def chat_message(
         page_size=payload.page_size,
         user_id=current_user.user_id,
         connection_id=payload.connection_id,
+        workspace_id=payload.workspace_id,
     )
 
 

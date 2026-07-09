@@ -138,7 +138,15 @@ class AuthService:
         return self._build_frontend_redirect(redirect_uri, token, user)
 
     def _serialize_user(self, user: AppUser) -> AuthUser:
-        return AuthUser.model_validate(user)
+        return AuthUser(
+            user_id=user.user_id,
+            full_name=user.full_name,
+            email=user.email,
+            auth_provider=user.auth_provider,
+            role=self._resolve_role(user.email),
+            is_active=user.is_active,
+            last_login_at=user.last_login_at,
+        )
 
     def _build_response(self, user: AppUser, token: str) -> dict[str, Any]:
         return AuthResponse(access_token=token, user=self._serialize_user(user)).model_dump()
@@ -150,6 +158,7 @@ class AuthService:
                 "sub": user.user_id,
                 "email": user.email,
                 "full_name": user.full_name,
+                "role": self._resolve_role(user.email),
                 "exp": self._now_ts() + (self.settings.auth_token_expiry_minutes * 60),
             },
             secret=self.settings.auth_token_secret,
@@ -222,3 +231,11 @@ class AuthService:
         if candidate_origin == allowed_origin:
             return candidate
         return configured
+
+    def _resolve_role(self, email: str) -> str:
+        allowlist = {
+            value.strip().lower()
+            for value in self.settings.admin_email_allowlist.split(",")
+            if value.strip()
+        }
+        return "admin" if email.strip().lower() in allowlist else "user"
