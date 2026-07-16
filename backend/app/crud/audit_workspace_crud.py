@@ -22,6 +22,14 @@ def list_workspaces_for_user(db: Session, user_id: str) -> list[AuditWorkspace]:
     return list(db.scalars(stmt).all())
 
 
+def list_all_workspaces(db: Session) -> list[AuditWorkspace]:
+    stmt = select(AuditWorkspace).order_by(
+        AuditWorkspace.is_default.desc(),
+        AuditWorkspace.created_at.desc(),
+    )
+    return list(db.scalars(stmt).all())
+
+
 def get_workspace_by_id(db: Session, workspace_id: str, *, user_id: str | None = None) -> AuditWorkspace | None:
     stmt = select(AuditWorkspace).where(AuditWorkspace.workspace_id == workspace_id)
     if user_id:

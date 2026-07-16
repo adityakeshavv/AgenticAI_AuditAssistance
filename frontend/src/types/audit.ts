@@ -164,3 +164,23 @@ export interface ChatResponse extends AuditResponse {
   investigation_state: InvestigationState;
   turn_count: number;
 }
+
+export interface GovernanceAuditRecord {
+  audit_log_id: string;
+  actor_user_id?: string | null;
+  actor_name?: string | null;
+  action_type: string;
+  entity_type: string;
+  entity_id?: string | null;
+  workspace_id?: string | null;
+  connection_id?: string | null;
+  severity: string;
+  summary: string;
+  before_state?: Record<string, unknown> | null;
+  after_state?: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export interface GovernanceAuditListResponse {
+  events: GovernanceAuditRecord[];
+}

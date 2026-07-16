@@ -1,6 +1,7 @@
 import { type FormEvent, useMemo, useState } from 'react';
 import { buildGoogleSignInUrl, login, saveAuthSession, signup } from '../services/authApi';
 import type { AuthResponse } from '../types/auth';
+import { FeedbackBanner } from './FeedbackBanner';
 
 type AuthMode = 'login' | 'signup';
 
@@ -172,11 +173,7 @@ export function AuthPage({ onAuthenticated }: AuthPageProps) {
                 />
               </div>
 
-              {errorMessage && (
-                <div className="auth-error">
-                  <p>{errorMessage}</p>
-                </div>
-              )}
+              {errorMessage && <FeedbackBanner title="Authentication Error" message={errorMessage} variant="error" />}
 
               <button className="btn auth-primary-btn" type="submit" disabled={loading}>
                 {loading ? 'Processing…' : mode === 'login' ? 'Login' : 'Create Account'}

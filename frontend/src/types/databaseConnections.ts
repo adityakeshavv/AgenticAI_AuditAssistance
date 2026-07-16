@@ -27,6 +27,22 @@ export interface DatabaseConnectionTableInfo {
   table_name: string;
   schema_name: string;
   columns: string[];
+  column_count: number;
+}
+
+export interface DatabaseTableColumnInfo {
+  name: string;
+  data_type?: string | null;
+  nullable?: boolean | null;
+  default?: string | null;
+}
+
+export interface DatabaseConnectionTableDetailInfo extends DatabaseConnectionTableInfo {
+  summary: string;
+  row_count: number;
+  primary_key_columns: string[];
+  column_details: DatabaseTableColumnInfo[];
+  sample_rows: Record<string, unknown>[];
 }
 
 export interface DatabaseConnectionForm {
@@ -39,4 +55,15 @@ export interface DatabaseConnectionForm {
   password: string;
   selected_schemas: string[];
   selected_tables: string[];
+}
+
+export interface DocumentUploadForm {
+  file: File;
+  document_type?: string;
+  document_category?: string;
+  related_vendor_id?: string;
+  related_employee_id?: string;
+  related_transaction_id?: string;
+  related_contract_id?: string;
+  related_investigation_id?: string;
 }

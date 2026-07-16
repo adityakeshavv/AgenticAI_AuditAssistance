@@ -21,6 +21,7 @@ from app.services.agent_service import AgentService
 from app.services.database_connector_service import DatabaseConnectorService
 from app.services.conversation_memory_service import ConversationMemoryService
 from app.services.conversation_context_manager import ConversationContextManager
+from app.services.governance_audit_service import GovernanceAuditService
 from app.services.suggested_actions_service import SuggestedActionsService
 
 logger = logging.getLogger(__name__)
@@ -56,6 +57,22 @@ class ChatService:
             "Chat turn: session=%s followup=%s resolved=%r",
             session_id[:8], is_followup, resolved_query,
         )
+        GovernanceAuditService(self.db).record_event(
+            actor_user_id=user_id,
+            action_type="chat_turn_started",
+            entity_type="chat_session",
+            entity_id=session_id,
+            severity="info",
+            summary=f"Chat turn started for session {session_id[:8]}.",
+            after_state={
+                "original_message": message,
+                "resolved_query": resolved_query,
+                "is_followup": is_followup,
+                "workspace_id": workspace_id,
+                "connection_id": connection_id,
+            },
+        )
+        self.db.commit()
 
         # 3. Run audit agent pipeline (with context injected into planner)
         connector = DatabaseConnectorService(self.db)
@@ -64,7 +81,7 @@ class ChatService:
             connection_id=connection_id,
             workspace_id=workspace_id,
         ) as data_db:
-            agent_svc = AgentService(data_db)
+            agent_svc = AgentService(data_db, audit_db=self.db)
             # Patch the planner so it receives conversation context
             _original_plan = agent_svc.investigation_planner.plan
 
@@ -76,11 +93,25 @@ class ChatService:
 
             agent_svc.investigation_planner.plan = _plan_with_context  # type: ignore[method-assign]
 
-            audit_response = agent_svc.run(
-                query=resolved_query,
-                page=page,
-                page_size=page_size,
-            )
+            try:
+                audit_response = agent_svc.run(
+                    query=resolved_query,
+                    page=page,
+                    page_size=page_size,
+                    actor_user_id=user_id,
+                )
+            except Exception as exc:
+                GovernanceAuditService(self.db).record_event(
+                    actor_user_id=user_id,
+                    action_type="chat_turn_failed",
+                    entity_type="chat_session",
+                    entity_id=session_id,
+                    severity="warning",
+                    summary=f"Chat turn failed for session {session_id[:8]}.",
+                    after_state={"error": str(exc), "resolved_query": resolved_query},
+                )
+                self.db.commit()
+                raise
 
         # 4. Generate suggested actions
             suggested_actions = self.suggested_actions_service.suggest(
@@ -103,6 +134,20 @@ class ChatService:
             investigation_state["transaction_ids"] = list(investigation_state.get("transaction_ids", set()))
 
             # 7. Return enriched response
+            GovernanceAuditService(self.db).record_event(
+                actor_user_id=user_id,
+                action_type="chat_turn_completed",
+                entity_type="chat_session",
+                entity_id=session_id,
+                severity="info",
+                summary=f"Chat turn completed for session {session_id[:8]}.",
+                after_state={
+                    "turn_count": len(ConversationMemoryService.get_session(session_id)["session"]["turns"]) + 1,
+                    "risk_rating": audit_response.get("risk_rating"),
+                    "finding_title": audit_response.get("finding", {}).get("title"),
+                },
+            )
+            self.db.commit()
             return {
                 **audit_response,
                 # Conversation metadata

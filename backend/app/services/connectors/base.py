@@ -7,6 +7,8 @@ from typing import Any
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 
+from app.core.exceptions import format_human_error
+
 
 @dataclass(frozen=True)
 class ConnectionTestResult:
@@ -37,7 +39,10 @@ class BaseDatabaseConnector(ABC):
         except Exception as exc:
             return ConnectionTestResult(
                 success=False,
-                message=str(exc),
+                message=format_human_error(
+                    exc,
+                    "Database connection failed. Please verify the host, port, database name, username, and password.",
+                ),
                 schemas=[],
                 tables=[],
             )
@@ -84,6 +89,7 @@ class BaseDatabaseConnector(ABC):
                             "table_name": table_name,
                             "schema_name": schema,
                             "columns": columns,
+                            "column_count": len(columns),
                         }
                     )
         except Exception:

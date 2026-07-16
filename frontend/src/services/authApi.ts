@@ -1,4 +1,5 @@
 import type { AuthResponse, AuthUser, LoginRequest, SignupRequest } from '../types/auth';
+import { readApiError } from './apiErrors';
 
 const AUTH_TOKEN_KEY = 'audit_auth_token';
 const AUTH_USER_KEY = 'audit_auth_user';
@@ -13,8 +14,7 @@ function getApiBaseUrl(): string {
 
 async function parseAuthResponse(response: Response): Promise<AuthResponse> {
   if (!response.ok) {
-    const errorText = await response.text().catch(() => '');
-    throw new Error(errorText || `Request failed with status ${response.status}`);
+    throw new Error(await readApiError(response, 'Request failed'));
   }
   const data: unknown = await response.json();
   if (!data || typeof data !== 'object') {
@@ -84,8 +84,7 @@ export async function fetchCurrentUser(token?: string | null): Promise<AuthUser>
     headers: buildAuthHeaders(token),
   });
   if (!response.ok) {
-    const errorText = await response.text().catch(() => '');
-    throw new Error(errorText || `Request failed with status ${response.status}`);
+    throw new Error(await readApiError(response, 'Request failed'));
   }
   const data: unknown = await response.json();
   if (!data || typeof data !== 'object') {
@@ -97,4 +96,3 @@ export async function fetchCurrentUser(token?: string | null): Promise<AuthUser>
 export function buildGoogleSignInUrl(): string {
   return `${getApiBaseUrl()}/auth/google/start?redirect_uri=${encodeURIComponent(window.location.origin)}`;
 }
-

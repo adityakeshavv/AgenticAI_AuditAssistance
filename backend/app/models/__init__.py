@@ -9,6 +9,7 @@ from app.models.evidence import Evidence
 from app.models.expense import ExpenseClaim
 from app.models.finding import AuditFinding
 from app.models.audit_workspace import AuditWorkspace
+from app.models.governance_audit import GovernanceAuditLog
 from app.models.investigation import AuditInvestigation
 from app.models.transaction import TransactionMaster
 from app.models.user import AppUser
@@ -28,6 +29,7 @@ __all__ = [
     "Evidence",
     "ExpenseClaim",
     "TransactionMaster",
+    "GovernanceAuditLog",
     "AppUser",
     "Vendor",
 ]

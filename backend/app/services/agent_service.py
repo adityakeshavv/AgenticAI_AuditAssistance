@@ -4,6 +4,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from app.services.governance_audit_service import GovernanceAuditService
 from app.services.document_retrieval_agent_service import DocumentRetrievalAgent
 from app.services.evidence_aggregator_service import EvidenceAggregatorService
 from app.services.investigation_planner_service import InvestigationPlannerService
@@ -18,8 +19,9 @@ from app.services.transaction_service import TRANSACTION_ALLOWED_INTENTS, execut
 
 
 class AgentService:
-    def __init__(self, db: Session) -> None:
+    def __init__(self, db: Session, *, audit_db: Session | None = None) -> None:
         self.db = db
+        self.audit_db = audit_db or db
         self.intent_service = StructuredIntentService()
         self.investigation_planner = InvestigationPlannerService()
         self.traceability_service = TraceabilityService()
@@ -37,8 +39,18 @@ class AgentService:
             investigation_planner=self.investigation_planner,
         )
 
-    def run(self, *, query: str, page: int = 1, page_size: int = 10) -> dict[str, Any]:
+    def run(self, *, query: str, page: int = 1, page_size: int = 10, actor_user_id: str | None = None) -> dict[str, Any]:
         traceability = self.traceability_service.initialize()
+        governance_audit = GovernanceAuditService(self.audit_db)
+        governance_audit.record_event(
+            actor_user_id=actor_user_id,
+            action_type="audit_query_started",
+            entity_type="audit_query",
+            severity="info",
+            summary=f"Audit query started: {query[:200]}",
+            after_state={"query": query, "page": page, "page_size": page_size},
+        )
+        self.audit_db.commit()
         trace_context = self.langfuse_service.start_trace(
             name="audit_query",
             input_payload={"query": query, "page": page, "page_size": page_size},
@@ -153,6 +165,20 @@ class AgentService:
             response_contract["traceability"] = traceability
             response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
             response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
+            governance_audit.record_event(
+                actor_user_id=actor_user_id,
+                action_type="audit_query_completed",
+                entity_type="audit_query",
+                severity="info",
+                summary=f"Audit query completed via transaction investigation: {query[:200]}",
+                after_state={
+                    "risk_rating": response_contract.get("risk_rating"),
+                    "structured_evidence_count": len(response_contract.get("structured_evidence", [])),
+                    "document_evidence_count": len(response_contract.get("document_evidence", [])),
+                    "agents_used": response_contract.get("agents_used", []),
+                },
+            )
+            self.audit_db.commit()
             trace_context.finalize(output=response_contract, metadata={"result": "transaction_investigation"})
             traceability["langfuse"] = trace_context.as_traceability()
             return response_contract
@@ -309,6 +335,20 @@ class AgentService:
             response_contract["traceability"] = traceability
             response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
             response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
+            governance_audit.record_event(
+                actor_user_id=actor_user_id,
+                action_type="audit_query_completed",
+                entity_type="audit_query",
+                severity="info",
+                summary=f"Audit query completed via investigation workflow: {query[:200]}",
+                after_state={
+                    "risk_rating": response_contract.get("risk_rating"),
+                    "structured_evidence_count": len(response_contract.get("structured_evidence", [])),
+                    "document_evidence_count": len(response_contract.get("document_evidence", [])),
+                    "agents_used": response_contract.get("agents_used", []),
+                },
+            )
+            self.audit_db.commit()
             trace_context.finalize(output=response_contract, metadata={"result": "investigation"})
             traceability["langfuse"] = trace_context.as_traceability()
             return response_contract
@@ -385,6 +425,20 @@ class AgentService:
 
             response_contract["traceability"] = traceability
             response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
+            governance_audit.record_event(
+                actor_user_id=actor_user_id,
+                action_type="audit_query_completed",
+                entity_type="audit_query",
+                severity="info",
+                summary=f"Audit query completed via vendor investigation: {query[:200]}",
+                after_state={
+                    "risk_rating": response_contract.get("risk_rating"),
+                    "structured_evidence_count": len(response_contract.get("structured_evidence", [])),
+                    "document_evidence_count": len(response_contract.get("document_evidence", [])),
+                    "agents_used": response_contract.get("agents_used", []),
+                },
+            )
+            self.audit_db.commit()
             response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
             trace_context.finalize(output=response_contract, metadata={"result": "vendor_investigation"})
             traceability["langfuse"] = trace_context.as_traceability()
@@ -417,6 +471,15 @@ class AgentService:
                 "Query was rejected because the extracted intent was unsupported.",
             )
             response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
+            governance_audit.record_event(
+                actor_user_id=actor_user_id,
+                action_type="audit_query_rejected",
+                entity_type="audit_query",
+                severity="warning",
+                summary=f"Audit query rejected as unsupported: {query[:200]}",
+                after_state={"query": query, "reason": "unsupported_intent"},
+            )
+            self.audit_db.commit()
             trace_context.finalize(output=response_contract, metadata={"result": "unsupported_query"})
             traceability["langfuse"] = trace_context.as_traceability()
             return response_contract
@@ -444,6 +507,15 @@ class AgentService:
                 "Transaction retrieval did not return a supported result set.",
             )
             response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
+            governance_audit.record_event(
+                actor_user_id=actor_user_id,
+                action_type="audit_query_failed",
+                entity_type="audit_query",
+                severity="warning",
+                summary=f"Audit query failed during transaction retrieval: {query[:200]}",
+                after_state={"query": query, "reason": response_contract.get("message")},
+            )
+            self.audit_db.commit()
             trace_context.finalize(output=response_contract, metadata={"result": "transaction_retrieval_failed"})
             traceability["langfuse"] = trace_context.as_traceability()
             return response_contract
@@ -521,6 +593,20 @@ class AgentService:
 
         response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
         response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
+        governance_audit.record_event(
+            actor_user_id=actor_user_id,
+            action_type="audit_query_completed",
+            entity_type="audit_query",
+            severity="info",
+            summary=f"Audit query completed via transaction workflow: {query[:200]}",
+            after_state={
+                "risk_rating": response_contract.get("risk_rating"),
+                "structured_evidence_count": len(response_contract.get("structured_evidence", [])),
+                "document_evidence_count": len(response_contract.get("document_evidence", [])),
+                "agents_used": response_contract.get("agents_used", []),
+            },
+        )
+        self.audit_db.commit()
         trace_context.finalize(output=response_contract, metadata={"result": "transaction_query"})
         traceability["langfuse"] = trace_context.as_traceability()
         return response_contract

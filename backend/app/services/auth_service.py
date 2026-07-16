@@ -16,6 +16,7 @@ from app.core.security import create_signed_token, hash_password, verify_passwor
 from app.crud import user_crud
 from app.models.user import AppUser
 from app.schemas.auth import AuthResponse, AuthUser, LoginRequest, SignupRequest
+from app.services.governance_audit_service import GovernanceAuditService
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,14 @@ class AuthService:
         email = payload.email.lower()
         existing = user_crud.get_user_by_email(self.db, email)
         if existing:
+            GovernanceAuditService(self.db).record_event(
+                actor_name=email,
+                action_type="signup_failed",
+                entity_type="user",
+                severity="warning",
+                summary=f"Signup attempt blocked because the email '{email}' already exists.",
+            )
+            self.db.commit()
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="An account with this email already exists.")
 
         salt_hex, hash_hex = hash_password(payload.password)
@@ -42,6 +51,17 @@ class AuthService:
         )
         self.db.commit()
         self.db.refresh(user)
+        GovernanceAuditService(self.db).record_event(
+            actor_user_id=user.user_id,
+            actor_name=user.full_name or user.email,
+            action_type="signup_completed",
+            entity_type="user",
+            entity_id=user.user_id,
+            severity="info",
+            summary=f"User '{user.full_name or user.email}' created a local account.",
+            after_state={"email": user.email, "auth_provider": user.auth_provider},
+        )
+        self.db.commit()
         token = self._create_access_token(user)
         return self._build_response(user, token)
 
@@ -49,12 +69,56 @@ class AuthService:
         email = payload.email.lower()
         user = user_crud.get_user_by_email(self.db, email)
         if not user or not user.password_hash or not user.password_salt:
+            GovernanceAuditService(self.db).record_event(
+                actor_name=email,
+                action_type="login_failed",
+                entity_type="user",
+                severity="warning",
+                summary=f"Login failed for '{email}'.",
+                after_state={"email": email, "reason": "invalid_credentials"},
+            )
+            self.db.commit()
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password.")
+        if not user.is_active:
+            GovernanceAuditService(self.db).record_event(
+                actor_user_id=user.user_id,
+                actor_name=user.full_name or user.email,
+                action_type="login_failed",
+                entity_type="user",
+                entity_id=user.user_id,
+                severity="warning",
+                summary=f"Login blocked because '{user.email}' is inactive.",
+                after_state={"email": user.email, "reason": "inactive_account"},
+            )
+            self.db.commit()
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This account is inactive.")
         if not verify_password(payload.password, salt_hex=user.password_salt, password_hash_hex=user.password_hash):
+            GovernanceAuditService(self.db).record_event(
+                actor_user_id=user.user_id,
+                actor_name=user.full_name or user.email,
+                action_type="login_failed",
+                entity_type="user",
+                entity_id=user.user_id,
+                severity="warning",
+                summary=f"Login failed for '{user.email}'.",
+                after_state={"email": user.email, "reason": "invalid_credentials"},
+            )
+            self.db.commit()
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password.")
         user_crud.update_user_login_metadata(self.db, user, auth_provider="LOCAL")
         self.db.commit()
         self.db.refresh(user)
+        GovernanceAuditService(self.db).record_event(
+            actor_user_id=user.user_id,
+            actor_name=user.full_name or user.email,
+            action_type="login_completed",
+            entity_type="user",
+            entity_id=user.user_id,
+            severity="info",
+            summary=f"User '{user.email}' signed in successfully.",
+            after_state={"email": user.email, "auth_provider": "LOCAL"},
+        )
+        self.db.commit()
         token = self._create_access_token(user)
         return self._build_response(user, token)
 
@@ -117,6 +181,8 @@ class AuthService:
         if not user:
             user = user_crud.get_user_by_email(self.db, email)
         if user:
+            if not user.is_active:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This account is inactive.")
             user.full_name = full_name
             user.email = email
             user.google_sub = google_sub
@@ -133,6 +199,17 @@ class AuthService:
 
         self.db.commit()
         self.db.refresh(user)
+        GovernanceAuditService(self.db).record_event(
+            actor_user_id=user.user_id,
+            actor_name=user.full_name or user.email,
+            action_type="google_login_completed",
+            entity_type="user",
+            entity_id=user.user_id,
+            severity="info",
+            summary=f"User '{user.email}' signed in with Google.",
+            after_state={"email": user.email, "auth_provider": user.auth_provider},
+        )
+        self.db.commit()
         token = self._create_access_token(user)
         redirect_uri = self._normalize_frontend_redirect(str(state_payload.get("redirect_uri") or ""))
         return self._build_frontend_redirect(redirect_uri, token, user)
@@ -147,6 +224,9 @@ class AuthService:
             is_active=user.is_active,
             last_login_at=user.last_login_at,
         )
+
+    def serialize_user(self, user: AppUser) -> AuthUser:
+        return self._serialize_user(user)
 
     def _build_response(self, user: AppUser, token: str) -> dict[str, Any]:
         return AuthResponse(access_token=token, user=self._serialize_user(user)).model_dump()

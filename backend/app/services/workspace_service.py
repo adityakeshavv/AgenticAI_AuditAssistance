@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 
 from app.crud import audit_workspace_crud, database_connection_crud
 from app.models.audit_workspace import AuditWorkspace
+from app.crud import user_crud
+from app.services.governance_audit_service import GovernanceAuditService
 
 
 class WorkspaceService:
@@ -14,6 +16,9 @@ class WorkspaceService:
 
     def list_workspaces(self, user_id: str) -> list[dict[str, Any]]:
         return [self.serialize_workspace(workspace) for workspace in audit_workspace_crud.list_workspaces_for_user(self.db, user_id)]
+
+    def list_all_workspaces(self) -> list[dict[str, Any]]:
+        return [self.serialize_workspace(workspace) for workspace in audit_workspace_crud.list_all_workspaces(self.db)]
 
     def get_workspace(self, user_id: str, workspace_id: str) -> AuditWorkspace | None:
         return audit_workspace_crud.get_workspace_by_id(self.db, workspace_id, user_id=user_id)
@@ -41,6 +46,17 @@ class WorkspaceService:
             active_connection_id=active_connection_id,
             is_default=is_default,
             is_active=True,
+        )
+        GovernanceAuditService(self.db).record_event(
+            actor_user_id=user_id,
+            action_type="workspace_created",
+            entity_type="workspace",
+            entity_id=workspace.workspace_id,
+            workspace_id=workspace.workspace_id,
+            severity="info",
+            summary=f"Workspace '{workspace.workspace_name}' was created.",
+            after_state=self.serialize_workspace(workspace),
+            actor_name=self._actor_name(user_id),
         )
         self.db.commit()
         return {"success": True, "workspace": self.serialize_workspace(workspace)}
@@ -88,6 +104,17 @@ class WorkspaceService:
             self.db.add(workspace)
             self.db.flush()
 
+        GovernanceAuditService(self.db).record_event(
+            actor_user_id=user_id,
+            action_type="workspace_updated",
+            entity_type="workspace",
+            entity_id=workspace.workspace_id,
+            workspace_id=workspace.workspace_id,
+            severity="info",
+            summary=f"Workspace '{workspace.workspace_name}' selection was updated.",
+            after_state=self.serialize_workspace(workspace),
+            actor_name=self._actor_name(user_id),
+        )
         self.db.commit()
         return {"success": True, "workspace": self.serialize_workspace(workspace)}
 
@@ -95,6 +122,17 @@ class WorkspaceService:
         workspace = audit_workspace_crud.set_default_workspace(self.db, user_id=user_id, workspace_id=workspace_id)
         if workspace is None:
             return {"success": False, "message": "Workspace not found."}
+        GovernanceAuditService(self.db).record_event(
+            actor_user_id=user_id,
+            action_type="workspace_activated",
+            entity_type="workspace",
+            entity_id=workspace.workspace_id,
+            workspace_id=workspace.workspace_id,
+            severity="info",
+            summary=f"Workspace '{workspace.workspace_name}' was activated.",
+            after_state=self.serialize_workspace(workspace),
+            actor_name=self._actor_name(user_id),
+        )
         self.db.commit()
         return {"success": True, "workspace": self.serialize_workspace(workspace)}
 
@@ -108,6 +146,17 @@ class WorkspaceService:
             remaining = audit_workspace_crud.list_workspaces_for_user(self.db, user_id)
             if remaining:
                 audit_workspace_crud.set_default_workspace(self.db, user_id=user_id, workspace_id=remaining[0].workspace_id)
+        GovernanceAuditService(self.db).record_event(
+            actor_user_id=user_id,
+            action_type="workspace_deleted",
+            entity_type="workspace",
+            entity_id=workspace.workspace_id,
+            workspace_id=workspace.workspace_id,
+            severity="warning",
+            summary=f"Workspace '{workspace.workspace_name}' was deleted.",
+            before_state=self.serialize_workspace(workspace),
+            actor_name=self._actor_name(user_id),
+        )
         self.db.commit()
         return {"success": True}
 
@@ -161,3 +210,9 @@ class WorkspaceService:
             if database_connection_crud.get_connection_by_id(self.db, connection_id, user_id=user_id):
                 valid_connection_ids.append(connection_id)
         return valid_connection_ids
+
+    def _actor_name(self, user_id: str) -> str | None:
+        user = user_crud.get_user_by_id(self.db, user_id)
+        if user is None:
+            return None
+        return user.full_name or user.email

@@ -37,3 +37,7 @@ class AuthResponse(BaseModel):
 
 class MeResponse(AuthUser):
     pass
+
+
+class UserStatusUpdate(BaseModel):
+    is_active: bool

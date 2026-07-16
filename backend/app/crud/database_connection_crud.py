@@ -21,6 +21,14 @@ def list_connections_for_user(db: Session, user_id: str) -> list[DatabaseConnect
     return list(db.scalars(stmt).all())
 
 
+def list_all_connections(db: Session) -> list[DatabaseConnection]:
+    stmt = select(DatabaseConnection).order_by(
+        DatabaseConnection.is_default.desc(),
+        DatabaseConnection.created_at.desc(),
+    )
+    return list(db.scalars(stmt).all())
+
+
 def get_connection_by_id(db: Session, connection_id: str, *, user_id: str | None = None) -> DatabaseConnection | None:
     stmt = select(DatabaseConnection).where(DatabaseConnection.connection_id == connection_id)
     if user_id:

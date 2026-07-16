@@ -8,15 +8,16 @@ from datetime import datetime, timezone
 from typing import Any, Iterator
 
 from cryptography.fernet import Fernet
-from sqlalchemy import inspect
+from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
-from app.crud import audit_workspace_crud
-from app.crud import database_connection_crud
+from app.core.exceptions import format_human_error
+from app.crud import audit_workspace_crud, database_connection_crud, user_crud
 from app.models.database_connection import DatabaseConnection
 from app.services.connectors import ConnectionTestResult, get_connector, supported_database_types
+from app.services.governance_audit_service import GovernanceAuditService
 
 
 logger = logging.getLogger(__name__)
@@ -31,6 +32,9 @@ class DatabaseConnectorService:
     def list_connections(self, user_id: str) -> list[dict[str, Any]]:
         return [self.serialize_connection(connection) for connection in database_connection_crud.list_connections_for_user(self.db, user_id)]
 
+    def list_all_connections(self) -> list[dict[str, Any]]:
+        return [self.serialize_connection(connection) for connection in database_connection_crud.list_all_connections(self.db)]
+
     def list_supported_database_types(self) -> list[dict[str, str]]:
         return supported_database_types()
 
@@ -38,8 +42,24 @@ class DatabaseConnectorService:
         return database_connection_crud.get_connection_by_id(self.db, connection_id, user_id=user_id)
 
     def create_connection(self, *, user_id: str, payload: dict[str, Any]) -> dict[str, Any]:
-        test_result = self.test_connection(payload)
+        test_result = self._perform_connection_test(payload)
         if not test_result.success:
+            GovernanceAuditService(self.db).record_event(
+                actor_user_id=user_id,
+                action_type="connection_create_failed",
+                entity_type="database_connection",
+                severity="warning",
+                summary=test_result.message,
+                after_state={
+                    "connection_name": str(payload.get("connection_name", "")).strip(),
+                    "database_type": str(payload.get("database_type", "postgresql")).strip().lower(),
+                    "host": str(payload.get("host", "")).strip(),
+                    "port": int(payload.get("port", 5432)),
+                    "database_name": str(payload.get("database_name", "")).strip(),
+                },
+                actor_name=self._actor_name(user_id),
+            )
+            self.db.commit()
             return {
                 "success": False,
                 "message": test_result.message,
@@ -71,6 +91,17 @@ class DatabaseConnectorService:
             status="passed",
             message="Connection validated successfully.",
         )
+        GovernanceAuditService(self.db).record_event(
+            actor_user_id=user_id,
+            action_type="connection_created",
+            entity_type="database_connection",
+            entity_id=connection.connection_id,
+            connection_id=connection.connection_id,
+            severity="info",
+            summary=f"Database connection '{connection.connection_name}' was created and validated.",
+            after_state=self.serialize_connection(connection),
+            actor_name=self._actor_name(user_id),
+        )
         self.db.commit()
         self._reset_engine_cache()
         return {
@@ -82,15 +113,43 @@ class DatabaseConnectorService:
         }
 
     def test_connection(self, payload: dict[str, Any]) -> ConnectionTestResult:
+        result = self._perform_connection_test(payload)
+        try:
+            actor_user_id = self._resolve_actor_user_id(payload)
+            GovernanceAuditService(self.db).record_event(
+                actor_user_id=actor_user_id,
+                action_type="connection_tested",
+                entity_type="database_connection",
+                severity="info" if result.success else "warning",
+                summary=result.message,
+                actor_name=self._actor_name(actor_user_id),
+                after_state={
+                    "connection_name": str(payload.get("connection_name", "")).strip(),
+                    "database_type": str(payload.get("database_type", "postgresql")).strip().lower(),
+                    "host": str(payload.get("host", "")).strip(),
+                    "port": int(payload.get("port", 5432)),
+                    "database_name": str(payload.get("database_name", "")).strip(),
+                },
+            )
+            self.db.commit()
+        except Exception:
+            pass
+        return result
+
+    def _perform_connection_test(self, payload: dict[str, Any]) -> ConnectionTestResult:
         database_type = str(payload.get("database_type", "postgresql")).strip().lower()
         try:
             connector = get_connector(database_type)
             return connector.test_connection(payload)
         except Exception as exc:
             logger.warning("Database connection test failed: %s", exc)
+            message = format_human_error(
+                exc,
+                "Database connection failed. Please verify the host, port, database name, username, and password.",
+            )
             return ConnectionTestResult(
                 success=False,
-                message=str(exc),
+                message=message,
                 schemas=[],
                 tables=[],
             )
@@ -122,6 +181,17 @@ class DatabaseConnectorService:
             self.db.add(connection)
             self.db.flush()
 
+        GovernanceAuditService(self.db).record_event(
+            actor_user_id=user_id,
+            action_type="connection_updated",
+            entity_type="database_connection",
+            entity_id=connection.connection_id,
+            connection_id=connection.connection_id,
+            severity="info",
+            summary=f"Connection '{connection.connection_name}' selection was updated.",
+            after_state=self.serialize_connection(connection),
+            actor_name=self._actor_name(user_id),
+        )
         self.db.commit()
         self._reset_engine_cache()
         return {"success": True, "connection": self.serialize_connection(connection)}
@@ -130,6 +200,17 @@ class DatabaseConnectorService:
         connection = database_connection_crud.set_default_connection(self.db, user_id=user_id, connection_id=connection_id)
         if connection is None:
             return {"success": False, "message": "Connection not found."}
+        GovernanceAuditService(self.db).record_event(
+            actor_user_id=user_id,
+            action_type="connection_activated",
+            entity_type="database_connection",
+            entity_id=connection.connection_id,
+            connection_id=connection.connection_id,
+            severity="info",
+            summary=f"Connection '{connection.connection_name}' was activated.",
+            after_state=self.serialize_connection(connection),
+            actor_name=self._actor_name(user_id),
+        )
         self.db.commit()
         self._reset_engine_cache()
         return {"success": True, "connection": self.serialize_connection(connection)}
@@ -139,11 +220,23 @@ class DatabaseConnectorService:
         if connection is None:
             return {"success": False, "message": "Connection not found."}
         was_default = connection.is_default
+        before_state = self.serialize_connection(connection)
         database_connection_crud.delete_connection(self.db, connection)
         if was_default:
             remaining = database_connection_crud.list_connections_for_user(self.db, user_id)
             if remaining:
                 database_connection_crud.set_default_connection(self.db, user_id=user_id, connection_id=remaining[0].connection_id)
+        GovernanceAuditService(self.db).record_event(
+            actor_user_id=user_id,
+            action_type="connection_deleted",
+            entity_type="database_connection",
+            entity_id=connection_id,
+            connection_id=connection_id,
+            severity="warning",
+            summary=f"Connection '{before_state['connection_name']}' was deleted.",
+            before_state=before_state,
+            actor_name=self._actor_name(user_id),
+        )
         self.db.commit()
         self._reset_engine_cache()
         return {"success": True}
@@ -165,6 +258,56 @@ class DatabaseConnectorService:
                 return self._table_overview(inspector, schema_name=schema_name)
             connector = get_connector(connection.database_type)
             return connector.table_overview(inspector, schema_name=schema_name)
+
+    def get_table_detail(
+        self,
+        *,
+        user_id: str,
+        connection_id: str | None = None,
+        workspace_id: str | None = None,
+        schema_name: str,
+        table_name: str,
+        preview_limit: int = 5,
+    ) -> dict[str, Any] | None:
+        with self.open_session(user_id=user_id, connection_id=connection_id, workspace_id=workspace_id) as session:
+            connection = self._resolve_connection(user_id=user_id, connection_id=connection_id, workspace_id=workspace_id)
+            if connection is None:
+                return None
+            inspector = inspect(session.get_bind())
+            table_columns = inspector.get_columns(table_name, schema=schema_name)
+            primary_key = inspector.get_pk_constraint(table_name, schema=schema_name) or {}
+            column_details = [
+                {
+                    "name": column.get("name"),
+                    "data_type": str(column.get("type")) if column.get("type") is not None else None,
+                    "nullable": bool(column.get("nullable", True)),
+                    "default": str(column.get("default")) if column.get("default") is not None else None,
+                }
+                for column in table_columns
+            ]
+            column_names = [column.get("name") for column in table_columns if column.get("name")]
+            quoted_table = self._qualified_table_name(schema_name, table_name)
+            row_count = 0
+            sample_rows: list[dict[str, Any]] = []
+            try:
+                row_count = int(session.execute(text(f"SELECT COUNT(*) AS row_count FROM {quoted_table}")).scalar_one())
+            except Exception as exc:
+                logger.debug("Table row count failed for %s.%s: %s", schema_name, table_name, exc)
+            try:
+                sample_rows = [dict(row) for row in session.execute(text(f"SELECT * FROM {quoted_table} LIMIT :limit"), {"limit": preview_limit}).mappings().all()]
+            except Exception as exc:
+                logger.debug("Table preview failed for %s.%s: %s", schema_name, table_name, exc)
+            return {
+                "table_name": table_name,
+                "schema_name": schema_name,
+                "columns": column_names,
+                "column_count": len(column_names),
+                "column_details": column_details,
+                "row_count": row_count,
+                "primary_key_columns": list(primary_key.get("constrained_columns") or []),
+                "sample_rows": sample_rows,
+                "summary": self._table_summary(table_name=table_name, schema_name=schema_name, row_count=row_count, column_count=len(column_names)),
+            }
 
     @contextmanager
     def open_session(self, *, user_id: str, connection_id: str | None = None, workspace_id: str | None = None) -> Iterator[Session]:
@@ -269,10 +412,21 @@ class DatabaseConnectorService:
                         "table_name": table_name,
                         "schema_name": schema,
                         "columns": columns,
+                        "column_count": len(columns),
                     })
         except Exception as exc:
             logger.debug("Table inspection failed: %s", exc)
         return tables
+
+    def _qualified_table_name(self, schema_name: str, table_name: str) -> str:
+        return f'{self._quote_identifier(schema_name)}.{self._quote_identifier(table_name)}'
+
+    def _quote_identifier(self, value: str) -> str:
+        escaped = value.replace('"', '""')
+        return f'"{escaped}"'
+
+    def _table_summary(self, *, table_name: str, schema_name: str, row_count: int, column_count: int) -> str:
+        return f'Table "{schema_name}.{table_name}" contains {row_count} row{"s" if row_count != 1 else ""} across {column_count} column{"s" if column_count != 1 else ""}.'
 
     def _fernet(self) -> Fernet:
         key = self.settings.database_connection_encryption_key.strip()
@@ -293,3 +447,15 @@ class DatabaseConnectorService:
 
     def _now(self) -> datetime:
         return datetime.now(timezone.utc)
+
+    def _resolve_actor_user_id(self, payload: dict[str, Any]) -> str | None:
+        raw_user_id = payload.get("owner_user_id") or payload.get("user_id")
+        return str(raw_user_id).strip() or None
+
+    def _actor_name(self, user_id: str | None) -> str | None:
+        if not user_id:
+            return None
+        user = user_crud.get_user_by_id(self.db, user_id)
+        if user is None:
+            return None
+        return user.full_name or user.email

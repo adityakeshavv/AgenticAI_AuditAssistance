@@ -59,6 +59,22 @@ class DatabaseConnectionTableInfo(BaseModel):
     table_name: str
     schema_name: str
     columns: list[str] = Field(default_factory=list)
+    column_count: int = 0
+
+
+class DatabaseTableColumnInfo(BaseModel):
+    name: str
+    data_type: str | None = None
+    nullable: bool | None = None
+    default: str | None = None
+
+
+class DatabaseConnectionTableDetailResponse(DatabaseConnectionTableInfo):
+    summary: str = ""
+    row_count: int = 0
+    primary_key_columns: list[str] = Field(default_factory=list)
+    column_details: list[DatabaseTableColumnInfo] = Field(default_factory=list)
+    sample_rows: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class DatabaseConnectionTestResponse(BaseModel):
@@ -86,3 +102,9 @@ class DatabaseConnectionMutationResponse(BaseModel):
     success: bool
     connection: DatabaseConnectionResponse
     message: str | None = None
+
+
+class DocumentUploadResponse(BaseModel):
+    success: bool
+    message: str
+    document: dict[str, Any] = Field(default_factory=dict)

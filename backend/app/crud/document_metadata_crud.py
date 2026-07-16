@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from datetime import date, datetime, timezone
+
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session
 
@@ -6,6 +10,44 @@ from app.models import DocumentMetadata
 
 def _base_document_metadata_query() -> Select[tuple[DocumentMetadata]]:
     return select(DocumentMetadata)
+
+
+def create_document_metadata(
+    db: Session,
+    *,
+    document_id: str,
+    document_type: str,
+    document_category: str,
+    creation_date: date,
+    file_name: str,
+    file_path: str,
+    source_metadata_file: str,
+    related_vendor_id: str | None = None,
+    related_employee_id: str | None = None,
+    related_transaction_id: str | None = None,
+    related_contract_id: str | None = None,
+    related_investigation_id: str | None = None,
+) -> DocumentMetadata:
+    now = datetime.now(timezone.utc)
+    document = DocumentMetadata(
+        document_id=document_id,
+        document_type=document_type,
+        document_category=document_category,
+        related_vendor_id=related_vendor_id,
+        related_employee_id=related_employee_id,
+        related_transaction_id=related_transaction_id,
+        related_contract_id=related_contract_id,
+        related_investigation_id=related_investigation_id,
+        creation_date=creation_date,
+        file_name=file_name,
+        file_path=file_path,
+        source_metadata_file=source_metadata_file,
+        created_at=now,
+        updated_at=now,
+    )
+    db.add(document)
+    db.flush()
+    return document
 
 
 def get_document_by_id(db: Session, document_id: str) -> DocumentMetadata | None:

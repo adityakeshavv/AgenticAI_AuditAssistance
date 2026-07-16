@@ -1,0 +1,117 @@
+from __future__ import annotations
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.crud import user_crud
+from app.dependencies.auth import require_admin
+from app.dependencies.database import get_db
+from app.schemas.auth import AuthUser, UserStatusUpdate
+from app.services.auth_service import AuthService
+from app.services.database_connector_service import DatabaseConnectorService
+from app.services.governance_audit_service import GovernanceAuditService
+from app.services.workspace_service import WorkspaceService
+
+
+router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+@router.get("/users")
+def list_users(
+    db: Session = Depends(get_db),
+    _current_user: AuthUser = Depends(require_admin),
+) -> dict:
+    auth_service = AuthService(db)
+    users = [auth_service.serialize_user(user) for user in user_crud.list_users(db)]
+    return {"users": [user.model_dump() for user in users]}
+
+
+@router.get("/connections")
+def list_connections(
+    db: Session = Depends(get_db),
+    _current_user: AuthUser = Depends(require_admin),
+) -> dict:
+    svc = DatabaseConnectorService(db)
+    return {"connections": svc.list_all_connections()}
+
+
+@router.get("/workspaces")
+def list_workspaces(
+    db: Session = Depends(get_db),
+    _current_user: AuthUser = Depends(require_admin),
+) -> dict:
+    svc = WorkspaceService(db)
+    return {"workspaces": svc.list_all_workspaces()}
+
+
+@router.patch("/users/{user_id}/status")
+def update_user_status(
+    user_id: str,
+    payload: UserStatusUpdate,
+    db: Session = Depends(get_db),
+    current_user: AuthUser = Depends(require_admin),
+) -> dict:
+    if user_id == current_user.user_id and payload.is_active is False:
+        GovernanceAuditService(db).record_event(
+            actor_user_id=current_user.user_id,
+            actor_name=current_user.full_name or current_user.email,
+            action_type="admin_self_deactivation_blocked",
+            entity_type="user",
+            entity_id=user_id,
+            severity="warning",
+            summary="An admin attempted to deactivate their own account and was blocked.",
+        )
+        db.commit()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot deactivate your own admin account.")
+    user = user_crud.get_user_by_id(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    user_crud.set_user_active_status(db, user, is_active=payload.is_active)
+    GovernanceAuditService(db).record_event(
+        actor_user_id=current_user.user_id,
+        actor_name=current_user.full_name or current_user.email,
+        action_type="user_status_updated",
+        entity_type="user",
+        entity_id=user.user_id,
+        severity="info",
+        summary=f"User '{user.full_name or user.email}' status changed to {'active' if payload.is_active else 'inactive'}.",
+        before_state={"is_active": not payload.is_active},
+        after_state={"is_active": payload.is_active},
+    )
+    db.commit()
+    auth_service = AuthService(db)
+    return {"success": True, "user": auth_service.serialize_user(user)}
+
+
+@router.get("/audit-events")
+def list_audit_events(
+    limit: int = 50,
+    offset: int = 0,
+    action_type: str | None = None,
+    entity_type: str | None = None,
+    severity: str | None = None,
+    search: str | None = None,
+    actor_user_id: str | None = None,
+    entity_id: str | None = None,
+    workspace_id: str | None = None,
+    connection_id: str | None = None,
+    db: Session = Depends(get_db),
+    _current_user: AuthUser = Depends(require_admin),
+) -> dict:
+    svc = GovernanceAuditService(db)
+    events = [
+        svc.serialize_event(event)
+        for event in svc.list_events(
+            limit=limit,
+            offset=offset,
+            action_type=action_type,
+            entity_type=entity_type,
+            severity=severity,
+            search=search,
+            actor_user_id=actor_user_id,
+            entity_id=entity_id,
+            workspace_id=workspace_id,
+            connection_id=connection_id,
+        )
+    ]
+    return {"events": events}

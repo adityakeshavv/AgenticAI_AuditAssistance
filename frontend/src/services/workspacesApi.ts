@@ -1,4 +1,5 @@
 import type { WorkspaceForm, WorkspaceRecord } from '../types/workspace';
+import { readApiError } from './apiErrors';
 import { buildAuthHeaders } from './authApi';
 
 const ACTIVE_WORKSPACE_KEY = 'audit_active_workspace_id';
@@ -14,8 +15,7 @@ function getApiBaseUrl(): string {
 
 async function parseJson<T>(response: Response, message: string): Promise<T> {
   if (!response.ok) {
-    const errorText = await response.text().catch(() => '');
-    throw new Error(errorText || `${message} (${response.status})`);
+    throw new Error(await readApiError(response, message));
   }
   return response.json() as Promise<T>;
 }
@@ -96,4 +96,3 @@ export async function deleteWorkspace(workspaceId: string): Promise<void> {
   });
   await parseJson(response, 'Failed to delete workspace');
 }
-

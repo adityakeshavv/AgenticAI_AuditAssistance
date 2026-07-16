@@ -4,19 +4,24 @@ import {
   createDatabaseConnection,
   deleteDatabaseConnection,
   getDatabaseConnection,
+  getDatabaseConnectionTableDetail,
   getDatabaseConnectionSchemas,
   getDatabaseConnectionTables,
   getSelectedDatabaseConnectionId,
   listDatabaseConnections,
   setSelectedDatabaseConnectionId,
   updateDatabaseConnectionSelection,
+  uploadDocumentSource,
   testDatabaseConnection,
 } from '../services/databaseConnectionsApi';
+import { FeedbackBanner } from './FeedbackBanner';
 import type {
   DatabaseConnectionForm,
   DatabaseConnectionRecord,
+  DatabaseConnectionTableDetailInfo,
   DatabaseConnectionSchemaInfo,
   DatabaseConnectionTableInfo,
+  DocumentUploadForm,
 } from '../types/databaseConnections';
 
 const DEFAULT_FORM: DatabaseConnectionForm = {
@@ -32,6 +37,22 @@ const DEFAULT_FORM: DatabaseConnectionForm = {
 };
 
 const DATABASE_TYPE_OPTIONS = [{ value: 'postgresql', label: 'PostgreSQL' }];
+const DOCUMENT_TYPE_OPTIONS = [
+  { value: 'pdf', label: 'PDF' },
+  { value: 'docx', label: 'DOCX' },
+  { value: 'txt', label: 'TXT' },
+  { value: 'eml', label: 'EML' },
+];
+const DOCUMENT_CATEGORY_OPTIONS = [
+  { value: 'supporting_document', label: 'Supporting Document' },
+  { value: 'audit_report', label: 'Audit Report' },
+  { value: 'investigation_report', label: 'Investigation Report' },
+  { value: 'policy', label: 'Policy' },
+  { value: 'sop', label: 'SOP' },
+  { value: 'email', label: 'Email' },
+  { value: 'meeting_minutes', label: 'Meeting Minutes' },
+  { value: 'contract', label: 'Contract' },
+];
 
 function prettyDate(value?: string | null) {
   if (!value) return 'n/a';
@@ -39,8 +60,57 @@ function prettyDate(value?: string | null) {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
 }
 
+function cleanConnectionTestMessage(message: string, success: boolean): string {
+  const trimmed = message.trim();
+  if (success) {
+    return trimmed || 'Connection check passed.';
+  }
+
+  const collapsed = trimmed
+    .replace(/\s+/g, ' ')
+    .replace(/\(Background on this error.*$/i, '')
+    .replace(/Multiple connection attempts failed.*$/i, '')
+    .replace(/- host:.*$/i, '')
+    .replace(/^\(psycopg[^)]*\)\s*/i, '')
+    .trim()
+    .replace(/[.:-]+$/, '');
+
+  if (/password authentication failed/i.test(collapsed)) {
+    return 'Connection failed: password authentication failed for the supplied username.';
+  }
+  if (/database .* does not exist/i.test(collapsed)) {
+    return 'Connection failed: the selected database does not exist.';
+  }
+  if (collapsed) {
+    return `Connection failed: ${collapsed}`;
+  }
+  return 'Connection failed. Please verify the host, port, database name, username, and password.';
+}
+
 type DatabaseConnectionsPageProps = {
   isAdminView?: boolean;
+};
+
+type DocumentUploadDraft = {
+  file: File | null;
+  document_type: string;
+  document_category: string;
+  related_vendor_id: string;
+  related_employee_id: string;
+  related_transaction_id: string;
+  related_contract_id: string;
+  related_investigation_id: string;
+};
+
+const DEFAULT_UPLOAD_DRAFT: DocumentUploadDraft = {
+  file: null,
+  document_type: 'pdf',
+  document_category: 'supporting_document',
+  related_vendor_id: '',
+  related_employee_id: '',
+  related_transaction_id: '',
+  related_contract_id: '',
+  related_investigation_id: '',
 };
 
 export function DatabaseConnectionsPage({ isAdminView = false }: DatabaseConnectionsPageProps) {
@@ -51,6 +121,13 @@ export function DatabaseConnectionsPage({ isAdminView = false }: DatabaseConnect
   const [tables, setTables] = useState<DatabaseConnectionTableInfo[]>([]);
   const [selectedSchemas, setSelectedSchemas] = useState<string[]>([]);
   const [selectedTables, setSelectedTables] = useState<string[]>([]);
+  const [selectedTableDetail, setSelectedTableDetail] = useState<DatabaseConnectionTableDetailInfo | null>(null);
+  const [tableDetailLoading, setTableDetailLoading] = useState(false);
+  const [tableDetailError, setTableDetailError] = useState<string | null>(null);
+  const [uploadDraft, setUploadDraft] = useState<DocumentUploadDraft>(DEFAULT_UPLOAD_DRAFT);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const [form, setForm] = useState<DatabaseConnectionForm>(DEFAULT_FORM);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -89,6 +166,8 @@ export function DatabaseConnectionsPage({ isAdminView = false }: DatabaseConnect
       setSelectedConnection(detail);
       setSelectedSchemas(detail.selected_schemas || []);
       setSelectedTables(detail.selected_tables || []);
+      setSelectedTableDetail(null);
+      setTableDetailError(null);
       setSchemas(await getDatabaseConnectionSchemas(connectionId));
       setTables(await getDatabaseConnectionTables(connectionId));
     } catch (err) {
@@ -124,12 +203,17 @@ export function DatabaseConnectionsPage({ isAdminView = false }: DatabaseConnect
     try {
       const result = await testDatabaseConnection(form);
       setTestMessage(
-        result.success
-          ? `Connection successful. ${result.schemas.length} schemas and ${result.tables.length} tables detected.`
-          : result.message,
+        cleanConnectionTestMessage(
+          result.success
+            ? `Connection successful. ${result.schemas.length} schemas and ${result.tables.length} tables detected.`
+            : result.message,
+          result.success,
+        ),
       );
     } catch (err) {
-      setTestMessage(err instanceof Error ? err.message : 'Connection test failed.');
+      setTestMessage(
+        cleanConnectionTestMessage(err instanceof Error ? err.message : 'Connection test failed.', false),
+      );
     } finally {
       setActionLoading(false);
     }
@@ -141,7 +225,7 @@ export function DatabaseConnectionsPage({ isAdminView = false }: DatabaseConnect
     try {
       const result = await createDatabaseConnection(form);
       setMessage(result.message || 'Connection saved.');
-      setSelectedConnectionId(result.connection.connection_id);
+      setSelectedConnectionIdState(result.connection.connection_id);
       setSelectedDatabaseConnectionId(result.connection.connection_id);
       await loadConnections();
     } catch (err) {
@@ -156,7 +240,7 @@ export function DatabaseConnectionsPage({ isAdminView = false }: DatabaseConnect
     setError(null);
     try {
       const connection = await activateDatabaseConnection(connectionId);
-      setSelectedConnectionId(connection.connection_id);
+      setSelectedConnectionIdState(connection.connection_id);
       setSelectedDatabaseConnectionId(connection.connection_id);
       setMessage(`${connection.connection_name} is now the active source.`);
       await loadConnections();
@@ -210,6 +294,55 @@ export function DatabaseConnectionsPage({ isAdminView = false }: DatabaseConnect
     setSelectedTables((prev) => (prev.includes(tableName) ? prev.filter((item) => item !== tableName) : [...prev, tableName]));
   };
 
+  const loadTableDetail = async (schemaName: string, tableName: string) => {
+    if (!selectedConnectionId) {
+      return;
+    }
+    setTableDetailLoading(true);
+    setTableDetailError(null);
+    try {
+      const detail = await getDatabaseConnectionTableDetail(selectedConnectionId, schemaName, tableName);
+      setSelectedTableDetail(detail);
+    } catch (err) {
+      setTableDetailError(err instanceof Error ? err.message : 'Unable to load table details.');
+    } finally {
+      setTableDetailLoading(false);
+    }
+  };
+
+  const updateUploadField = <K extends keyof DocumentUploadDraft>(field: K, value: DocumentUploadDraft[K]) => {
+    setUploadDraft((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleDocumentUpload = async () => {
+    if (!uploadDraft.file) {
+      setUploadError('Please choose a document before uploading.');
+      return;
+    }
+    setUploadLoading(true);
+    setUploadError(null);
+    setUploadMessage(null);
+    try {
+      const payload: DocumentUploadForm = {
+        file: uploadDraft.file,
+        document_type: uploadDraft.document_type || undefined,
+        document_category: uploadDraft.document_category || undefined,
+        related_vendor_id: uploadDraft.related_vendor_id || undefined,
+        related_employee_id: uploadDraft.related_employee_id || undefined,
+        related_transaction_id: uploadDraft.related_transaction_id || undefined,
+        related_contract_id: uploadDraft.related_contract_id || undefined,
+        related_investigation_id: uploadDraft.related_investigation_id || undefined,
+      };
+      const result = await uploadDocumentSource(payload);
+      setUploadMessage(result.message || 'Document uploaded successfully.');
+      setUploadDraft(DEFAULT_UPLOAD_DRAFT);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Unable to upload document.');
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
   return (
     <div className="stack" style={{ gap: '1.25rem' }}>
       <div className="flex-between" style={{ flexWrap: 'wrap', gap: '0.75rem' }}>
@@ -233,19 +366,9 @@ export function DatabaseConnectionsPage({ isAdminView = false }: DatabaseConnect
         )}
       </div>
 
-      {error && (
-        <div className="card-sm" style={{ borderLeft: '3px solid var(--accent-red)' }}>
-          <p className="label" style={{ color: 'var(--accent-red)' }}>Source Error</p>
-          <p className="body-copy">{error}</p>
-        </div>
-      )}
+      {error && <FeedbackBanner title="Source Error" message={error} variant="error" />}
 
-      {message && (
-        <div className="card-sm" style={{ borderLeft: '3px solid var(--accent-green)' }}>
-          <p className="label" style={{ color: 'var(--accent-green)' }}>Status</p>
-          <p className="body-copy">{message}</p>
-        </div>
-      )}
+      {message && <FeedbackBanner title="Status" message={message} variant="success" />}
 
       {isAdminView && (
         <div className="card-sm" style={{ borderLeft: '3px solid var(--accent-blue)' }}>
@@ -293,7 +416,13 @@ export function DatabaseConnectionsPage({ isAdminView = false }: DatabaseConnect
                 Save Source
               </button>
             </div>
-            {testMessage && <p className="small-copy">{testMessage}</p>}
+            {testMessage && (
+              <FeedbackBanner
+                title={testMessage.toLowerCase().startsWith('connection successful') ? 'Connection Check Passed' : 'Connection Check Failed'}
+                message={testMessage}
+                variant={testMessage.toLowerCase().startsWith('connection successful') ? 'success' : 'error'}
+              />
+            )}
           </div>
         </div>
 
@@ -382,21 +511,40 @@ export function DatabaseConnectionsPage({ isAdminView = false }: DatabaseConnect
               <div className="stack-sm">
                 {tables.length > 0 ? (
                   tables.map((table) => (
-                    <label
+                    <div
                       key={`${table.schema_name}.${table.table_name}`}
-                      className="flex-between"
-                      style={{ gap: '0.75rem', padding: '0.45rem 0', borderBottom: '1px solid var(--border)' }}
+                      className={`card-sm${selectedTableDetail?.table_name === table.table_name && selectedTableDetail?.schema_name === table.schema_name ? ' active' : ''}`}
+                      style={{ padding: '0.75rem', marginBottom: '0.6rem' }}
                     >
-                      <span style={{ display: 'flex', flexDirection: 'column' }}>
-                        <strong style={{ fontSize: '0.88rem' }}>{table.table_name}</strong>
-                        <span className="small-copy">{table.schema_name}</span>
-                      </span>
-                      <input
-                        type="checkbox"
-                        checked={selectedTables.includes(table.table_name)}
-                        onChange={() => toggleTable(table.table_name)}
-                      />
-                    </label>
+                      <div className="flex-between" style={{ gap: '0.75rem', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          onClick={() => void loadTableDetail(table.schema_name, table.table_name)}
+                          className="btn btn-ghost"
+                          style={{ padding: '0', textAlign: 'left', minWidth: 0 }}
+                        >
+                          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                            <strong style={{ fontSize: '0.88rem' }}>{table.table_name}</strong>
+                            <span className="small-copy">{table.schema_name}</span>
+                          </span>
+                        </button>
+                        <input
+                          type="checkbox"
+                          checked={selectedTables.includes(table.table_name)}
+                          onChange={() => toggleTable(table.table_name)}
+                        />
+                      </div>
+                      <div className="flex-between" style={{ gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+                        <span className="source-pill">{table.column_count} column{table.column_count === 1 ? '' : 's'}</span>
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          onClick={() => void loadTableDetail(table.schema_name, table.table_name)}
+                        >
+                          Preview
+                        </button>
+                      </div>
+                    </div>
                   ))
                 ) : (
                   <p className="body-copy">No table metadata available.</p>
@@ -404,8 +552,164 @@ export function DatabaseConnectionsPage({ isAdminView = false }: DatabaseConnect
               </div>
             </div>
           </div>
+
+          <div className="card-sm" style={{ marginTop: '1rem' }}>
+            <div className="flex-between" style={{ gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+              <p className="label" style={{ marginBottom: 0 }}>Table Preview</p>
+              {tableDetailLoading && <span className="small-copy">Loading preview...</span>}
+            </div>
+            {tableDetailError && <FeedbackBanner title="Table Preview Error" message={tableDetailError} variant="error" />}
+            {selectedTableDetail ? (
+              <div className="stack-sm">
+                <div className="card-sm">
+                  <strong>{selectedTableDetail.schema_name}.{selectedTableDetail.table_name}</strong>
+                  <p className="small-copy" style={{ marginTop: '0.35rem' }}>{selectedTableDetail.summary}</p>
+                </div>
+                <div className="grid-auto" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+                  <div className="card-sm">
+                    <p className="label">Rows</p>
+                    <strong>{selectedTableDetail.row_count.toLocaleString()}</strong>
+                  </div>
+                  <div className="card-sm">
+                    <p className="label">Columns</p>
+                    <strong>{selectedTableDetail.column_count}</strong>
+                  </div>
+                  <div className="card-sm">
+                    <p className="label">Primary Key</p>
+                    <p className="small-copy">
+                      {selectedTableDetail.primary_key_columns.length > 0
+                        ? selectedTableDetail.primary_key_columns.join(', ')
+                        : 'Not detected'}
+                    </p>
+                  </div>
+                </div>
+                <div className="card-sm">
+                  <p className="label" style={{ marginBottom: '0.45rem' }}>Columns</p>
+                  <div className="stack-sm">
+                    {selectedTableDetail.column_details.map((column) => (
+                      <div key={column.name} className="flex-between" style={{ gap: '0.75rem', flexWrap: 'wrap' }}>
+                        <strong style={{ fontSize: '0.88rem' }}>{column.name}</strong>
+                        <span className="small-copy">
+                          {column.data_type || 'unknown'}{column.nullable === false ? ' • required' : ''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="card-sm">
+                  <p className="label" style={{ marginBottom: '0.45rem' }}>Sample Rows</p>
+                  {selectedTableDetail.sample_rows.length > 0 ? (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr>
+                            {Object.keys(selectedTableDetail.sample_rows[0] || {}).map((key) => (
+                              <th key={key} style={{ textAlign: 'left', padding: '0.45rem 0.5rem' }}>{key}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedTableDetail.sample_rows.map((row, index) => (
+                            <tr key={index}>
+                              {Object.keys(selectedTableDetail.sample_rows[0] || {}).map((key) => (
+                                <td key={key} style={{ padding: '0.45rem 0.5rem', borderTop: '1px solid var(--border)' }}>
+                                  {String(row[key] ?? '—')}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="small-copy">No sample rows available.</p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="small-copy">Select a table to inspect its summary, dimensions, and sample data.</p>
+            )}
+          </div>
         </div>
       )}
+
+      <div className="grid-2" style={{ gap: '1rem', alignItems: 'start' }}>
+        <div className="card">
+          <p className="label" style={{ marginBottom: '0.8rem' }}>Upload Document</p>
+          <div className="stack-sm">
+            <input
+              className="input"
+              type="file"
+              accept=".pdf,.docx,.txt,.eml"
+              onChange={(event) => updateUploadField('file', event.target.files?.[0] || null)}
+            />
+            <div className="grid-2" style={{ gap: '0.75rem' }}>
+              <div className="stack-sm">
+                <span className="label" style={{ marginBottom: 0 }}>Document Type</span>
+                <select
+                  className="input"
+                  value={uploadDraft.document_type}
+                  onChange={(event) => updateUploadField('document_type', event.target.value)}
+                >
+                  {DOCUMENT_TYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="stack-sm">
+                <span className="label" style={{ marginBottom: 0 }}>Category</span>
+                <select
+                  className="input"
+                  value={uploadDraft.document_category}
+                  onChange={(event) => updateUploadField('document_category', event.target.value)}
+                >
+                  {DOCUMENT_CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="grid-2" style={{ gap: '0.75rem' }}>
+              <input className="input" placeholder="Linked Vendor ID" value={uploadDraft.related_vendor_id} onChange={(event) => updateUploadField('related_vendor_id', event.target.value)} />
+              <input className="input" placeholder="Linked Employee ID" value={uploadDraft.related_employee_id} onChange={(event) => updateUploadField('related_employee_id', event.target.value)} />
+              <input className="input" placeholder="Linked Transaction ID" value={uploadDraft.related_transaction_id} onChange={(event) => updateUploadField('related_transaction_id', event.target.value)} />
+              <input className="input" placeholder="Linked Contract ID" value={uploadDraft.related_contract_id} onChange={(event) => updateUploadField('related_contract_id', event.target.value)} />
+            </div>
+            <input
+              className="input"
+              placeholder="Linked Investigation ID"
+              value={uploadDraft.related_investigation_id}
+              onChange={(event) => updateUploadField('related_investigation_id', event.target.value)}
+            />
+            <div className="flex-row" style={{ gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button className="btn btn-primary" type="button" onClick={handleDocumentUpload} disabled={uploadLoading}>
+                {uploadLoading ? 'Uploading...' : 'Upload Document'}
+              </button>
+              {uploadDraft.file && <span className="source-pill">{uploadDraft.file.name}</span>}
+            </div>
+            {uploadError && <FeedbackBanner title="Upload Failed" message={uploadError} variant="error" />}
+            {uploadMessage && <FeedbackBanner title="Upload Complete" message={uploadMessage} variant="success" />}
+          </div>
+        </div>
+
+        <div className="card">
+          <p className="label" style={{ marginBottom: '0.8rem' }}>Document Handling</p>
+          <div className="stack-sm">
+            <div className="card-sm">
+              <strong>Supported Formats</strong>
+              <p className="small-copy">PDF, DOCX, TXT, and EML files can be uploaded from the device.</p>
+            </div>
+            <div className="card-sm">
+              <strong>Storage Flow</strong>
+              <p className="small-copy">Uploaded files are stored in the document repository and registered in document metadata.</p>
+            </div>
+            <div className="card-sm">
+              <strong>Downstream Processing</strong>
+              <p className="small-copy">The document intelligence and retrieval pipeline can later extract snippets, citations, and evidence links.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

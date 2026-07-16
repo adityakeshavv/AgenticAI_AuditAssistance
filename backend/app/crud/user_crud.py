@@ -27,6 +27,11 @@ def get_user_by_google_sub(db: Session, google_sub: str) -> AppUser | None:
     return db.scalar(stmt)
 
 
+def list_users(db: Session) -> list[AppUser]:
+    stmt = select(AppUser).order_by(AppUser.created_at.desc())
+    return list(db.scalars(stmt).all())
+
+
 def create_user(
     db: Session,
     *,
@@ -67,6 +72,14 @@ def update_user_login_metadata(
     if google_sub is not None:
         user.google_sub = google_sub
     user.last_login_at = _now()
+    user.updated_at = _now()
+    db.add(user)
+    db.flush()
+    return user
+
+
+def set_user_active_status(db: Session, user: AppUser, *, is_active: bool) -> AppUser:
+    user.is_active = is_active
     user.updated_at = _now()
     db.add(user)
     db.flush()

@@ -1,9 +1,12 @@
 import type {
   DatabaseConnectionForm,
   DatabaseConnectionRecord,
+  DatabaseConnectionTableDetailInfo,
   DatabaseConnectionSchemaInfo,
   DatabaseConnectionTableInfo,
+  DocumentUploadForm,
 } from '../types/databaseConnections';
+import { readApiError } from './apiErrors';
 import { buildAuthHeaders } from './authApi';
 
 const ACTIVE_CONNECTION_KEY = 'audit_active_connection_id';
@@ -18,8 +21,7 @@ function getApiBaseUrl(): string {
 
 async function parseJson<T>(response: Response, message: string): Promise<T> {
   if (!response.ok) {
-    const errorText = await response.text().catch(() => '');
-    throw new Error(errorText || `${message} (${response.status})`);
+    throw new Error(await readApiError(response, message));
   }
   return response.json() as Promise<T>;
 }
@@ -133,4 +135,41 @@ export async function getDatabaseConnectionTables(connectionId: string, schemaNa
     headers: { ...buildAuthHeaders() },
   });
   return parseJson(response, 'Failed to load tables');
+}
+
+export async function getDatabaseConnectionTableDetail(
+  connectionId: string,
+  schemaName: string,
+  tableName: string,
+): Promise<DatabaseConnectionTableDetailInfo> {
+  const response = await fetch(
+    `${getApiBaseUrl()}/connections/${connectionId}/tables/${encodeURIComponent(schemaName)}/${encodeURIComponent(tableName)}`,
+    {
+      headers: { ...buildAuthHeaders() },
+    },
+  );
+  return parseJson(response, 'Failed to load table details');
+}
+
+export async function uploadDocumentSource(payload: DocumentUploadForm): Promise<{
+  success: boolean;
+  message: string;
+  document: Record<string, unknown>;
+}> {
+  const formData = new FormData();
+  formData.append('file', payload.file);
+  if (payload.document_type) formData.append('document_type', payload.document_type);
+  if (payload.document_category) formData.append('document_category', payload.document_category);
+  if (payload.related_vendor_id) formData.append('related_vendor_id', payload.related_vendor_id);
+  if (payload.related_employee_id) formData.append('related_employee_id', payload.related_employee_id);
+  if (payload.related_transaction_id) formData.append('related_transaction_id', payload.related_transaction_id);
+  if (payload.related_contract_id) formData.append('related_contract_id', payload.related_contract_id);
+  if (payload.related_investigation_id) formData.append('related_investigation_id', payload.related_investigation_id);
+
+  const response = await fetch(`${getApiBaseUrl()}/connections/documents/upload`, {
+    method: 'POST',
+    headers: { ...buildAuthHeaders() },
+    body: formData,
+  });
+  return parseJson(response, 'Failed to upload document');
 }

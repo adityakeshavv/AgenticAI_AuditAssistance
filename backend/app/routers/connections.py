@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.dependencies.auth import get_current_user, require_connection_access
@@ -14,12 +14,15 @@ from app.schemas.database_connection import (
     DatabaseConnectionMutationResponse,
     DatabaseConnectionResponse,
     DatabaseConnectionSchemaInfo,
+    DatabaseConnectionTableDetailResponse,
     DatabaseConnectionSelectionUpdate,
     DatabaseConnectionTableInfo,
+    DocumentUploadResponse,
     DatabaseConnectionTestRequest,
     DatabaseConnectionTestResponse,
 )
 from app.services.database_connector_service import DatabaseConnectorService
+from app.services.document_upload_service import DocumentUploadService
 
 
 router = APIRouter(prefix="/connections", tags=["connections"])
@@ -110,6 +113,26 @@ def list_tables(
     return [DatabaseConnectionTableInfo(**table) for table in tables]
 
 
+@router.get("/{connection_id}/tables/{schema_name}/{table_name}", response_model=DatabaseConnectionTableDetailResponse)
+def get_table_detail(
+    connection_id: str,
+    schema_name: str,
+    table_name: str,
+    db: Session = Depends(get_db),
+    current_user: AuthUser = Depends(require_connection_access),
+) -> DatabaseConnectionTableDetailResponse:
+    svc = DatabaseConnectorService(db)
+    detail = svc.get_table_detail(
+        user_id=current_user.user_id,
+        connection_id=connection_id,
+        schema_name=schema_name,
+        table_name=table_name,
+    )
+    if detail is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Table not found.")
+    return DatabaseConnectionTableDetailResponse(**detail)
+
+
 @router.patch("/{connection_id}/selection", response_model=DatabaseConnectionMutationResponse)
 def update_selection(
     connection_id: str,
@@ -161,3 +184,34 @@ def delete_connection(
     if not result.get("success"):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=result.get("message", "Connection not found."))
     return {"success": True}
+
+
+@router.post("/documents/upload", response_model=DocumentUploadResponse)
+def upload_document(
+    file: UploadFile = File(...),
+    document_type: str | None = Form(default=None),
+    document_category: str | None = Form(default=None),
+    related_vendor_id: str | None = Form(default=None),
+    related_employee_id: str | None = Form(default=None),
+    related_transaction_id: str | None = Form(default=None),
+    related_contract_id: str | None = Form(default=None),
+    related_investigation_id: str | None = Form(default=None),
+    db: Session = Depends(get_db),
+    current_user: AuthUser = Depends(get_current_user),
+) -> DocumentUploadResponse:
+    svc = DocumentUploadService(db)
+    result = svc.upload_document(
+        user_id=current_user.user_id,
+        actor_name=current_user.full_name or current_user.email,
+        file=file,
+        document_type=document_type,
+        document_category=document_category,
+        related_vendor_id=related_vendor_id,
+        related_employee_id=related_employee_id,
+        related_transaction_id=related_transaction_id,
+        related_contract_id=related_contract_id,
+        related_investigation_id=related_investigation_id,
+    )
+    if not result.get("success"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result.get("message", "Unable to upload document."))
+    return DocumentUploadResponse(**result)

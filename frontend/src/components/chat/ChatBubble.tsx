@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ChatMessage, CitationRecord } from '../../types/audit';
 import { AuditResponsePanel } from '../AuditResponsePanel';
 import { DocumentViewerModal } from '../DocumentViewerModal';
+import { FeedbackBanner } from '../FeedbackBanner';
 
 interface Props {
   msg: ChatMessage;
@@ -19,6 +20,7 @@ export function ChatBubble({ msg }: Props) {
     : r.risk_rating === 'HIGH' || r.risk_rating === 'CRITICAL' ? 'var(--accent-red)'
     : r.risk_rating === 'MEDIUM' ? 'var(--accent-amber)'
     : 'var(--accent-green)';
+  const isErrorMessage = !r && !msg.isLoading && msg.content.trim().startsWith('⚠');
 
   if (isUser) {
     return (
@@ -52,6 +54,21 @@ export function ChatBubble({ msg }: Props) {
           <span className="small-copy">Investigating…</span>
         </div>
         <style>{`@keyframes bounce { 0%,100%{transform:translateY(0);opacity:.6} 50%{transform:translateY(-5px);opacity:1} }`}</style>
+      </div>
+    );
+  }
+
+  if (isErrorMessage) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', padding: '0.25rem 0' }}>
+        <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-cyan))', display: 'grid', placeItems: 'center', fontSize: '0.8rem', fontWeight: 800, color: '#fff', flexShrink: 0, marginTop: '0.15rem' }}>A</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <FeedbackBanner
+            title="Query Error"
+            message={msg.content.replace(/^⚠\s*/, '')}
+            variant="error"
+          />
+        </div>
       </div>
     );
   }

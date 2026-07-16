@@ -1,4 +1,5 @@
 import type { AuditResponse } from '../types/audit';
+import { readApiError } from './apiErrors';
 import { buildAuthHeaders } from './authApi';
 import { getSelectedDatabaseConnectionId } from './databaseConnectionsApi';
 import { getSelectedWorkspaceId } from './workspacesApi';
@@ -15,18 +16,17 @@ export async function submitAuditQuery(query: string): Promise<AuditResponse> {
       'Content-Type': 'application/json',
       ...buildAuthHeaders(),
     },
-      body: JSON.stringify({
-        query,
-        page: 1,
-        page_size: 10,
-        connection_id: getSelectedDatabaseConnectionId(),
-        workspace_id: getSelectedWorkspaceId(),
-      }),
+    body: JSON.stringify({
+      query,
+      page: 1,
+      page_size: 10,
+      connection_id: getSelectedDatabaseConnectionId(),
+      workspace_id: getSelectedWorkspaceId(),
+    }),
   });
 
   if (!response.ok) {
-    const errorText = await response.text().catch(() => '');
-    throw new Error(errorText || `Request failed with status ${response.status}`);
+    throw new Error(await readApiError(response, 'Failed to run audit query'));
   }
 
   const data: unknown = await response.json();
@@ -60,19 +60,18 @@ export async function sendChatMessage(
   const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/chat/message`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...buildAuthHeaders() },
-      body: JSON.stringify({
-        message,
-        session_id: sessionId,
-        page: 1,
-        page_size: 10,
-        connection_id: getSelectedDatabaseConnectionId(),
-        workspace_id: getSelectedWorkspaceId(),
-      }),
+    body: JSON.stringify({
+      message,
+      session_id: sessionId,
+      page: 1,
+      page_size: 10,
+      connection_id: getSelectedDatabaseConnectionId(),
+      workspace_id: getSelectedWorkspaceId(),
+    }),
   });
 
   if (!response.ok) {
-    const errorText = await response.text().catch(() => '');
-    throw new Error(errorText || `Chat request failed with status ${response.status}`);
+    throw new Error(await readApiError(response, 'Failed to send chat message'));
   }
 
   const data = await response.json();
@@ -89,8 +88,7 @@ export async function createChatSession(): Promise<string> {
     },
   });
   if (!response.ok) {
-    const errorText = await response.text().catch(() => '');
-    throw new Error(errorText || `Chat session request failed with status ${response.status}`);
+    throw new Error(await readApiError(response, 'Failed to create chat session'));
   }
   const data = await response.json();
   return data.session_id as string;
@@ -105,8 +103,7 @@ export async function getChatHistory(sessionId: string): Promise<unknown> {
     },
   });
   if (!response.ok) {
-    const errorText = await response.text().catch(() => '');
-    throw new Error(errorText || `Chat history request failed with status ${response.status}`);
+    throw new Error(await readApiError(response, 'Failed to load chat history'));
   }
   return response.json();
 }

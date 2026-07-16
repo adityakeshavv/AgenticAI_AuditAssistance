@@ -236,6 +236,9 @@ export function AuditResponsePanel({ response, onCitationSelect }: Props) {
                   {response.supporting_documents.map((doc, i) => {
                     const d = doc as Record<string, unknown>;
                     const exp = (d.selection_explanation as Record<string, unknown> | undefined) ?? {};
+                    const contentSnippet = String(d.content_snippet ?? d.citation_text ?? '');
+                    const selectionReason = String(d.reason_selected ?? exp.selection_reason ?? '');
+                    const supportsText = String(d.supports ?? exp.supports ?? '');
                     return (
                       <div key={String(d.document_id ?? i)} className="doc-item">
                         <div className="flex-between">
@@ -248,14 +251,16 @@ export function AuditResponsePanel({ response, onCitationSelect }: Props) {
                           {[d.page_number != null && `Page ${d.page_number}`, d.section_title, d.linked_transaction && `Linked: ${d.linked_transaction}`]
                             .filter(Boolean).join(' | ')}
                         </div>
-                        {(d.content_snippet || d.citation_text) && (
-                          <p className="doc-item-snippet">{String(d.content_snippet ?? d.citation_text)}</p>
+                        {contentSnippet && (
+                          <p className="doc-item-snippet">{contentSnippet}</p>
                         )}
-                        {(d.reason_selected || exp.selection_reason) && (
+                        {(selectionReason || supportsText) && (
                           <div style={{ marginTop: '0.4rem', paddingTop: '0.4rem', borderTop: '1px solid var(--border)' }}>
-                            <p className="small-copy"><strong>Why selected:</strong> {String(d.reason_selected ?? exp.selection_reason)}</p>
-                            {(d.supports || exp.supports) && (
-                              <p className="small-copy"><strong>Supports:</strong> {String(d.supports ?? exp.supports)}</p>
+                            {selectionReason && (
+                              <p className="small-copy"><strong>Why selected:</strong> {selectionReason}</p>
+                            )}
+                            {supportsText && (
+                              <p className="small-copy"><strong>Supports:</strong> {supportsText}</p>
                             )}
                           </div>
                         )}
@@ -277,19 +282,22 @@ export function AuditResponsePanel({ response, onCitationSelect }: Props) {
                 <div className="doc-list">
                   {response.top_supporting_evidence.map((item, i) => {
                     const d = item as Record<string, unknown>;
+                    const documentTypeText = String(d.document_type ?? '');
+                    const documentCategoryText = String(d.document_category ?? '');
+                    const relevanceText = d.relevance_score != null ? `${(Number(d.relevance_score) * 100).toFixed(0)}% relevance` : '';
                     return (
                       <div key={String(d.document_id ?? d.chunk_id ?? i)} className="evidence-card">
                         <div className="evidence-card-title">
                           {String(d.title ?? d.document_id ?? `Evidence ${i + 1}`)}
                         </div>
                         <div className="evidence-card-meta">
-                          {d.document_type && <span>{String(d.document_type)}</span>}
-                          {d.document_category && <span>{String(d.document_category)}</span>}
-                          {d.relevance_score != null && <span>{(Number(d.relevance_score) * 100).toFixed(0)}% relevance</span>}
+                          {documentTypeText && <span>{documentTypeText}</span>}
+                          {documentCategoryText && <span>{documentCategoryText}</span>}
+                          {relevanceText && <span>{relevanceText}</span>}
                         </div>
-                        {(d.content_snippet || d.citation_text || d.reason_selected) && (
+                        {String(d.content_snippet ?? d.citation_text ?? d.reason_selected ?? '') && (
                           <p className="evidence-card-snippet">
-                            {String(d.content_snippet ?? d.citation_text ?? d.reason_selected)}
+                            {String(d.content_snippet ?? d.citation_text ?? d.reason_selected ?? '')}
                           </p>
                         )}
                       </div>

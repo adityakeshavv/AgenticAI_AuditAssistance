@@ -13,6 +13,7 @@ import {
 } from '../services/workspacesApi';
 import type { DatabaseConnectionRecord } from '../types/databaseConnections';
 import type { WorkspaceForm, WorkspaceRecord } from '../types/workspace';
+import { FeedbackBanner } from './FeedbackBanner';
 
 const DEFAULT_FORM: WorkspaceForm = {
   workspace_name: '',
@@ -210,19 +211,9 @@ export function WorkspaceManagementPage() {
         )}
       </div>
 
-      {error && (
-        <div className="card-sm" style={{ borderLeft: '3px solid var(--accent-red)' }}>
-          <p className="label" style={{ color: 'var(--accent-red)' }}>Workspace Error</p>
-          <p className="body-copy">{error}</p>
-        </div>
-      )}
+      {error && <FeedbackBanner title="Workspace Error" message={error} variant="error" />}
 
-      {message && (
-        <div className="card-sm" style={{ borderLeft: '3px solid var(--accent-green)' }}>
-          <p className="label" style={{ color: 'var(--accent-green)' }}>Status</p>
-          <p className="body-copy">{message}</p>
-        </div>
-      )}
+      {message && <FeedbackBanner title="Status" message={message} variant="success" />}
 
       <div className="grid-2" style={{ gap: '1rem', alignItems: 'start' }}>
         <div className="card">

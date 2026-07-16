@@ -1,5 +1,6 @@
 import { type FormEventHandler, useEffect, useMemo, useState } from 'react';
 import { AuditResponsePanel } from './AuditResponsePanel';
+import { FeedbackBanner } from './FeedbackBanner';
 import { DocumentViewerModal } from './DocumentViewerModal';
 import { submitAuditQuery } from '../services/auditApi';
 import type { AuditResponse, CitationRecord } from '../types/audit';
@@ -156,17 +157,7 @@ export function AuditQueryPage() {
         )}
 
         {/* Error */}
-        {errorMessage && (
-          <div style={{
-            background: 'rgba(239,68,68,0.08)',
-            border: '1px solid rgba(239,68,68,0.2)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '0.85rem 1rem',
-          }}>
-            <p className="label" style={{ color: '#f87171' }}>Query Error</p>
-            <p className="body-copy" style={{ color: '#fca5a5' }}>{errorMessage}</p>
-          </div>
-        )}
+        {errorMessage && <FeedbackBanner title="Query Error" message={errorMessage} variant="error" />}
 
         {/* Meta bar */}
         {(response || isLoading) && (

@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AuthPage } from './components/AuthPage';
 import { AuditDashboard } from './components/AuditDashboard';
-import { DatabaseConnectionsPage } from './components/DatabaseConnectionsPage';
 import { AuditQueryPage } from './components/AuditQueryPage';
-import { WorkspaceManagementPage } from './components/WorkspaceManagementPage';
+import { GovernancePage } from './components/GovernancePage';
 import { ChatPage } from './components/chat/ChatPage';
 import { clearAuthSession, fetchCurrentUser, getStoredAuthToken, saveAuthSession } from './services/authApi';
 import { getSelectedDatabaseConnectionId, setSelectedDatabaseConnectionId } from './services/databaseConnectionsApi';
@@ -11,7 +10,7 @@ import { getSelectedWorkspaceId, listWorkspaces, setSelectedWorkspaceId } from '
 import type { AuthResponse, AuthUser } from './types/auth';
 import type { WorkspaceRecord } from './types/workspace';
 
-type Page = 'dashboard' | 'workspace' | 'chat' | 'connections' | 'workspaces' | 'admin';
+type Page = 'dashboard' | 'workspace' | 'chat' | 'governance';
 
 export default function App() {
   const [page, setPage] = useState<Page>('dashboard');
@@ -133,67 +132,41 @@ export default function App() {
 
   return (
     <div className="app-root">
-      {/* ── Top Navigation ── */}
-      <nav className="topnav">
-        <a
-          className="topnav-brand"
-          href="#"
-          onClick={(e) => { e.preventDefault(); setPage('dashboard'); }}
-        >
-          <div className="topnav-brand-icon">A</div>
-          AuditAI
-        </a>
+      <div className="app-shell">
+        <aside className="side-rail">
+          <a
+            className="topnav-brand"
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setPage('dashboard');
+            }}
+          >
+            <div className="topnav-brand-icon">A</div>
+            AuditAI
+          </a>
 
-        <div className="topnav-tabs">
-          <button
-            className={`topnav-tab${page === 'dashboard' ? ' active' : ''}`}
-            onClick={() => setPage('dashboard')}
-          >
-            Dashboard
-          </button>
-          <button
-            className={`topnav-tab${page === 'chat' ? ' active' : ''}`}
-            onClick={() => setPage('chat')}
-          >
-            Copilot Chat
-          </button>
-          <button
-            className={`topnav-tab${page === 'workspace' ? ' active' : ''}`}
-            onClick={() => setPage('workspace')}
-          >
-            Audit Workspace
-          </button>
-          <button
-            className={`topnav-tab${page === 'connections' ? ' active' : ''}`}
-            onClick={() => setPage('connections')}
-          >
-            Connections
-          </button>
-          <button
-            className={`topnav-tab${page === 'workspaces' ? ' active' : ''}`}
-            onClick={() => setPage('workspaces')}
-          >
-            Workspaces
-          </button>
-          {isAdmin && (
-            <button
-              className={`topnav-tab${page === 'admin' ? ' active' : ''}`}
-              onClick={() => setPage('admin')}
-            >
-              Admin
-            </button>
-          )}
-        </div>
+          <div className="rail-section">
+            <span className="rail-label">Navigation</span>
+            <div className="rail-nav">
+              <button className={`rail-tab${page === 'dashboard' ? ' active' : ''}`} onClick={() => setPage('dashboard')}>
+                Dashboard
+              </button>
+              <button className={`rail-tab${page === 'chat' ? ' active' : ''}`} onClick={() => setPage('chat')}>
+                Copilot Chat
+              </button>
+              <button className={`rail-tab${page === 'workspace' ? ' active' : ''}`} onClick={() => setPage('workspace')}>
+                Audit Workspace
+              </button>
+              <button className={`rail-tab${page === 'governance' ? ' active' : ''}`} onClick={() => setPage('governance')}>
+                Governance
+              </button>
+            </div>
+          </div>
 
-        <div className="topnav-actions">
-          <div style={{ display: 'grid', gap: '0.15rem', minWidth: 220 }}>
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Active Workspace</span>
-            <select
-              className="input"
-              value={activeWorkspaceId || ''}
-              onChange={(e) => handleWorkspaceChange(e.target.value)}
-              style={{ minWidth: 220, padding: '0.55rem 0.75rem' }}
-            >
+          <div className="rail-section">
+            <span className="rail-label">Workspace</span>
+            <select className="input" value={activeWorkspaceId || ''} onChange={(e) => handleWorkspaceChange(e.target.value)}>
               <option value="">No workspace selected</option>
               {workspaces.map((workspace) => (
                 <option key={workspace.workspace_id} value={workspace.workspace_id}>
@@ -201,51 +174,45 @@ export default function App() {
                 </option>
               ))}
             </select>
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+            <span className="small-copy" style={{ marginTop: '0.35rem' }}>
               {activeWorkspace
                 ? `Source: ${activeWorkspace.active_connection_id || activeWorkspace.selected_connection_ids[0] || 'not set'}`
                 : 'Select a workspace to scope queries'}
             </span>
           </div>
-          <div className="status-dot" title="System operational" />
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Operational</span>
-          <div style={{ display: 'grid', gap: '0.1rem', textAlign: 'right' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-primary)', fontWeight: 600 }}>
-              {authUser.full_name}
-            </span>
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{authUser.email}</span>
-          </div>
-          <button className="btn btn-ghost" type="button" onClick={handleLogout}>
-            Sign Out
-          </button>
-        </div>
-      </nav>
 
-      {/* ── Page Content ── */}
-      {page === 'chat' ? (
-        /* Chat takes full height with its own layout */
-        <ChatPage />
-      ) : page === 'connections' ? (
-        <div className="page-content" style={{ overflow: 'auto' }}>
-          <DatabaseConnectionsPage />
-        </div>
-      ) : page === 'workspaces' ? (
-        <div className="page-content" style={{ overflow: 'auto' }}>
-          <WorkspaceManagementPage />
-        </div>
-      ) : page === 'admin' ? (
-        <div className="page-content" style={{ overflow: 'auto' }}>
-          <DatabaseConnectionsPage isAdminView />
-        </div>
-      ) : (
-        <div className="page-content" style={{ overflow: 'auto' }}>
-          {page === 'dashboard' ? (
-            <AuditDashboard onNavigateToWorkspace={() => setPage('chat')} />
-          ) : (
-            <AuditQueryPage />
-          )}
-        </div>
-      )}
+          <div className="rail-footer">
+            <div className="status-dot" title="System operational" />
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Operational</span>
+            <div style={{ display: 'grid', gap: '0.1rem' }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+                {authUser.full_name}
+              </span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{authUser.email}</span>
+              <span className="source-pill" style={{ width: 'fit-content', marginTop: '0.25rem' }}>
+                {isAdmin ? 'Admin' : 'User'}
+              </span>
+            </div>
+            <button className="btn btn-ghost" type="button" onClick={handleLogout}>
+              Sign Out
+            </button>
+          </div>
+        </aside>
+
+        <main className="app-main">
+          <div className="page-content" style={{ overflow: 'auto' }}>
+            {page === 'chat' ? (
+              <ChatPage />
+            ) : page === 'governance' ? (
+              <GovernancePage isAdmin={isAdmin} currentUserId={authUser.user_id} />
+            ) : page === 'dashboard' ? (
+              <AuditDashboard onNavigateToWorkspace={() => setPage('chat')} />
+            ) : (
+              <AuditQueryPage />
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

@@ -134,6 +134,11 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("RAG_DOCUMENTS_DIR", "AUDIT_RAG_DOCUMENTS_DIR"),
         description="Directory containing raw unstructured documents.",
     )
+    document_uploads_dir: Path = Field(
+        default=REPO_ROOT / "rag" / "documents" / "uploads",
+        validation_alias=AliasChoices("DOCUMENT_UPLOADS_DIR", "AUDIT_DOCUMENT_UPLOADS_DIR"),
+        description="Directory used to store user-uploaded documents.",
+    )
     rag_metadata_dir: Path = Field(
         default=REPO_ROOT / "rag" / "metadata",
         validation_alias=AliasChoices("RAG_METADATA_DIR", "AUDIT_RAG_METADATA_DIR"),

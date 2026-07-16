@@ -9,6 +9,7 @@ from app.schemas.audit import (
     NavigationPayload,
     TraceabilityRecord,
 )
+from app.schemas.governance_audit import GovernanceAuditListResponse, GovernanceAuditRecord
 from app.schemas.auth import AuthResponse, AuthUser, LoginRequest, MeResponse, SignupRequest
 from app.schemas.database_connection import (
     DatabaseConnectionActivationResponse,
@@ -45,6 +46,8 @@ __all__ = [
     "ExecutionMetadataRecord",
     "NavigationPayload",
     "TraceabilityRecord",
+    "GovernanceAuditListResponse",
+    "GovernanceAuditRecord",
     "AuthResponse",
     "AuthUser",
     "LoginRequest",
