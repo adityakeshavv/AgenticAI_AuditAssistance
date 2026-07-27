@@ -1,8 +1,10 @@
-import { type FormEventHandler, useEffect, useMemo, useState } from 'react';
+import { type FormEventHandler, useEffect, useState } from 'react';
 import { AuditResponsePanel } from './AuditResponsePanel';
 import { FeedbackBanner } from './FeedbackBanner';
 import { DocumentViewerModal } from './DocumentViewerModal';
 import { submitAuditQuery } from '../services/auditApi';
+import { getSelectedDatabaseConnectionId } from '../services/databaseConnectionsApi';
+import { getSelectedWorkspaceId } from '../services/workspacesApi';
 import type { AuditResponse, CitationRecord } from '../types/audit';
 
 const SAMPLE_QUERIES = [
@@ -33,64 +35,115 @@ export function AuditQueryPage() {
   const [loadingStepIndex, setLoadingStepIndex] = useState(0);
 
   useEffect(() => {
-    if (!isLoading) { setLoadingStepIndex(0); return; }
+    if (!isLoading) {
+      setLoadingStepIndex(0);
+      return;
+    }
     const timer = window.setInterval(() => {
-      setLoadingStepIndex((c) => Math.min(c + 1, LOADING_STEPS.length - 1));
+      setLoadingStepIndex((current) => Math.min(current + 1, LOADING_STEPS.length - 1));
     }, 480);
     return () => clearInterval(timer);
   }, [isLoading]);
 
   const citationCount = response?.citations.length ?? 0;
   const riskRating = response?.risk_rating ?? null;
+  const activeWorkspaceId = getSelectedWorkspaceId();
+  const activeConnectionId = getSelectedDatabaseConnectionId();
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault();
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
+    event.preventDefault();
     if (!query.trim()) return;
+
     setIsLoading(true);
     setLoadingStepIndex(0);
     setErrorMessage(null);
     setSelectedCitation(null);
     setIsModalOpen(false);
+
     try {
-      const res = await submitAuditQuery(query);
-      setResponse(res);
-    } catch (err) {
+      const result = await submitAuditQuery(query);
+      setResponse(result);
+    } catch (error) {
       setResponse(null);
-      setErrorMessage(err instanceof Error ? err.message : 'Unable to run audit query.');
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to run audit query.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleChip = (q: string) => { setQuery(q); };
+  const handleChip = (value: string) => setQuery(value);
 
-  const handleCitationSelect = (c: CitationRecord) => {
-    setSelectedCitation(c);
+  const handleCitationSelect = (citation: CitationRecord) => {
+    setSelectedCitation(citation);
     setIsModalOpen(true);
   };
 
+  const setupSteps = [
+    {
+      label: 'Workspace',
+      detail: activeWorkspaceId ? 'Active workspace selected' : 'Select a workspace in the left rail',
+    },
+    {
+      label: 'Source',
+      detail: activeConnectionId ? 'Active source selected' : 'Select a source before running queries',
+    },
+    {
+      label: 'Query',
+      detail: 'Ask a question in natural audit language',
+    },
+    {
+      label: 'Review',
+      detail: 'Inspect findings, evidence, citations, and traceability',
+    },
+  ];
+
   return (
     <div style={{ display: 'grid', gap: '1.5rem', alignItems: 'start' }}>
-      {/* Page Header */}
-      <div className="flex-between">
-        <div>
+      <div className="dashboard-hero" style={{ marginBottom: 0, alignItems: 'flex-start' }}>
+        <div style={{ maxWidth: '56ch' }}>
           <p className="eyebrow" style={{ marginBottom: '0.4rem' }}>Audit Assistant</p>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Investigation Workspace</h1>
-          <p className="body-copy" style={{ marginTop: '0.4rem' }}>
-            Ask a question, inspect the evidence, and review the resulting audit findings — all in one place.
+          <p className="body-copy" style={{ marginTop: '0.45rem' }}>
+            Ask a question, inspect the evidence, and review the resulting audit findings all in one place.
           </p>
         </div>
-        {response && (
-          <div style={{ flexShrink: 0, textAlign: 'right' }}>
-            <div className={`risk-pill risk-${(riskRating || 'low').toLowerCase()}`} style={{ marginBottom: '0.3rem' }}>
-              {riskRating || 'LOW'} Risk
+
+        <div className="card-sm" style={{ minWidth: 280, alignSelf: 'stretch' }}>
+          <p className="label" style={{ marginBottom: '0.55rem' }}>Workspace Context</p>
+          <div className="stack-sm">
+            <div className="flex-between" style={{ gap: '0.75rem' }}>
+              <span className="small-copy">Workspace</span>
+              <span className="source-pill">{activeWorkspaceId ? 'Selected' : 'Not selected'}</span>
             </div>
-            <p className="small-copy">{citationCount} citations · {response.agents_used.length} agents</p>
+            <div className="flex-between" style={{ gap: '0.75rem' }}>
+              <span className="small-copy">Source</span>
+              <span className="source-pill">{activeConnectionId ? 'Selected' : 'Not selected'}</span>
+            </div>
+            {response && (
+              <>
+                <div className="flex-between" style={{ gap: '0.75rem' }}>
+                  <span className="small-copy">Risk</span>
+                  <span className={`risk-pill risk-${(riskRating || 'low').toLowerCase()}`}>{riskRating || 'LOW'}</span>
+                </div>
+                <div className="flex-between" style={{ gap: '0.75rem' }}>
+                  <span className="small-copy">Citations</span>
+                  <span className="source-pill">{citationCount}</span>
+                </div>
+              </>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Query Box */}
+      <div className="grid-4" style={{ gap: '0.75rem' }}>
+        {setupSteps.map((step) => (
+          <div key={step.label} className="card-sm">
+            <p className="label" style={{ marginBottom: '0.25rem' }}>{step.label}</p>
+            <p className="small-copy" style={{ lineHeight: 1.5 }}>{step.detail}</p>
+          </div>
+        ))}
+      </div>
+
       <div className="query-box">
         <div>
           <p className="label">Audit Query</p>
@@ -99,8 +152,8 @@ export function AuditQueryPage() {
               <input
                 className="input"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="E.g. Investigate vendor VND-02731 for suspicious payment patterns…"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="E.g. Investigate vendor VND-02731 for suspicious payment patterns..."
                 disabled={isLoading}
                 aria-label="Audit query"
               />
@@ -113,41 +166,47 @@ export function AuditQueryPage() {
                 {isLoading ? (
                   <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span className="step-icon running" style={{ width: 14, height: 14 }}>↻</span>
-                    Running…
+                    Running...
                   </span>
-                ) : 'Run Query'}
+                ) : (
+                  'Start Investigation'
+                )}
               </button>
             </div>
           </form>
         </div>
 
-        {/* Quick query chips */}
         <div>
-          <p className="label" style={{ marginBottom: '0.4rem' }}>Quick Queries</p>
+          <p className="label" style={{ marginBottom: '0.4rem' }}>Starter Queries</p>
           <div className="query-chips">
-            {SAMPLE_QUERIES.map((q) => (
-              <button key={q} className="query-chip" type="button" onClick={() => handleChip(q)} disabled={isLoading}>
-                {q}
+            {SAMPLE_QUERIES.map((value) => (
+              <button
+                key={value}
+                className="query-chip"
+                type="button"
+                onClick={() => handleChip(value)}
+                disabled={isLoading}
+              >
+                {value}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Loading progress */}
         {isLoading && (
           <div>
-            <p className="label" style={{ marginBottom: '0.5rem' }}>Running audit workflow…</p>
+            <p className="label" style={{ marginBottom: '0.5rem' }}>Running audit workflow...</p>
             <div className="progress-steps">
-              {LOADING_STEPS.map((step, i) => {
-                const st = i < loadingStepIndex ? 'done' : i === loadingStepIndex ? 'running' : 'waiting';
+              {LOADING_STEPS.map((step, index) => {
+                const status = index < loadingStepIndex ? 'done' : index === loadingStepIndex ? 'running' : 'waiting';
                 return (
-                  <div key={step} className={`progress-step ${st}`}>
-                    <span className={`step-icon ${st}`}>
-                      {st === 'done' ? '✓' : st === 'running' ? '↻' : '○'}
+                  <div key={step} className={`progress-step ${status}`}>
+                    <span className={`step-icon ${status}`}>
+                      {status === 'done' ? '✓' : status === 'running' ? '↻' : '◌'}
                     </span>
                     <span>{step}</span>
                     <span style={{ marginLeft: 'auto', fontSize: '0.78rem' }}>
-                      {st === 'done' ? 'Done' : st === 'running' ? 'Running…' : ''}
+                      {status === 'done' ? 'Done' : status === 'running' ? 'Running...' : ''}
                     </span>
                   </div>
                 );
@@ -156,23 +215,18 @@ export function AuditQueryPage() {
           </div>
         )}
 
-        {/* Error */}
         {errorMessage && <FeedbackBanner title="Query Error" message={errorMessage} variant="error" />}
 
-        {/* Meta bar */}
         {(response || isLoading) && (
           <div className="query-meta-bar">
             <span>📄 {citationCount} citations</span>
             <span>⚡ {response?.agents_used.length ?? 0} agents used</span>
             {riskRating && <span>⚠ {riskRating} risk</span>}
-            {response && !response.success && (
-              <span style={{ color: 'var(--accent-amber)' }}>⚠ Query returned no supported result</span>
-            )}
+            {response && !response.success && <span style={{ color: 'var(--accent-amber)' }}>⚠ Query returned no supported result</span>}
           </div>
         )}
       </div>
 
-      {/* Response Panel or Empty State */}
       {response ? (
         <AuditResponsePanel response={response} onCitationSelect={handleCitationSelect} />
       ) : !isLoading && !errorMessage ? (

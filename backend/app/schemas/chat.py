@@ -18,6 +18,7 @@ class ChatRequest(BaseModel):
     page_size: int = 10
     connection_id: str | None = None
     workspace_id: str | None = None
+    attached_document_ids: list[str] = Field(default_factory=list)
 
 
 class SuggestedAction(BaseModel):

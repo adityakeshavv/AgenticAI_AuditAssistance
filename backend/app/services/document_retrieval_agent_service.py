@@ -20,6 +20,7 @@ from app.services.document_metadata_service import DocumentMetadataService
 from app.services.document_metadata_service import build_citation_record, build_source_uri
 from app.services.document_intelligence_service import DocumentIntelligenceService
 from app.services.semantic_retrieval_service import SemanticRetrievalService
+from app.services.uploaded_document_search_service import UploadedDocumentSearchService
 
 
 LOOKUP_KEYS = (
@@ -36,6 +37,7 @@ class DocumentRetrievalAgent:
         self.service = DocumentMetadataService(db)
         self.intelligence_service = DocumentIntelligenceService()
         self.semantic_service = SemanticRetrievalService(db)
+        self.uploaded_search_service = UploadedDocumentSearchService(db)
         self.settings = get_settings()
 
     def retrieve(
@@ -44,6 +46,7 @@ class DocumentRetrievalAgent:
         query: str,
         structured_intent: dict[str, Any],
         transaction_results: list[dict[str, Any]],
+        attached_document_ids: list[str] | None = None,
         trace_context: Any | None = None,
     ) -> dict[str, Any]:
         retrieval_span = trace_context.begin_span(
@@ -79,6 +82,11 @@ class DocumentRetrievalAgent:
             for document in self.service.get_documents_by_investigation_id(investigation_id):
                 documents[document["document_id"]] = document
 
+        for document_id in attached_document_ids or []:
+            document = self.service.get_document_by_id(document_id)
+            if document:
+                documents[document["document_id"]] = document
+
         document_list = self._enrich_documents(list(documents.values()), transaction_results)
         document_list = [self._attach_content_snippet(document) for document in document_list]
         document_list = [self._attach_intelligence(document) for document in document_list]
@@ -101,21 +109,36 @@ class DocumentRetrievalAgent:
             )
             semantic_documents = list(semantic_result.get("semantic_evidence", []))
             semantic_sources = list(semantic_result.get("sources", []))
+
+        uploaded_documents: list[dict[str, Any]] = []
+        if attached_document_ids or self._should_run_semantic_search(query, document_list) or not document_list:
+            uploaded_documents = self.uploaded_search_service.search(
+                query=query,
+                top_k=5,
+                attached_document_ids={str(document_id) for document_id in (attached_document_ids or []) if document_id},
+                exclude_document_ids={str(document.get("document_id")) for document in document_list if document.get("document_id")},
+            )
+
+        document_list = document_list + uploaded_documents
         document_list = document_list + semantic_documents
         sources = self._build_sources(document_list)
         for source in semantic_sources:
             if source not in sources:
                 sources.append(source)
+        if uploaded_documents and "uploaded_document_search" not in sources:
+            sources.append("uploaded_document_search")
         document_intelligence = self.intelligence_service.summarize_documents(document_list)
         if retrieval_span:
             retrieval_span.finish(
                 output={
                     "document_count": len(document_list),
                     "sources": sources,
+                    "uploaded_document_count": len(uploaded_documents),
                     "semantic_evidence_count": len(semantic_documents),
                 },
                 metadata={
                     "document_count": len(document_list),
+                    "uploaded_document_count": len(uploaded_documents),
                     "semantic_evidence_count": len(semantic_documents),
                     "sources": sources,
                 },
@@ -129,6 +152,7 @@ class DocumentRetrievalAgent:
             "document_count": len(document_list),
             "sources": sources,
             "document_intelligence": document_intelligence,
+            "uploaded_document_evidence": uploaded_documents,
             "semantic_evidence": semantic_documents,
         }
 

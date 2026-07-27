@@ -53,6 +53,7 @@ import type { ChatResponse } from '../types/audit';
 export async function sendChatMessage(
   message: string,
   sessionId: string | null,
+  attachedDocumentIds: string[] = [],
 ): Promise<ChatResponse> {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
   if (!apiBaseUrl) throw new Error('VITE_API_BASE_URL is not configured.');
@@ -67,6 +68,7 @@ export async function sendChatMessage(
       page_size: 10,
       connection_id: getSelectedDatabaseConnectionId(),
       workspace_id: getSelectedWorkspaceId(),
+      attached_document_ids: attachedDocumentIds,
     }),
   });
 

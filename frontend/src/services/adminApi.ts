@@ -1,7 +1,7 @@
 import { buildAuthHeaders } from './authApi';
 import { readApiError } from './apiErrors';
 import type { AuthUser } from '../types/auth';
-import type { GovernanceAuditRecord } from '../types/audit';
+import type { GovernanceAuditRecord, RouterReviewSummaryResponse } from '../types/audit';
 import type { DatabaseConnectionRecord } from '../types/databaseConnections';
 import type { WorkspaceRecord } from '../types/workspace';
 
@@ -42,6 +42,24 @@ export async function listAdminConnections(): Promise<DatabaseConnectionRecord[]
   });
   const data = await parseJson<{ connections: DatabaseConnectionRecord[] }>(response, 'Failed to load admin sources');
   return data.connections || [];
+}
+
+export interface ActiveUserRecord {
+  user_id: string;
+  full_name: string;
+  email: string;
+  role: string;
+  connected_at?: string | null;
+  last_seen_at?: string | null;
+  session_count?: number;
+}
+
+export async function listActiveUsers(): Promise<ActiveUserRecord[]> {
+  const response = await fetch(`${getApiBaseUrl()}/admin/active-users`, {
+    headers: { ...buildAuthHeaders() },
+  });
+  const data = await parseJson<{ active_users: ActiveUserRecord[] }>(response, 'Failed to load active users');
+  return data.active_users || [];
 }
 
 export async function updateAdminUserStatus(userId: string, isActive: boolean): Promise<AuthUser> {
@@ -95,4 +113,27 @@ export async function listGovernanceAuditEventsWithFilters(filters: GovernanceAu
   });
   const data = await parseJson<{ events: GovernanceAuditRecord[] }>(response, 'Failed to load governance activity');
   return data.events || [];
+}
+
+export interface RouterReviewSummaryQuery {
+  limit?: number;
+  offset?: number;
+  severity?: string;
+  actor_user_id?: string;
+  workspace_id?: string;
+  connection_id?: string;
+}
+
+export async function getRouterReviewSummary(filters: RouterReviewSummaryQuery = {}): Promise<RouterReviewSummaryResponse> {
+  const params = new URLSearchParams();
+  params.set('limit', String(filters.limit ?? 200));
+  if (filters.offset) params.set('offset', String(filters.offset));
+  if (filters.severity) params.set('severity', filters.severity);
+  if (filters.actor_user_id) params.set('actor_user_id', filters.actor_user_id);
+  if (filters.workspace_id) params.set('workspace_id', filters.workspace_id);
+  if (filters.connection_id) params.set('connection_id', filters.connection_id);
+  const response = await fetch(`${getApiBaseUrl()}/admin/router-summary?${params.toString()}`, {
+    headers: { ...buildAuthHeaders() },
+  });
+  return parseJson<RouterReviewSummaryResponse>(response, 'Failed to load router review summary');
 }

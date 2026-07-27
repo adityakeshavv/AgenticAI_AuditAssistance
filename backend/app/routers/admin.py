@@ -6,10 +6,12 @@ from sqlalchemy.orm import Session
 from app.crud import user_crud
 from app.dependencies.auth import require_admin
 from app.dependencies.database import get_db
+from app.schemas.audit import RouterReviewSummaryResponse
 from app.schemas.auth import AuthUser, UserStatusUpdate
 from app.services.auth_service import AuthService
 from app.services.database_connector_service import DatabaseConnectorService
 from app.services.governance_audit_service import GovernanceAuditService
+from app.services.realtime_service import realtime_hub
 from app.services.workspace_service import WorkspaceService
 
 
@@ -115,3 +117,47 @@ def list_audit_events(
         )
     ]
     return {"events": events}
+
+
+@router.get("/router-summary", response_model=RouterReviewSummaryResponse)
+def router_summary(
+    limit: int = 200,
+    offset: int = 0,
+    severity: str | None = None,
+    actor_user_id: str | None = None,
+    workspace_id: str | None = None,
+    connection_id: str | None = None,
+    db: Session = Depends(get_db),
+    _current_user: AuthUser = Depends(require_admin),
+) -> RouterReviewSummaryResponse:
+    svc = GovernanceAuditService(db)
+    summary = svc.summarize_router_reviews(
+        limit=limit,
+        offset=offset,
+        severity=severity,
+        actor_user_id=actor_user_id,
+        workspace_id=workspace_id,
+        connection_id=connection_id,
+    )
+    return RouterReviewSummaryResponse(
+        total_reviews=summary["total_reviews"],
+        decision_events=summary["decision_events"],
+        path_review_events=summary["path_review_events"],
+        escalated_count=summary["escalated_count"],
+        low_confidence_count=summary["low_confidence_count"],
+        path_mismatch_count=summary["path_mismatch_count"],
+        decision_source_counts=summary["decision_source_counts"],
+        top_selected_agents=summary["top_selected_agents"],
+        top_candidate_agents=summary["top_candidate_agents"],
+        recent_misroutes=summary["recent_misroutes"],
+        recent_decisions=summary["recent_decisions"],
+        recent_path_reviews=summary["recent_path_reviews"],
+    )
+
+
+@router.get("/active-users")
+def active_users(
+    _current_user: AuthUser = Depends(require_admin),
+) -> dict:
+    active_users = realtime_hub.list_active_users()
+    return {"active_users": active_users, "active_user_count": len(active_users)}

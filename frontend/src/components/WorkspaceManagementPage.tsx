@@ -28,7 +28,11 @@ function prettyDate(value?: string | null) {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
 }
 
-export function WorkspaceManagementPage() {
+interface WorkspaceManagementPageProps {
+  realtimeTick?: number;
+}
+
+export function WorkspaceManagementPage({ realtimeTick = 0 }: WorkspaceManagementPageProps) {
   const [workspaces, setWorkspaces] = useState<WorkspaceRecord[]>([]);
   const [connections, setConnections] = useState<DatabaseConnectionRecord[]>([]);
   const [selectedWorkspaceId, setSelectedWorkspaceIdState] = useState<string | null>(getSelectedWorkspaceId());
@@ -47,6 +51,32 @@ export function WorkspaceManagementPage() {
   );
 
   const connectionById = useMemo(() => new Map(connections.map((item) => [item.connection_id, item])), [connections]);
+  const setupSteps = [
+    {
+      label: 'Workspace',
+      detail: selectedWorkspaceId ? 'Workspace selected' : 'Create or choose one',
+      complete: Boolean(selectedWorkspaceId),
+    },
+    {
+      label: 'Sources',
+      detail: selectedWorkspace?.selected_connection_ids?.length
+        ? `${selectedWorkspace.selected_connection_ids.length} source(s) linked`
+        : 'Select data sources',
+      complete: Boolean(selectedWorkspace?.selected_connection_ids?.length),
+    },
+    {
+      label: 'Active Source',
+      detail: selectedWorkspace?.active_connection_id
+        ? 'Active source set'
+        : 'Choose the working source',
+      complete: Boolean(selectedWorkspace?.active_connection_id),
+    },
+    {
+      label: 'Audit Ready',
+      detail: selectedWorkspace?.is_active ? 'Ready for investigations' : 'Activate the workspace',
+      complete: Boolean(selectedWorkspace?.is_active && selectedWorkspace?.active_connection_id),
+    },
+  ];
 
   const loadData = async () => {
     setLoading(true);
@@ -73,7 +103,7 @@ export function WorkspaceManagementPage() {
 
   useEffect(() => {
     void loadData();
-  }, []);
+  }, [realtimeTick]);
 
   useEffect(() => {
     if (!selectedWorkspaceId) {
@@ -214,6 +244,40 @@ export function WorkspaceManagementPage() {
       {error && <FeedbackBanner title="Workspace Error" message={error} variant="error" />}
 
       {message && <FeedbackBanner title="Status" message={message} variant="success" />}
+
+      <div className="card">
+        <div className="flex-between" style={{ gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.85rem' }}>
+          <div>
+            <p className="label" style={{ marginBottom: '0.25rem' }}>Setup Journey</p>
+            <strong style={{ fontSize: '1rem' }}>Workspace to source selection flow</strong>
+            <p className="small-copy" style={{ marginTop: '0.3rem' }}>
+              Create a workspace, attach data sources, choose the active source, then move into investigation.
+            </p>
+          </div>
+          {activeWorkspace && (
+            <span className="source-pill">
+              Active: {activeWorkspace.workspace_name}
+            </span>
+          )}
+        </div>
+
+        <div className="grid-auto" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
+          {setupSteps.map((step) => (
+            <div
+              key={step.label}
+              className="card-sm"
+              style={{
+                borderLeft: `3px solid ${step.complete ? 'var(--accent-green)' : 'var(--border)'}`,
+                background: step.complete ? 'rgba(16,185,129,0.04)' : 'var(--bg-card)',
+              }}
+            >
+              <p className="label" style={{ marginBottom: '0.3rem' }}>{step.label}</p>
+              <strong style={{ display: 'block', marginBottom: '0.35rem' }}>{step.complete ? 'Complete' : 'Pending'}</strong>
+              <p className="small-copy">{step.detail}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="grid-2" style={{ gap: '1rem', alignItems: 'start' }}>
         <div className="card">

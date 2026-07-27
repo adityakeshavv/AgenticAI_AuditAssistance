@@ -17,11 +17,14 @@ from app.schemas.database_connection import (
     DatabaseConnectionTableDetailResponse,
     DatabaseConnectionSelectionUpdate,
     DatabaseConnectionTableInfo,
+    DocumentMetadataListResponse,
+    DocumentMetadataRecord,
     DocumentUploadResponse,
     DatabaseConnectionTestRequest,
     DatabaseConnectionTestResponse,
 )
 from app.services.database_connector_service import DatabaseConnectorService
+from app.services.document_metadata_service import DocumentMetadataService
 from app.services.document_upload_service import DocumentUploadService
 
 
@@ -131,6 +134,35 @@ def get_table_detail(
     if detail is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Table not found.")
     return DatabaseConnectionTableDetailResponse(**detail)
+
+
+@router.get("/documents", response_model=DocumentMetadataListResponse)
+def list_documents(
+    search: str | None = Query(default=None),
+    document_type: str | None = Query(default=None),
+    document_category: str | None = Query(default=None),
+    related_vendor_id: str | None = Query(default=None),
+    related_employee_id: str | None = Query(default=None),
+    related_transaction_id: str | None = Query(default=None),
+    related_contract_id: str | None = Query(default=None),
+    related_investigation_id: str | None = Query(default=None),
+    uploaded_only: bool = Query(default=False),
+    db: Session = Depends(get_db),
+    current_user: AuthUser = Depends(get_current_user),
+) -> DocumentMetadataListResponse:
+    svc = DocumentMetadataService(db)
+    documents = svc.list_documents(
+        search=search,
+        document_type=document_type,
+        document_category=document_category,
+        related_vendor_id=related_vendor_id,
+        related_employee_id=related_employee_id,
+        related_transaction_id=related_transaction_id,
+        related_contract_id=related_contract_id,
+        related_investigation_id=related_investigation_id,
+        uploaded_only=uploaded_only,
+    )
+    return {"documents": [DocumentMetadataRecord(**document) for document in documents]}
 
 
 @router.patch("/{connection_id}/selection", response_model=DatabaseConnectionMutationResponse)

@@ -3,14 +3,24 @@ import { AuthPage } from './components/AuthPage';
 import { AuditDashboard } from './components/AuditDashboard';
 import { AuditQueryPage } from './components/AuditQueryPage';
 import { GovernancePage } from './components/GovernancePage';
+import { WorkspaceManagementPage } from './components/WorkspaceManagementPage';
+import { DatabaseConnectionsPage } from './components/DatabaseConnectionsPage';
 import { ChatPage } from './components/chat/ChatPage';
 import { clearAuthSession, fetchCurrentUser, getStoredAuthToken, saveAuthSession } from './services/authApi';
 import { getSelectedDatabaseConnectionId, setSelectedDatabaseConnectionId } from './services/databaseConnectionsApi';
 import { getSelectedWorkspaceId, listWorkspaces, setSelectedWorkspaceId } from './services/workspacesApi';
+import { connectRealtimeSocket } from './services/realtimeSocket';
 import type { AuthResponse, AuthUser } from './types/auth';
 import type { WorkspaceRecord } from './types/workspace';
 
-type Page = 'dashboard' | 'workspace' | 'chat' | 'governance';
+type Page = 'dashboard' | 'workspaces' | 'sources' | 'audit' | 'chat' | 'governance';
+
+const JOURNEY_STEPS: Array<{ key: Page; label: string; detail: string }> = [
+  { key: 'workspaces', label: '1. Workspace', detail: 'Create or select the audit workspace.' },
+  { key: 'sources', label: '2. Data Source', detail: 'Connect databases and document sources.' },
+  { key: 'audit', label: '3. Audit Workspace', detail: 'Run investigations and review evidence.' },
+  { key: 'chat', label: '4. Copilot Chat', detail: 'Continue with follow-up questions.' },
+];
 
 export default function App() {
   const [page, setPage] = useState<Page>('dashboard');
@@ -18,6 +28,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [workspaces, setWorkspaces] = useState<WorkspaceRecord[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceIdState] = useState<string | null>(getSelectedWorkspaceId());
+  const [realtimeTick, setRealtimeTick] = useState(0);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -67,8 +78,10 @@ export default function App() {
 
   useEffect(() => {
     if (!authUser) return;
+    let cancelled = false;
     listWorkspaces()
       .then((items) => {
+        if (cancelled) return;
         setWorkspaces(items);
         const current = getSelectedWorkspaceId();
         const workspace = items.find((item) => item.workspace_id === current) || items.find((item) => item.is_default) || items[0] || null;
@@ -80,8 +93,50 @@ export default function App() {
         }
       })
       .catch(() => {
+        if (cancelled) return;
         setWorkspaces([]);
       });
+    return () => {
+      cancelled = true;
+    };
+  }, [authUser, realtimeTick]);
+
+  useEffect(() => {
+    if (!authUser) {
+      return;
+    }
+    let active = true;
+    let retryHandle: number | null = null;
+    let socket: WebSocket | null = null;
+
+    const connect = () => {
+      socket = connectRealtimeSocket(
+        (event) => {
+          if (!active || event.type === 'realtime_connected') {
+            return;
+          }
+          setRealtimeTick((value) => value + 1);
+        },
+        (connected) => {
+          if (!connected && active) {
+            if (retryHandle) {
+              window.clearTimeout(retryHandle);
+            }
+            retryHandle = window.setTimeout(connect, 3000);
+          }
+        },
+      );
+    };
+
+    connect();
+
+    return () => {
+      active = false;
+      if (retryHandle) {
+        window.clearTimeout(retryHandle);
+      }
+      socket?.close();
+    };
   }, [authUser]);
 
   const handleAuthenticated = (session: AuthResponse) => {
@@ -152,15 +207,58 @@ export default function App() {
               <button className={`rail-tab${page === 'dashboard' ? ' active' : ''}`} onClick={() => setPage('dashboard')}>
                 Dashboard
               </button>
+              <button className={`rail-tab${page === 'workspaces' ? ' active' : ''}`} onClick={() => setPage('workspaces')}>
+                Workspaces
+              </button>
+              <button className={`rail-tab${page === 'sources' ? ' active' : ''}`} onClick={() => setPage('sources')}>
+                Data Sources
+              </button>
+              <button className={`rail-tab${page === 'audit' ? ' active' : ''}`} onClick={() => setPage('audit')}>
+                Audit Workspace
+              </button>
               <button className={`rail-tab${page === 'chat' ? ' active' : ''}`} onClick={() => setPage('chat')}>
                 Copilot Chat
-              </button>
-              <button className={`rail-tab${page === 'workspace' ? ' active' : ''}`} onClick={() => setPage('workspace')}>
-                Audit Workspace
               </button>
               <button className={`rail-tab${page === 'governance' ? ' active' : ''}`} onClick={() => setPage('governance')}>
                 Governance
               </button>
+            </div>
+          </div>
+
+          <div className="rail-section">
+            <span className="rail-label">Workflow</span>
+            <div style={{ display: 'grid', gap: '0.5rem' }}>
+              {JOURNEY_STEPS.map((step) => {
+                const active = page === step.key;
+                const complete =
+                  (step.key === 'workspaces' && !!activeWorkspaceId) ||
+                  (step.key === 'sources' && !!(activeWorkspace?.active_connection_id || activeWorkspace?.selected_connection_ids?.length)) ||
+                  (step.key === 'audit' && !!authUser);
+                return (
+                  <button
+                    key={step.key}
+                    type="button"
+                    className="card-sm"
+                    onClick={() => setPage(step.key)}
+                    style={{
+                      textAlign: 'left',
+                      padding: '0.75rem',
+                      border: `1px solid ${active ? 'var(--accent-blue)' : 'var(--border)'}`,
+                      background: active ? 'rgba(59,130,246,0.08)' : 'var(--bg-panel)',
+                    }}
+                  >
+                    <div className="flex-between" style={{ gap: '0.75rem', alignItems: 'flex-start' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <strong style={{ display: 'block', fontSize: '0.86rem' }}>{step.label}</strong>
+                        <span className="small-copy" style={{ display: 'block', marginTop: '0.15rem' }}>{step.detail}</span>
+                      </div>
+                      <span className={`source-pill`} style={{ flexShrink: 0 }}>
+                        {complete ? 'Ready' : 'Pending'}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -203,10 +301,24 @@ export default function App() {
           <div className="page-content" style={{ overflow: 'auto' }}>
             {page === 'chat' ? (
               <ChatPage />
+            ) : page === 'sources' ? (
+              <DatabaseConnectionsPage isAdminView={isAdmin} realtimeTick={realtimeTick} />
+            ) : page === 'workspaces' ? (
+              <WorkspaceManagementPage realtimeTick={realtimeTick} />
+            ) : page === 'audit' ? (
+              <AuditQueryPage />
             ) : page === 'governance' ? (
-              <GovernancePage isAdmin={isAdmin} currentUserId={authUser.user_id} />
+              <GovernancePage isAdmin={isAdmin} currentUserId={authUser.user_id} realtimeTick={realtimeTick} />
             ) : page === 'dashboard' ? (
-              <AuditDashboard onNavigateToWorkspace={() => setPage('chat')} />
+              <AuditDashboard
+                onNavigateToWorkspace={() => setPage('workspaces')}
+                onNavigateToSources={() => setPage('sources')}
+                onNavigateToAudit={() => setPage('audit')}
+                onNavigateToChat={() => setPage('chat')}
+                activeWorkspaceName={activeWorkspace?.workspace_name || null}
+                hasSelectedSource={Boolean(activeWorkspace?.active_connection_id || activeWorkspace?.selected_connection_ids?.length)}
+                workspaceCount={workspaces.length}
+              />
             ) : (
               <AuditQueryPage />
             )}

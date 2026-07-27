@@ -200,18 +200,29 @@ class LangfuseService:
             return None
 
         try:
-            from langfuse import get_client  # type: ignore
+            from langfuse import Langfuse  # type: ignore
         except Exception:
             logger.warning("langfuse package is not installed; Langfuse tracing will stay disabled.")
             return None
 
         try:
-            os.environ.setdefault("LANGFUSE_PUBLIC_KEY", self.settings.langfuse_public_key)
-            os.environ.setdefault("LANGFUSE_SECRET_KEY", self.settings.langfuse_secret_key)
+            client_kwargs: dict[str, Any] = {
+                "public_key": self.settings.langfuse_public_key,
+                "secret_key": self.settings.langfuse_secret_key,
+            }
             if self.settings.langfuse_host:
-                os.environ.setdefault("LANGFUSE_BASE_URL", self.settings.langfuse_host)
-                os.environ.setdefault("LANGFUSE_HOST", self.settings.langfuse_host)
-            return get_client()
+                client_kwargs["base_url"] = self.settings.langfuse_host
+            client = Langfuse(**client_kwargs)
+            auth_check = getattr(client, "auth_check", None)
+            if callable(auth_check):
+                try:
+                    if not auth_check():
+                        logger.warning("Langfuse auth_check failed; tracing will stay disabled.")
+                        return None
+                except Exception as exc:
+                    logger.warning("Langfuse auth_check raised an error: %s", exc)
+                    return None
+            return client
         except Exception as exc:
             logger.warning("Failed to initialize Langfuse client: %s", exc)
             return None

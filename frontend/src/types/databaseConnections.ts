@@ -67,3 +67,39 @@ export interface DocumentUploadForm {
   related_contract_id?: string;
   related_investigation_id?: string;
 }
+
+export interface DocumentUploadProcessingRecord {
+  supported?: boolean;
+  file_type?: string;
+  content_snippet?: string;
+  content_length?: number;
+  processing_summary?: string;
+  signals?: string[];
+  risk_contribution?: string[];
+  document_intelligence?: Record<string, unknown>;
+}
+
+export interface DocumentUploadResponse {
+  success: boolean;
+  message: string;
+  document: Record<string, unknown>;
+  processing?: DocumentUploadProcessingRecord;
+}
+
+export interface DocumentMetadataRecord {
+  document_id: string;
+  document_type: string;
+  document_category: string;
+  related_vendor_id?: string | null;
+  related_employee_id?: string | null;
+  related_transaction_id?: string | null;
+  related_contract_id?: string | null;
+  related_investigation_id?: string | null;
+  creation_date: string;
+  file_name: string;
+  file_path: string;
+  source_uri: string;
+  source_metadata_file: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+}

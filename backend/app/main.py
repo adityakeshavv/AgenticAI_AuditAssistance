@@ -7,7 +7,7 @@ from app.database import Base, engine
 from app.core.config import get_settings
 from app.core.exceptions import safe_detail
 from app import models as _models  # noqa: F401
-from app.routers import admin, audit, auth, chat, connections, health, workspaces
+from app.routers import admin, audit, auth, chat, connections, health, realtime, workspaces
 
 
 settings = get_settings()
@@ -33,6 +33,7 @@ app.include_router(workspaces.router)
 app.include_router(admin.router)
 app.include_router(audit.router)
 app.include_router(chat.router)
+app.include_router(realtime.router)
 
 
 @app.exception_handler(HTTPException)

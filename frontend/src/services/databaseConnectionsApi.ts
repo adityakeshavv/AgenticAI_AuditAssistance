@@ -1,6 +1,8 @@
 import type {
   DatabaseConnectionForm,
   DatabaseConnectionRecord,
+  DocumentMetadataRecord,
+  DocumentUploadResponse,
   DatabaseConnectionTableDetailInfo,
   DatabaseConnectionSchemaInfo,
   DatabaseConnectionTableInfo,
@@ -151,11 +153,7 @@ export async function getDatabaseConnectionTableDetail(
   return parseJson(response, 'Failed to load table details');
 }
 
-export async function uploadDocumentSource(payload: DocumentUploadForm): Promise<{
-  success: boolean;
-  message: string;
-  document: Record<string, unknown>;
-}> {
+export async function uploadDocumentSource(payload: DocumentUploadForm): Promise<DocumentUploadResponse> {
   const formData = new FormData();
   formData.append('file', payload.file);
   if (payload.document_type) formData.append('document_type', payload.document_type);
@@ -172,4 +170,28 @@ export async function uploadDocumentSource(payload: DocumentUploadForm): Promise
     body: formData,
   });
   return parseJson(response, 'Failed to upload document');
+}
+
+export async function listUploadedDocuments(filters: {
+  search?: string;
+  document_type?: string;
+  document_category?: string;
+  related_vendor_id?: string;
+  related_employee_id?: string;
+  related_transaction_id?: string;
+  related_contract_id?: string;
+  related_investigation_id?: string;
+  uploaded_only?: boolean;
+} = {}): Promise<DocumentMetadataRecord[]> {
+  const url = new URL(`${getApiBaseUrl()}/connections/documents`);
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      url.searchParams.set(key, String(value));
+    }
+  });
+  const response = await fetch(url.toString(), {
+    headers: { ...buildAuthHeaders() },
+  });
+  const data = await parseJson<{ documents: DocumentMetadataRecord[] }>(response, 'Failed to load uploaded documents');
+  return data.documents || [];
 }

@@ -26,6 +26,7 @@ def chat_message(
         user_id=current_user.user_id,
         connection_id=payload.connection_id,
         workspace_id=payload.workspace_id,
+        attached_document_ids=payload.attached_document_ids,
     )
 
 

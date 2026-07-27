@@ -48,6 +48,9 @@ class LLMRouterService:
                     model=self.settings.gemini_model,
                 )
                 parsed = self._parse_response(response_text)
+                parsed.setdefault("decision_source", "llm")
+                parsed.setdefault("candidate_agents", [parsed["agent"]])
+                parsed.setdefault("escalate_to_planner", parsed["agent"] == "general_agent" or parsed["confidence"] < 0.75)
                 if llm_span:
                     llm_span.finish(output=response_text, metadata={"service": "LLMRouterService", "model": self.settings.gemini_model})
                 logger.info("Gemini router selected %s with confidence %.2f", parsed["agent"], parsed["confidence"])
@@ -64,6 +67,9 @@ class LLMRouterService:
         try:
             response_text = self._call_llm(query, trace_context=trace_context)
             parsed = self._parse_response(response_text)
+            parsed.setdefault("decision_source", "llm")
+            parsed.setdefault("candidate_agents", [parsed["agent"]])
+            parsed.setdefault("escalate_to_planner", parsed["agent"] == "general_agent" or parsed["confidence"] < 0.75)
             logger.info("LLM router selected %s with confidence %.2f", parsed["agent"], parsed["confidence"])
             return parsed
         except Exception as exc:
@@ -145,6 +151,8 @@ class LLMRouterService:
         agent = payload.get("agent")
         confidence = float(payload.get("confidence", 0))
         reason = payload.get("reason")
+        candidate_agents = payload.get("candidate_agents")
+        escalate_to_planner = bool(payload.get("escalate_to_planner", False))
 
         if agent not in VALID_AGENTS:
             raise ValueError(f"Invalid agent returned by LLM: {agent}")
@@ -152,11 +160,18 @@ class LLMRouterService:
             raise ValueError(f"Invalid confidence returned by LLM: {confidence}")
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError("LLM response must include a non-empty reason.")
+        if candidate_agents is None:
+            candidate_agents = [agent]
+        if not isinstance(candidate_agents, list) or not all(isinstance(item, str) and item in VALID_AGENTS for item in candidate_agents):
+            raise ValueError("LLM response candidate_agents must be a list of valid agent names.")
 
         return {
             "agent": agent,
             "confidence": confidence,
             "reason": reason.strip(),
+            "candidate_agents": list(dict.fromkeys(candidate_agents)),
+            "escalate_to_planner": escalate_to_planner or confidence < 0.75 or agent == "general_agent",
+            "decision_source": "llm",
         }
 
     def _fallback(self, query: str, reason: str) -> dict[str, Any]:
@@ -165,6 +180,9 @@ class LLMRouterService:
                 "agent": "general_agent",
                 "confidence": 0.50,
                 "reason": reason,
+                "candidate_agents": ["general_agent"],
+                "escalate_to_planner": True,
+                "decision_source": "keyword_fallback",
             }
 
         result = self.fallback_router.route(query)
@@ -172,6 +190,9 @@ class LLMRouterService:
             "agent": result.get("agent", "general_agent"),
             "confidence": result.get("confidence", 0.50),
             "reason": f"{reason} Fallback reason: {result.get('reason', 'Keyword fallback selected route.')}",
+            "candidate_agents": list(result.get("candidate_agents") or [result.get("agent", "general_agent")]),
+            "escalate_to_planner": bool(result.get("escalate_to_planner", False) or result.get("agent") == "general_agent"),
+            "decision_source": str(result.get("decision_source", "keyword_fallback")),
         }
 
     @staticmethod
@@ -189,11 +210,20 @@ Available agents:
 - investigation_agent: audit investigations, findings, evidence, citations, traceability, finding support.
 - general_agent: use only when none of the above are appropriate.
 
+Routing guidance:
+- Prefer escalation when the query is ambiguous, multi-domain, or could reasonably require more than one agent.
+- Use general_agent for unrelated, nonsensical, or out-of-domain questions.
+- Do not guess when the query is merely a keyword match without audit context.
+- Example ambiguous cases that should escalate: "show vendor compliance issues for flagged transactions", "review approvals and expenses", "investigate supplier risk and policy violations".
+- Example unsupported cases that should escalate: "tell me a joke", "what is the capital of france", "how is the weather today", "who won the cricket match".
+
 Return JSON only with this exact shape:
 {
   "agent": "transaction_agent",
   "confidence": 0.95,
-  "reason": "Short reason for the selected agent."
+  "reason": "Short reason for the selected agent.",
+  "candidate_agents": ["transaction_agent"],
+  "escalate_to_planner": false
 }
 
 Do not include markdown, prose, or extra keys.

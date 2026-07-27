@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.services.agent_service import AgentService
 from app.services.database_connector_service import DatabaseConnectorService
+from app.services.document_metadata_service import DocumentMetadataService
 from app.services.conversation_memory_service import ConversationMemoryService
 from app.services.conversation_context_manager import ConversationContextManager
 from app.services.governance_audit_service import GovernanceAuditService
@@ -43,15 +44,35 @@ class ChatService:
         user_id: str | None = None,
         connection_id: str | None = None,
         workspace_id: str | None = None,
+        attached_document_ids: list[str] | None = None,
     ) -> dict[str, Any]:
         # 1. Get / create session
         session_id, _session = ConversationMemoryService.get_or_create(session_id)
+        attached_document_ids = [doc_id for doc_id in (attached_document_ids or []) if doc_id]
+        attached_documents = []
+        if attached_document_ids:
+            document_service = DocumentMetadataService(self.db)
+            for document_id in attached_document_ids:
+                document = document_service.get_document_by_id(document_id)
+                if document:
+                    attached_documents.append(document)
 
         # 2. Resolve follow-up references
         ctx = self.context_manager.resolve(message, session_id)
         resolved_query = ctx["resolved_query"]
         is_followup = ctx["is_followup"]
         memory_context = ctx["memory_context"]
+        if attached_documents:
+            memory_context = {
+                **memory_context,
+                "attached_document_ids": attached_document_ids,
+                "attached_documents": attached_documents,
+            }
+            ctx["injected_context"] = {
+                **ctx.get("injected_context", {}),
+                "attached_document_ids": attached_document_ids,
+                "attached_documents": attached_documents,
+            }
 
         logger.info(
             "Chat turn: session=%s followup=%s resolved=%r",
@@ -70,6 +91,7 @@ class ChatService:
                 "is_followup": is_followup,
                 "workspace_id": workspace_id,
                 "connection_id": connection_id,
+                "attached_document_ids": attached_document_ids,
             },
         )
         self.db.commit()
@@ -83,7 +105,7 @@ class ChatService:
         ) as data_db:
             agent_svc = AgentService(data_db, audit_db=self.db)
             # Patch the planner so it receives conversation context
-            _original_plan = agent_svc.investigation_planner.plan
+            _original_plan = agent_svc.workflow.investigation_planner.plan
 
             def _plan_with_context(query: str, **kwargs: Any) -> dict[str, Any]:
                 existing_ctx = kwargs.get("investigation_context") or {}
@@ -91,7 +113,7 @@ class ChatService:
                 kwargs["investigation_context"] = existing_ctx
                 return _original_plan(query, **kwargs)
 
-            agent_svc.investigation_planner.plan = _plan_with_context  # type: ignore[method-assign]
+            agent_svc.workflow.investigation_planner.plan = _plan_with_context  # type: ignore[method-assign]
 
             try:
                 audit_response = agent_svc.run(
@@ -99,6 +121,7 @@ class ChatService:
                     page=page,
                     page_size=page_size,
                     actor_user_id=user_id,
+                    attached_document_ids=attached_document_ids,
                 )
             except Exception as exc:
                 GovernanceAuditService(self.db).record_event(

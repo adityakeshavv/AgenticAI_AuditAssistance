@@ -108,3 +108,26 @@ class DocumentUploadResponse(BaseModel):
     success: bool
     message: str
     document: dict[str, Any] = Field(default_factory=dict)
+    processing: dict[str, Any] = Field(default_factory=dict)
+
+
+class DocumentMetadataRecord(BaseModel):
+    document_id: str
+    document_type: str
+    document_category: str
+    related_vendor_id: str | None = None
+    related_employee_id: str | None = None
+    related_transaction_id: str | None = None
+    related_contract_id: str | None = None
+    related_investigation_id: str | None = None
+    creation_date: str
+    file_name: str
+    file_path: str
+    source_uri: str
+    source_metadata_file: str
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
+class DocumentMetadataListResponse(BaseModel):
+    documents: list[DocumentMetadataRecord] = Field(default_factory=list)

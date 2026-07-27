@@ -3,6 +3,7 @@ import type { InvestigationState } from '../../types/audit';
 interface Props {
   state: InvestigationState;
   turnCount: number;
+  onCollapse?: () => void;
 }
 
 function StatRow({ label, value, color = 'var(--accent-blue)' }: { label: string; value: string | number; color?: string }) {
@@ -21,19 +22,38 @@ function StatRow({ label, value, color = 'var(--accent-blue)' }: { label: string
   );
 }
 
-export function InvestigationSidebar({ state, turnCount }: Props) {
+export function InvestigationSidebar({ state, turnCount, onCollapse }: Props) {
   const riskColor = state.risk_rating === 'HIGH' || state.risk_rating === 'CRITICAL'
     ? 'var(--accent-red)' : state.risk_rating === 'MEDIUM'
     ? 'var(--accent-amber)' : 'var(--accent-green)';
 
   return (
     <aside style={{
-      width: 260, flexShrink: 0,
-      display: 'flex', flexDirection: 'column', gap: '1rem',
-      padding: '1rem', borderLeft: '1px solid var(--border)', overflowY: 'auto',
+      width: '100%',
+      flexShrink: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1rem',
+      padding: '1rem',
+      borderLeft: '1px solid var(--border)',
+      borderRadius: '20px',
+      background: 'rgba(255,255,255,0.88)',
+      boxShadow: '0 12px 30px rgba(15,23,42,0.08)',
+      overflowY: 'auto',
     }}>
+      <div className="flex-between" style={{ gap: '0.75rem', alignItems: 'flex-start' }}>
+        <div>
+          <p className="label" style={{ marginBottom: '0.35rem' }}>Active Investigation</p>
+          <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0 }}>Workspace Monitor</h3>
+        </div>
+        {onCollapse && (
+          <button type="button" className="btn btn-ghost" onClick={onCollapse} style={{ fontSize: '0.78rem', padding: '0.45rem 0.75rem' }}>
+            Collapse
+          </button>
+        )}
+      </div>
+
       <div>
-        <p className="label" style={{ marginBottom: '0.5rem' }}>Active Investigation</p>
         <div className="stack-sm">
           <StatRow label="Status" value={state.status === 'in_progress' ? 'In Progress' : state.status === 'idle' ? 'Idle' : state.status} color="var(--accent-cyan)" />
           <StatRow label="Turns" value={turnCount} />

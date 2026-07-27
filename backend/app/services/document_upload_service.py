@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shutil
 import uuid
 from datetime import date
@@ -11,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.crud import document_metadata_crud, user_crud
+from app.services.document_processing_service import DocumentProcessingService
 from app.services.document_metadata_service import serialize_document_metadata
 from app.services.governance_audit_service import GovernanceAuditService
 
@@ -19,6 +21,7 @@ class DocumentUploadService:
     def __init__(self, db: Session) -> None:
         self.db = db
         self.settings = get_settings()
+        self.processing_service = DocumentProcessingService()
 
     def upload_document(
         self,
@@ -49,6 +52,21 @@ class DocumentUploadService:
         with file_path.open("wb") as destination:
             shutil.copyfileobj(file.file, destination)
 
+        processing = self.processing_service.process_document(
+            file_path=str(file_path.resolve()),
+            file_name=original_name,
+            document_type=resolved_type,
+            document_category=resolved_category,
+        )
+        self._write_processing_artifact(
+            file_path=file_path,
+            document_id=document_id,
+            file_name=original_name,
+            document_type=resolved_type,
+            document_category=resolved_category,
+            processing=processing,
+        )
+
         document = document_metadata_crud.create_document_metadata(
             self.db,
             document_id=document_id,
@@ -74,14 +92,41 @@ class DocumentUploadService:
             entity_id=document.document_id,
             severity="info",
             summary=f"Document '{document.file_name}' was uploaded and registered.",
-            after_state=serialize_document_metadata(document),
+            after_state={
+                **serialize_document_metadata(document),
+                "processing": processing,
+            },
         )
         self.db.commit()
         return {
             "success": True,
             "message": "Document uploaded successfully.",
             "document": serialize_document_metadata(document),
+            "processing": processing,
         }
 
     def _slugify(self, value: str) -> str:
         return "".join(char.lower() if char.isalnum() else "_" for char in value).strip("_") or "document"
+
+    def _write_processing_artifact(
+        self,
+        *,
+        file_path: Path,
+        document_id: str,
+        file_name: str,
+        document_type: str,
+        document_category: str,
+        processing: dict[str, Any],
+    ) -> None:
+        artifact_path = file_path.with_suffix(f"{file_path.suffix}.meta.json")
+        artifact = {
+            "document_id": document_id,
+            "file_name": file_name,
+            "document_type": document_type,
+            "document_category": document_category,
+            "processing": processing,
+        }
+        try:
+            artifact_path.write_text(json.dumps(artifact, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:
+            return

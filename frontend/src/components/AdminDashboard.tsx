@@ -6,9 +6,10 @@ import type { WorkspaceRecord } from '../types/workspace';
 import { FeedbackBanner } from './FeedbackBanner';
 
 interface AdminDashboardProps {
-  onOpenConnections: () => void;
-  onOpenWorkspaces: () => void;
+  onOpenConnections?: () => void;
+  onOpenWorkspaces?: () => void;
   currentUserId: string;
+  realtimeTick?: number;
 }
 
 function prettyDate(value?: string | null) {
@@ -32,7 +33,7 @@ function MetricCard({ label, value, detail }: { label: string; value: string; de
   );
 }
 
-export function AdminDashboard({ onOpenConnections, onOpenWorkspaces, currentUserId }: AdminDashboardProps) {
+export function AdminDashboard({ onOpenConnections, onOpenWorkspaces, currentUserId, realtimeTick = 0 }: AdminDashboardProps) {
   const [users, setUsers] = useState<AuthUser[]>([]);
   const [workspaces, setWorkspaces] = useState<WorkspaceRecord[]>([]);
   const [connections, setConnections] = useState<DatabaseConnectionRecord[]>([]);
@@ -63,7 +64,7 @@ export function AdminDashboard({ onOpenConnections, onOpenWorkspaces, currentUse
     return () => {
       active = false;
     };
-  }, []);
+  }, [realtimeTick]);
 
   const metrics = useMemo(() => {
     const adminUsers = users.filter((user) => user.role === 'admin').length;
@@ -112,14 +113,20 @@ export function AdminDashboard({ onOpenConnections, onOpenWorkspaces, currentUse
             active, which workspaces are in use, and how the connected sources are performing.
           </p>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flexShrink: 0 }}>
-          <button className="btn btn-primary" onClick={onOpenConnections} style={{ padding: '0.75rem 1.5rem', fontSize: '0.95rem' }}>
-            Open Source Console
-          </button>
-          <button className="btn btn-secondary" onClick={onOpenWorkspaces} style={{ padding: '0.75rem 1.5rem', fontSize: '0.95rem' }}>
-            Open Workspace Manager
-          </button>
-        </div>
+        {(onOpenConnections || onOpenWorkspaces) && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flexShrink: 0 }}>
+            {onOpenConnections && (
+              <button className="btn btn-primary" onClick={onOpenConnections} style={{ padding: '0.75rem 1.5rem', fontSize: '0.95rem' }}>
+                Open Source Console
+              </button>
+            )}
+            {onOpenWorkspaces && (
+              <button className="btn btn-secondary" onClick={onOpenWorkspaces} style={{ padding: '0.75rem 1.5rem', fontSize: '0.95rem' }}>
+                Open Workspace Manager
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {error && <FeedbackBanner title="Admin Dashboard Error" message={error} variant="error" />}

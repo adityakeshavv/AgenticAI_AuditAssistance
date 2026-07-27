@@ -18,6 +18,7 @@ class TraceabilityRecord(BaseModel):
     evidence_used: list[dict[str, Any]] = Field(default_factory=list)
     reasoning_path: list[str] = Field(default_factory=list)
     execution_metadata: list[dict[str, Any]] = Field(default_factory=list)
+    langfuse: dict[str, Any] = Field(default_factory=dict)
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -95,10 +96,44 @@ class ExecutionMetadataRecord(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class RouterReviewItem(BaseModel):
+    audit_log_id: str
+    created_at: str | None = None
+    query: str | None = None
+    selected_agent: str | None = None
+    confidence: float | None = None
+    escalate_to_planner: bool = False
+    decision_source: str | None = None
+    candidate_agents: list[str] = Field(default_factory=list)
+    selected_agents: list[str] = Field(default_factory=list)
+    severity: str | None = None
+    summary: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RouterReviewSummaryResponse(BaseModel):
+    total_reviews: int = 0
+    decision_events: int = 0
+    path_review_events: int = 0
+    escalated_count: int = 0
+    low_confidence_count: int = 0
+    path_mismatch_count: int = 0
+    decision_source_counts: dict[str, int] = Field(default_factory=dict)
+    top_selected_agents: list[dict[str, Any]] = Field(default_factory=list)
+    top_candidate_agents: list[dict[str, Any]] = Field(default_factory=list)
+    recent_misroutes: list[RouterReviewItem] = Field(default_factory=list)
+    recent_decisions: list[RouterReviewItem] = Field(default_factory=list)
+    recent_path_reviews: list[RouterReviewItem] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class AuditResponse(BaseModel):
     success: bool = True
     query: str
     intent: dict[str, Any] = Field(default_factory=dict)
+    routing_decision: dict[str, Any] = Field(default_factory=dict)
     investigation_plan: dict[str, Any] = Field(default_factory=dict)
     entities_investigated: list[str] = Field(default_factory=list)
     entity_type: str | None = None

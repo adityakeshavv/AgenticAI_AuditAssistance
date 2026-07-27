@@ -8,6 +8,12 @@ import { RiskDistributionChart } from './charts/RiskDistributionChart';
 
 interface AuditDashboardProps {
   onNavigateToWorkspace: () => void;
+  onNavigateToSources: () => void;
+  onNavigateToAudit: () => void;
+  onNavigateToChat: () => void;
+  activeWorkspaceName: string | null;
+  hasSelectedSource: boolean;
+  workspaceCount: number;
 }
 
 const SAMPLE_QUERIES = [
@@ -26,8 +32,28 @@ const workflow = [
   { id: 'composer', label: 'Response Composer', desc: 'Produces the final audit finding.' },
 ];
 
-export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
+export function AuditDashboard({
+  onNavigateToWorkspace,
+  onNavigateToSources,
+  onNavigateToAudit,
+  onNavigateToChat,
+  activeWorkspaceName,
+  hasSelectedSource,
+  workspaceCount,
+}: AuditDashboardProps) {
   const [activeWorkflow, setActiveWorkflow] = useState('intent');
+
+  const primaryActionLabel = !activeWorkspaceName
+    ? 'Open Workspaces'
+    : !hasSelectedSource
+      ? 'Open Data Sources'
+      : 'Open Audit Workspace';
+
+  const handlePrimaryAction = !activeWorkspaceName
+    ? onNavigateToWorkspace
+    : !hasSelectedSource
+      ? onNavigateToSources
+      : onNavigateToAudit;
 
   const kpis = [
     {
@@ -37,7 +63,7 @@ export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
       accent: '#3b82f6',
       trend: '+4.6% this week',
       trendDirection: 'up' as const,
-      icon: '◎',
+      icon: 'TX',
     },
     {
       label: 'Flagged Transactions',
@@ -46,7 +72,7 @@ export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
       accent: '#f59e0b',
       trend: '+128 since yesterday',
       trendDirection: 'up' as const,
-      icon: '!',
+      icon: 'FR',
     },
     {
       label: 'High Risk Findings',
@@ -55,7 +81,7 @@ export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
       accent: '#ef4444',
       trend: '+12 open cases',
       trendDirection: 'up' as const,
-      icon: '▲',
+      icon: 'HR',
     },
     {
       label: 'Supporting Documents',
@@ -64,7 +90,7 @@ export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
       accent: '#10b981',
       trend: '+31 linked documents',
       trendDirection: 'up' as const,
-      icon: '▣',
+      icon: 'DOC',
     },
     {
       label: 'Active Investigations',
@@ -73,7 +99,7 @@ export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
       accent: '#8b5cf6',
       trend: 'Stable this week',
       trendDirection: 'flat' as const,
-      icon: '⌕',
+      icon: 'INV',
     },
   ];
 
@@ -100,9 +126,43 @@ export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
 
   const selectedStep = workflow.find((w) => w.id === activeWorkflow) || workflow[0];
 
+  const setupSteps = [
+    {
+      title: 'Create or select a workspace',
+      status: activeWorkspaceName ? 'Ready' : 'Start here',
+      detail: activeWorkspaceName
+        ? `Active workspace: ${activeWorkspaceName}`
+        : 'Pick the workspace that will scope the audit session.',
+      actionLabel: activeWorkspaceName ? 'Change Workspace' : 'Open Workspaces',
+      action: onNavigateToWorkspace,
+    },
+    {
+      title: 'Connect a data source',
+      status: hasSelectedSource ? 'Ready' : 'Pending',
+      detail: hasSelectedSource
+        ? 'A source is already linked to the active workspace.'
+        : 'Add a database or document source before starting the review.',
+      actionLabel: 'Open Data Sources',
+      action: onNavigateToSources,
+    },
+    {
+      title: 'Open the audit workspace',
+      status: 'Ready',
+      detail: 'Use the audit workspace to ask a question and inspect evidence-backed findings.',
+      actionLabel: 'Open Audit Workspace',
+      action: onNavigateToAudit,
+    },
+    {
+      title: 'Continue in Copilot Chat',
+      status: 'Ready',
+      detail: 'Ask follow-up questions after the first response is generated.',
+      actionLabel: 'Open Chat',
+      action: onNavigateToChat,
+    },
+  ];
+
   return (
     <div style={{ display: 'grid', gap: '1.5rem' }}>
-      {/* Hero */}
       <div className="dashboard-hero">
         <div>
           <p className="eyebrow" style={{ marginBottom: '0.5rem' }}>Audit Operations Center</p>
@@ -114,14 +174,35 @@ export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
           </p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flexShrink: 0 }}>
-          <button className="btn btn-primary" onClick={onNavigateToWorkspace} style={{ padding: '0.75rem 1.5rem', fontSize: '0.95rem' }}>
-            Launch Audit Copilot →
+          <button className="btn btn-primary" onClick={handlePrimaryAction} style={{ padding: '0.75rem 1.5rem', fontSize: '0.95rem' }}>
+            {primaryActionLabel}
           </button>
-          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center' }}>Chat, investigate, and follow up conversationally</span>
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+            Follow the setup journey before opening the assistant
+          </span>
         </div>
       </div>
 
-      {/* KPI Grid */}
+      <div>
+        <p className="label" style={{ marginBottom: '0.75rem' }}>Start Here</p>
+        <div className="grid-2" style={{ gap: '1rem' }}>
+          {setupSteps.map((step) => (
+            <div key={step.title} className="card">
+              <div className="flex-between" style={{ gap: '0.75rem', alignItems: 'flex-start' }}>
+                <div style={{ minWidth: 0 }}>
+                  <p className="label" style={{ marginBottom: '0.35rem' }}>{step.title}</p>
+                  <strong style={{ display: 'block', marginBottom: '0.35rem' }}>{step.status}</strong>
+                  <p className="body-copy" style={{ lineHeight: 1.6 }}>{step.detail}</p>
+                </div>
+                <button className="btn btn-secondary" type="button" onClick={step.action} style={{ flexShrink: 0 }}>
+                  {step.actionLabel}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div>
         <p className="label" style={{ marginBottom: '0.75rem' }}>Key Performance Indicators</p>
         <div className="grid-auto" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
@@ -131,7 +212,6 @@ export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
         </div>
       </div>
 
-      {/* Charts Row */}
       <div>
         <p className="label" style={{ marginBottom: '0.75rem' }}>Analytics Overview</p>
         <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
@@ -141,15 +221,12 @@ export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
         </div>
       </div>
 
-      {/* Middle row: System Overview + Recent Investigations */}
       <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))' }}>
         <SystemOverview />
-        <RecentInvestigations onOpenInvestigation={onNavigateToWorkspace} />
+        <RecentInvestigations onOpenInvestigation={onNavigateToAudit} />
       </div>
 
-      {/* Quick Queries + Agent Workflow */}
       <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1.5fr' }}>
-        {/* Quick Queries */}
         <div className="card">
           <p className="label">Quick Queries</p>
           <p className="body-copy" style={{ marginBottom: '0.9rem' }}>Click any query to open it in the audit workspace.</p>
@@ -158,17 +235,16 @@ export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
               <button
                 key={q}
                 className="investigation-item"
-                onClick={onNavigateToWorkspace}
+                onClick={onNavigateToAudit}
                 style={{ fontSize: '0.85rem' }}
               >
-                <span style={{ color: 'var(--accent-blue)', fontSize: '1rem', flexShrink: 0 }}>→</span>
+                <span style={{ color: 'var(--accent-blue)', fontSize: '1rem', flexShrink: 0 }}>&gt;</span>
                 <span>{q}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Agent Workflow Preview */}
         <div className="card">
           <p className="label">Agent Workflow Pipeline</p>
           <p className="body-copy" style={{ marginBottom: '0.9rem' }}>Interactive overview of the multi-agent audit system.</p>
@@ -195,10 +271,16 @@ export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
                   >
                     <span
                       style={{
-                        width: 20, height: 20, borderRadius: '50%',
+                        width: 20,
+                        height: 20,
+                        borderRadius: '50%',
                         background: activeWorkflow === step.id ? 'var(--accent-blue)' : 'var(--bg-card)',
                         color: activeWorkflow === step.id ? '#fff' : 'var(--text-muted)',
-                        display: 'grid', placeItems: 'center', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0
+                        display: 'grid',
+                        placeItems: 'center',
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        flexShrink: 0,
                       }}
                     >
                       {i + 1}
@@ -211,12 +293,28 @@ export function AuditDashboard({ onNavigateToWorkspace }: AuditDashboardProps) {
                 </div>
               ))}
             </div>
-            <div style={{ padding: '0.75rem', background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', display: 'grid', alignContent: 'start', gap: '0.5rem' }}>
+            <div
+              style={{
+                padding: '0.75rem',
+                background: 'var(--bg-panel)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)',
+                display: 'grid',
+                alignContent: 'start',
+                gap: '0.5rem',
+              }}
+            >
               <p className="label" style={{ margin: 0 }}>Active Step</p>
               <strong style={{ fontSize: '0.9rem', color: 'var(--text-accent)' }}>{selectedStep.label}</strong>
               <p className="body-copy" style={{ fontSize: '0.8rem' }}>{selectedStep.desc}</p>
               <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border)' }}>
                 <span className="badge badge-completed">Operational</span>
+                <span className="source-pill" style={{ marginLeft: '0.5rem' }}>
+                  {workspaceCount > 0 ? `${workspaceCount} workspace(s)` : 'No workspace yet'}
+                </span>
+                <span className="source-pill" style={{ marginLeft: '0.5rem' }}>
+                  {hasSelectedSource ? 'Source connected' : 'Source pending'}
+                </span>
               </div>
             </div>
           </div>

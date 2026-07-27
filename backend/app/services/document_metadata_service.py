@@ -117,3 +117,30 @@ class DocumentMetadataService:
 
     def get_documents_by_type(self, document_type: str) -> list[dict[str, Any]]:
         return [serialize_document_metadata(document) for document in document_metadata_crud.get_documents_by_type(self.db, document_type)]
+
+    def list_documents(
+        self,
+        *,
+        search: str | None = None,
+        document_type: str | None = None,
+        document_category: str | None = None,
+        related_vendor_id: str | None = None,
+        related_employee_id: str | None = None,
+        related_transaction_id: str | None = None,
+        related_contract_id: str | None = None,
+        related_investigation_id: str | None = None,
+        uploaded_only: bool = False,
+    ) -> list[dict[str, Any]]:
+        documents = document_metadata_crud.list_documents(
+            self.db,
+            search=search,
+            document_type=document_type,
+            document_category=document_category,
+            related_vendor_id=related_vendor_id,
+            related_employee_id=related_employee_id,
+            related_transaction_id=related_transaction_id,
+            related_contract_id=related_contract_id,
+            related_investigation_id=related_investigation_id,
+            uploaded_only=uploaded_only,
+        )
+        return [serialize_document_metadata(document) for document in documents]

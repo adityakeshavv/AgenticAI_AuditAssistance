@@ -184,3 +184,32 @@ export interface GovernanceAuditRecord {
 export interface GovernanceAuditListResponse {
   events: GovernanceAuditRecord[];
 }
+
+export interface RouterReviewItem {
+  audit_log_id: string;
+  created_at?: string | null;
+  query?: string | null;
+  selected_agent?: string | null;
+  confidence?: number | null;
+  escalate_to_planner?: boolean;
+  decision_source?: string | null;
+  candidate_agents?: string[];
+  selected_agents?: string[];
+  severity?: string | null;
+  summary?: string | null;
+}
+
+export interface RouterReviewSummaryResponse {
+  total_reviews: number;
+  decision_events: number;
+  path_review_events: number;
+  escalated_count: number;
+  low_confidence_count: number;
+  path_mismatch_count: number;
+  decision_source_counts: Record<string, number>;
+  top_selected_agents: { agent: string; count: number }[];
+  top_candidate_agents: { agent: string; count: number }[];
+  recent_misroutes: RouterReviewItem[];
+  recent_decisions: RouterReviewItem[];
+  recent_path_reviews: RouterReviewItem[];
+}

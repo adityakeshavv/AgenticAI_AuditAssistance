@@ -1,19 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { AdminDashboard } from './AdminDashboard';
-import { DatabaseConnectionsPage } from './DatabaseConnectionsPage';
 import { MetricCard } from './MetricCard';
 import { RecentInvestigations } from './RecentInvestigations';
 import { SystemOverview } from './SystemOverview';
-import { WorkspaceManagementPage } from './WorkspaceManagementPage';
-import { listAdminUsers, listGovernanceAuditEventsWithFilters } from '../services/adminApi';
+import { getRouterReviewSummary, listActiveUsers, listAdminUsers, listGovernanceAuditEventsWithFilters } from '../services/adminApi';
+import type { ActiveUserRecord } from '../services/adminApi';
 import type { AuthUser } from '../types/auth';
-import type { GovernanceAuditRecord } from '../types/audit';
+import type { GovernanceAuditRecord, RouterReviewSummaryResponse } from '../types/audit';
 
-type GovernanceSection = 'overview' | 'users' | 'workspaces' | 'sources' | 'policies' | 'activity';
+type GovernanceSection = 'overview' | 'users' | 'policies' | 'activity';
 
 interface GovernancePageProps {
   isAdmin: boolean;
   currentUserId: string;
+  realtimeTick?: number;
 }
 
 type ActivityCardItem = {
@@ -35,34 +35,27 @@ const FALLBACK_ACTIVITY: ActivityCardItem[] = [
 const SECTION_COPY: Record<GovernanceSection, { title: string; description: string }> = {
   overview: {
     title: 'Governance Overview',
-    description: 'Track the control plane for users, workspaces, and data sources from one place.',
+    description: 'Track the control plane for users, roles, policies, and activity from one place.',
   },
   users: {
     title: 'Users & Roles',
     description: 'Review users, roles, and account state for admin governance.',
   },
-  workspaces: {
-    title: 'Workspaces',
-    description: 'Manage source scope, active workspace selection, and investigation context.',
-  },
-  sources: {
-    title: 'Sources',
-    description: 'Add, test, and activate database connections used by the audit assistant.',
-  },
   policies: {
     title: 'Policies',
-    description: 'Review access rules, source governance rules, and workspace guardrails.',
+    description: 'Review access rules and governance guardrails.',
   },
   activity: {
     title: 'Governance Activity',
-    description: 'Review recent governance actions, source events, and workspace updates.',
+    description: 'Review recent governance actions and admin activity.',
   },
 };
 
-export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) {
+export function GovernancePage({ isAdmin, currentUserId, realtimeTick = 0 }: GovernancePageProps) {
   const [section, setSection] = useState<GovernanceSection>('overview');
   const [activityEvents, setActivityEvents] = useState<GovernanceAuditRecord[]>([]);
   const [adminUsers, setAdminUsers] = useState<AuthUser[]>([]);
+  const [activeUsers, setActiveUsers] = useState<ActiveUserRecord[]>([]);
   const [activityLoading, setActivityLoading] = useState(false);
   const [activityError, setActivityError] = useState<string | null>(null);
   const [activitySearch, setActivitySearch] = useState('');
@@ -70,13 +63,14 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
   const [activityAction, setActivityAction] = useState('');
   const [activityUserId, setActivityUserId] = useState('');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [routerSummary, setRouterSummary] = useState<RouterReviewSummaryResponse | null>(null);
+  const [routerSummaryLoading, setRouterSummaryLoading] = useState(false);
+  const [routerSummaryError, setRouterSummaryError] = useState<string | null>(null);
 
   const sectionItems = useMemo(
     () => ([
       ['overview', 'Overview'],
       ['users', 'Users & Roles'],
-      ['workspaces', 'Workspaces'],
-      ['sources', 'Sources'],
       ['policies', 'Policies'],
       ['activity', 'Activity'],
     ] as const),
@@ -89,7 +83,9 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
     }
     let cancelled = false;
     setActivityLoading(true);
+    setRouterSummaryLoading(true);
     setActivityError(null);
+    setRouterSummaryError(null);
     const actorUserId = isAdmin ? activityUserId || undefined : currentUserId || undefined;
     Promise.all([
       listGovernanceAuditEventsWithFilters({
@@ -99,11 +95,17 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
         action_type: activityAction || undefined,
         actor_user_id: actorUserId,
       }),
+      getRouterReviewSummary({
+        limit: 200,
+        severity: activitySeverity || undefined,
+        actor_user_id: actorUserId,
+      }),
       isAdmin ? listAdminUsers() : Promise.resolve([] as AuthUser[]),
     ])
-      .then(([events, users]) => {
+      .then(([events, routerSummaryResponse, users]) => {
         if (!cancelled) {
           setActivityEvents(events);
+          setRouterSummary(routerSummaryResponse);
           setAdminUsers(users);
           setSelectedEventId((current) => current && events.some((event) => event.audit_log_id === current) ? current : events[0]?.audit_log_id ?? null);
         }
@@ -111,18 +113,43 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
       .catch((error: unknown) => {
         if (!cancelled) {
           setActivityError(error instanceof Error ? error.message : 'Failed to load governance activity.');
+          setRouterSummaryError(error instanceof Error ? error.message : 'Failed to load router review summary.');
           setActivityEvents([]);
+          setRouterSummary(null);
         }
       })
       .finally(() => {
         if (!cancelled) {
           setActivityLoading(false);
+          setRouterSummaryLoading(false);
         }
       });
     return () => {
       cancelled = true;
     };
-  }, [activityAction, activitySearch, activitySeverity, activityUserId, currentUserId, isAdmin, section]);
+  }, [activityAction, activitySearch, activitySeverity, activityUserId, currentUserId, isAdmin, section, realtimeTick]);
+
+  useEffect(() => {
+    if (!isAdmin) {
+      setActiveUsers([]);
+      return;
+    }
+    let cancelled = false;
+    listActiveUsers()
+      .then((items) => {
+        if (!cancelled) {
+          setActiveUsers(items);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setActiveUsers([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin, realtimeTick]);
 
   const renderedActivity: ActivityCardItem[] = activityEvents.length > 0
     ? activityEvents.map((event) => ({
@@ -138,28 +165,6 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
     }))
     : FALLBACK_ACTIVITY;
   const selectedEvent = selectedEventId ? activityEvents.find((event) => event.audit_log_id === selectedEventId) || null : null;
-  const activeUsers = useMemo(() => {
-    if (!isAdmin) {
-      return [];
-    }
-    const cutoff = Date.now() - 15 * 60 * 1000;
-    const recent = new Map<string, { name: string; lastSeen: number }>();
-    for (const event of activityEvents) {
-      const eventTime = Date.parse(event.created_at);
-      if (Number.isNaN(eventTime) || eventTime < cutoff) {
-        continue;
-      }
-      const id = event.actor_user_id || event.actor_name || 'system';
-      const name = event.actor_name || event.actor_user_id || 'System';
-      const existing = recent.get(id);
-      if (!existing || eventTime > existing.lastSeen) {
-        recent.set(id, { name, lastSeen: eventTime });
-      }
-    }
-    return Array.from(recent.entries())
-      .sort((left, right) => right[1].lastSeen - left[1].lastSeen)
-      .map(([id, value]) => ({ id, name: value.name, lastSeen: value.lastSeen }));
-  }, [activityEvents]);
   const activityStats = useMemo(() => {
     const totalEvents = activityEvents.length;
     const uniqueActors = new Set(
@@ -234,10 +239,10 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
       {section === 'overview' && (
         <div className="stack" style={{ gap: '1rem' }}>
           <div className="grid-auto" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))' }}>
-            <MetricCard label="Governance Controls" value="4" detail="Users, workspaces, sources, and activity." trend="+1 section" trendDirection="up" accent="#38bdf8" />
+            <MetricCard label="Governance Controls" value="4" detail="Users, roles, policies, and activity." trend="+1 section" trendDirection="up" accent="#38bdf8" />
             <MetricCard label="Admin Ready" value={isAdmin ? 'Yes' : 'No'} detail="RBAC is enforced for privileged actions." trend={isAdmin ? 'Admin session active' : 'User session active'} trendDirection="flat" accent="#a78bfa" />
-            <MetricCard label="Workspace Scope" value="Active" detail="Selected source context is applied to investigations." trend="Auto-applied" trendDirection="up" accent="#34d399" />
-            <MetricCard label="Source Health" value="Monitored" detail="Connection testing and source selection are available." trend="Validated sources visible" trendDirection="flat" accent="#f59e0b" />
+            <MetricCard label="Policy Scope" value="Active" detail="Governance policies apply across users and sessions." trend="Auto-applied" trendDirection="up" accent="#34d399" />
+            <MetricCard label="Activity Health" value="Monitored" detail="Connection testing and governance activity are available." trend="Validated actions visible" trendDirection="flat" accent="#f59e0b" />
           </div>
 
           <div className="grid-2" style={{ gap: '1rem', alignItems: 'start' }}>
@@ -250,9 +255,8 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
               <p className="label" style={{ marginBottom: '0.5rem' }}>Governance Workflow</p>
               <div className="stack-sm">
                 <div className="card-sm"><strong>1. Users & Roles</strong><p className="small-copy">Control who can access the platform and what actions they can take.</p></div>
-                <div className="card-sm"><strong>2. Workspaces</strong><p className="small-copy">Scope investigations to the correct data sources and contexts.</p></div>
-                <div className="card-sm"><strong>3. Sources</strong><p className="small-copy">Manage database connectivity, testing, and active source selection.</p></div>
-                <div className="card-sm"><strong>4. Activity</strong><p className="small-copy">Review the governance trail for user, source, and workspace actions.</p></div>
+                <div className="card-sm"><strong>2. Policies</strong><p className="small-copy">Define and review guardrails for access and operations.</p></div>
+                <div className="card-sm"><strong>3. Activity</strong><p className="small-copy">Review the governance trail for user and admin actions.</p></div>
               </div>
             </div>
             <div className="card">
@@ -261,14 +265,6 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
                 <div className="card-sm">
                   <strong>Open User Controls</strong>
                   <p className="small-copy">Inspect user status and RBAC controls for this session.</p>
-                </div>
-                <div className="card-sm">
-                  <strong>Open Workspace Manager</strong>
-                  <p className="small-copy">Choose which workspace and sources scope the audit assistant.</p>
-                </div>
-                <div className="card-sm">
-                  <strong>Open Source Console</strong>
-                  <p className="small-copy">Add or test a database connection before using it in investigations.</p>
                 </div>
               </div>
             </div>
@@ -280,9 +276,8 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
         <div className="card">
           {isAdmin ? (
             <AdminDashboard
-              onOpenConnections={() => setSection('sources')}
-              onOpenWorkspaces={() => setSection('workspaces')}
               currentUserId={currentUserId}
+              realtimeTick={realtimeTick}
             />
           ) : (
             <div className="stack-sm">
@@ -293,20 +288,77 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
         </div>
       )}
 
-      {section === 'workspaces' && (
-        <div className="card">
-          <WorkspaceManagementPage />
-        </div>
-      )}
-
-      {section === 'sources' && (
-        <div className="card">
-          <DatabaseConnectionsPage isAdminView={isAdmin} />
-        </div>
-      )}
-
       {section === 'activity' && (
         <div className="stack" style={{ gap: '1rem' }}>
+          <div className="card">
+            <div className="flex-between" style={{ gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
+              <p className="label">Routing Review</p>
+              <span className="badge badge-completed">Admin view</span>
+            </div>
+            {routerSummaryLoading ? (
+              <p className="small-copy">Loading router review summary...</p>
+            ) : routerSummaryError ? (
+              <div className="card-sm">
+                <strong>Routing review unavailable</strong>
+                <p className="small-copy" style={{ marginTop: '0.35rem' }}>{routerSummaryError}</p>
+              </div>
+            ) : routerSummary ? (
+              <div className="grid-2" style={{ gap: '0.85rem', alignItems: 'start' }}>
+                <div className="stack-sm">
+                  <div className="grid-2" style={{ gap: '0.6rem' }}>
+                    <InfoTile label="Total Reviews" value={String(routerSummary.total_reviews)} />
+                    <InfoTile label="Escalations" value={String(routerSummary.escalated_count)} />
+                    <InfoTile label="Low Confidence" value={String(routerSummary.low_confidence_count)} />
+                    <InfoTile label="Path Mismatches" value={String(routerSummary.path_mismatch_count)} />
+                  </div>
+                  <div className="card-sm">
+                    <p className="label" style={{ marginBottom: '0.45rem' }}>Top Selected Agents</p>
+                    <div className="stack-sm">
+                      {routerSummary.top_selected_agents.length > 0 ? routerSummary.top_selected_agents.map((item) => (
+                        <div key={item.agent} className="flex-between" style={{ gap: '0.75rem' }}>
+                          <span className="small-copy">{formatActionLabel(item.agent)}</span>
+                          <span className="source-pill">{item.count}</span>
+                        </div>
+                      )) : (
+                        <p className="small-copy">No router decisions logged yet.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="stack-sm">
+                  <div className="card-sm">
+                    <p className="label" style={{ marginBottom: '0.45rem' }}>Decision Source Breakdown</p>
+                    <div className="stack-sm">
+                      {Object.entries(routerSummary.decision_source_counts).length > 0 ? Object.entries(routerSummary.decision_source_counts).map(([source, count]) => (
+                        <div key={source} className="flex-between" style={{ gap: '0.75rem' }}>
+                          <span className="small-copy">{source.replace(/_/g, ' ')}</span>
+                          <span className="source-pill">{count}</span>
+                        </div>
+                      )) : (
+                        <p className="small-copy">No routing source data available.</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="card-sm">
+                    <p className="label" style={{ marginBottom: '0.45rem' }}>Recent Misroutes</p>
+                    <div className="stack-sm">
+                      {routerSummary.recent_misroutes.length > 0 ? routerSummary.recent_misroutes.slice(0, 3).map((item) => (
+                        <div key={item.audit_log_id} className="card-sm">
+                          <strong>{formatActionLabel(item.selected_agent || 'general_agent')}</strong>
+                          <p className="small-copy" style={{ marginTop: '0.25rem' }}>{item.query || 'No query text available.'}</p>
+                        </div>
+                      )) : (
+                        <p className="small-copy">No misroutes detected in the current review window.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="small-copy">No routing summary available yet.</p>
+            )}
+          </div>
+
           <div className="grid-auto" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))' }}>
             <MetricCard
               label="Activity Events"
@@ -350,9 +402,18 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
               </div>
               <div className="flex-row" style={{ flexWrap: 'wrap', gap: '0.5rem' }}>
                 {activeUsers.length > 0 ? activeUsers.map((user) => (
-                  <span key={user.id} className="source-pill">
-                    {user.name}
-                  </span>
+                  <div key={user.user_id} className="card-sm" style={{ minWidth: '180px' }}>
+                    <strong style={{ display: 'block' }}>{user.full_name}</strong>
+                    <p className="small-copy" style={{ marginTop: '0.2rem' }}>{user.email}</p>
+                    <p className="small-copy" style={{ marginTop: '0.2rem' }}>
+                      {user.role === 'admin' ? 'Admin' : 'User'} • {user.session_count || 1} session{(user.session_count || 1) === 1 ? '' : 's'}
+                    </p>
+                    {user.connected_at && (
+                      <p className="small-copy" style={{ marginTop: '0.2rem', opacity: 0.8 }}>
+                        Connected {formatRelativeTime(user.connected_at)}
+                      </p>
+                    )}
+                  </div>
                 )) : (
                   <p className="small-copy">No users are active right now.</p>
                 )}
@@ -363,11 +424,32 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
           <div className="grid-2" style={{ gap: '1rem', alignItems: 'start' }}>
             <div className="card">
               <div className="flex-between" style={{ gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.65rem' }}>
-                <p className="label">Audit Trail</p>
+                <p className="label">Activity Trail</p>
                 <button type="button" className="tab-btn" onClick={handleExportActivity} disabled={activityEvents.length === 0}>
                   Export
                 </button>
               </div>
+              {isAdmin && (
+                <div className="card-sm" style={{ marginBottom: '0.85rem', borderLeft: '3px solid var(--accent-green)' }}>
+                  <div className="flex-between" style={{ gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <div>
+                      <p className="label" style={{ marginBottom: '0.25rem' }}>Active Now</p>
+                      <strong>{activeUsers.length} active user{activeUsers.length === 1 ? '' : 's'}</strong>
+                    </div>
+                    <span className="badge badge-completed">Live view</span>
+                  </div>
+                  <div className="flex-row" style={{ flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.75rem' }}>
+                    {activeUsers.length > 0 ? activeUsers.map((user) => (
+                      <div key={user.user_id} className="source-pill" style={{ display: 'grid', gap: '0.1rem', padding: '0.55rem 0.75rem' }}>
+                        <strong style={{ display: 'block' }}>{user.full_name}</strong>
+                        <span style={{ fontSize: '0.72rem', opacity: 0.82 }}>{user.role === 'admin' ? 'Admin' : 'User'} • {user.session_count || 1} session{(user.session_count || 1) === 1 ? '' : 's'}</span>
+                      </div>
+                    )) : (
+                      <p className="small-copy">No users are active right now.</p>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="grid-3" style={{ gap: '0.6rem', marginBottom: '0.85rem' }}>
                 <input
                   value={activitySearch}
@@ -377,7 +459,7 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
                 />
                 {isAdmin ? (
                   <select value={activityUserId} onChange={(event) => setActivityUserId(event.target.value)} className="input">
-                    <option value="">All users</option>
+                    <option value="">View activity for all users</option>
                     {activityUserOptions.map(([value, label]) => (
                       <option key={value} value={value}>{label}</option>
                     ))}
@@ -406,6 +488,8 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
                   <option value="chat_turn_started">Chat Turn Started</option>
                   <option value="chat_turn_completed">Chat Turn Completed</option>
                   <option value="audit_query_started">Audit Query Started</option>
+                  <option value="router_decision_reviewed">Router Decision Reviewed</option>
+                  <option value="router_path_reviewed">Router Path Reviewed</option>
                   <option value="audit_query_completed">Audit Query Completed</option>
                   <option value="audit_query_failed">Audit Query Failed</option>
                   <option value="audit_query_rejected">Audit Query Rejected</option>
@@ -555,16 +639,16 @@ export function GovernancePage({ isAdmin, currentUserId }: GovernancePageProps) 
             <p className="label" style={{ marginBottom: '0.65rem' }}>Policy Summary</p>
             <div className="stack-sm">
               <div className="card-sm">
-                <strong>Who can change sources?</strong>
-                <p className="small-copy">Admins manage source creation, testing, and activation.</p>
+                <strong>Who can manage controls?</strong>
+                <p className="small-copy">Admins manage users, roles, and governance settings.</p>
               </div>
               <div className="card-sm">
-                <strong>How is scope applied?</strong>
-                <p className="small-copy">The active workspace determines which source and schema context the assistant uses.</p>
+                <strong>How is access applied?</strong>
+                <p className="small-copy">Access controls determine which parts of the system each user can use.</p>
               </div>
               <div className="card-sm">
                 <strong>What is protected?</strong>
-                <p className="small-copy">Admin self-deactivation and invalid connection states are blocked.</p>
+                <p className="small-copy">Admin self-deactivation and invalid governance actions are blocked.</p>
               </div>
             </div>
           </div>
