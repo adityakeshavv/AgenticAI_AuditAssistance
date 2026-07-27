@@ -1,4 +1,4 @@
-import type { AuditResponse } from '../types/audit';
+import type { AuditResponse, ChatHistoryResponse, ChatSessionSummary } from '../types/audit';
 import { readApiError } from './apiErrors';
 import { buildAuthHeaders } from './authApi';
 import { getSelectedDatabaseConnectionId } from './databaseConnectionsApi';
@@ -80,7 +80,7 @@ export async function sendChatMessage(
   return data as ChatResponse;
 }
 
-export async function createChatSession(): Promise<string> {
+export async function createChatSession(): Promise<ChatSessionSummary> {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
   if (!apiBaseUrl) throw new Error('VITE_API_BASE_URL is not configured.');
   const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/chat/session`, {
@@ -93,10 +93,25 @@ export async function createChatSession(): Promise<string> {
     throw new Error(await readApiError(response, 'Failed to create chat session'));
   }
   const data = await response.json();
-  return data.session_id as string;
+  return data as ChatSessionSummary;
 }
 
-export async function getChatHistory(sessionId: string): Promise<unknown> {
+export async function listChatSessions(): Promise<ChatSessionSummary[]> {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!apiBaseUrl) throw new Error('VITE_API_BASE_URL is not configured.');
+  const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/chat/sessions`, {
+    headers: {
+      ...buildAuthHeaders(),
+    },
+  });
+  if (!response.ok) {
+    throw new Error(await readApiError(response, 'Failed to load chat sessions'));
+  }
+  const data = await response.json();
+  return Array.isArray(data) ? (data as ChatSessionSummary[]) : [];
+}
+
+export async function getChatHistory(sessionId: string): Promise<ChatHistoryResponse> {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
   if (!apiBaseUrl) throw new Error('VITE_API_BASE_URL is not configured.');
   const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/chat/session/${sessionId}/history`, {
@@ -107,5 +122,6 @@ export async function getChatHistory(sessionId: string): Promise<unknown> {
   if (!response.ok) {
     throw new Error(await readApiError(response, 'Failed to load chat history'));
   }
-  return response.json();
+  const data = await response.json();
+  return data as ChatHistoryResponse;
 }

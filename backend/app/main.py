@@ -8,6 +8,7 @@ from app.core.config import get_settings
 from app.core.exceptions import safe_detail
 from app import models as _models  # noqa: F401
 from app.routers import admin, audit, auth, chat, connections, health, realtime, workspaces
+from app.services.realtime_service import realtime_hub
 
 
 settings = get_settings()
@@ -66,6 +67,11 @@ async def unhandled_exception_handler(_: Request, exc: Exception) -> JSONRespons
 @app.on_event("startup")
 def create_missing_tables() -> None:
     Base.metadata.create_all(bind=engine)
+
+
+@app.on_event("shutdown")
+async def shutdown_realtime_hub() -> None:
+    await realtime_hub.shutdown()
 
 
 @app.get("/")

@@ -18,12 +18,29 @@ class RealtimeHub:
         self._queue: Queue[dict[str, Any]] = Queue()
         self._dispatch_task: asyncio.Task[None] | None = None
         self._lock = asyncio.Lock()
+        self._running = False
+        self._stop_sentinel: dict[str, Any] = {"type": "__realtime_stop__"}
 
     async def ensure_started(self) -> None:
         async with self._lock:
             if self._dispatch_task and not self._dispatch_task.done():
                 return
+            self._running = True
             self._dispatch_task = asyncio.create_task(self._dispatch_loop())
+
+    async def shutdown(self) -> None:
+        async with self._lock:
+            self._running = False
+            self._queue.put(self._stop_sentinel)
+            task = self._dispatch_task
+            self._dispatch_task = None
+        if task and not task.done():
+            try:
+                await asyncio.wait_for(task, timeout=2)
+            except Exception:
+                task.cancel()
+        self._connections.clear()
+        self._connection_meta.clear()
 
     def publish(self, payload: dict[str, Any]) -> None:
         self._queue.put(payload)
@@ -69,8 +86,10 @@ class RealtimeHub:
         return sorted(active.values(), key=lambda item: (item.get("full_name") or item.get("user_id") or "").lower())
 
     async def _dispatch_loop(self) -> None:
-        while True:
+        while self._running:
             payload = await asyncio.to_thread(self._queue.get)
+            if payload == self._stop_sentinel:
+                break
             await self._broadcast(payload)
 
     async def _broadcast(self, payload: dict[str, Any]) -> None:

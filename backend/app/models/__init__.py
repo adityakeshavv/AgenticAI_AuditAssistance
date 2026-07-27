@@ -9,6 +9,8 @@ from app.models.evidence import Evidence
 from app.models.expense import ExpenseClaim
 from app.models.finding import AuditFinding
 from app.models.audit_workspace import AuditWorkspace
+from app.models.chat_session import ChatSession
+from app.models.chat_turn import ChatTurn
 from app.models.governance_audit import GovernanceAuditLog
 from app.models.investigation import AuditInvestigation
 from app.models.transaction import TransactionMaster
@@ -20,6 +22,8 @@ __all__ = [
     "AuditFinding",
     "AuditInvestigation",
     "AuditWorkspace",
+    "ChatSession",
+    "ChatTurn",
     "ComplianceRecord",
     "Contract",
     "DepartmentMaster",

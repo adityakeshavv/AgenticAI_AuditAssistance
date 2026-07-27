@@ -51,6 +51,29 @@ class ConversationMemoryService:
         return cls._sessions.get(session_id)
 
     @classmethod
+    def bootstrap_from_history(cls, session_id: str, turns: list[dict[str, Any]]) -> None:
+        if session_id not in cls._sessions:
+            cls._sessions[session_id] = cls._empty_session(session_id)
+
+        session = cls._sessions[session_id]
+        session["short_term"] = []
+        session["session"]["turns"] = []
+        session["investigation"] = cls._empty_session(session_id)["investigation"]
+        session["long_term"] = {"facts": []}
+
+        for turn in turns:
+            session["session"]["turns"].append(turn)
+            session["short_term"].append(turn)
+            if len(session["short_term"]) > _MAX_SHORT_TERM:
+                session["short_term"] = session["short_term"][-_MAX_SHORT_TERM:]
+
+            assistant_response = turn.get("assistant_response") or {}
+            cls._update_investigation(session["investigation"], assistant_response, turn)
+            cls._update_long_term(session["long_term"], turn)
+
+        session["last_updated"] = _now()
+
+    @classmethod
     def add_turn(
         cls,
         session_id: str,
@@ -67,6 +90,8 @@ class ConversationMemoryService:
             "timestamp": _now(),
             "user": user_message,
             "assistant_summary": cls._summarize_response(assistant_response),
+            "assistant_message": assistant_response.get("assistant_message", assistant_response.get("final_response", "")),
+            "conversation_mode": assistant_response.get("conversation_mode", "audit"),
             "risk_rating": assistant_response.get("risk_rating"),
             "key_findings": list(assistant_response.get("key_findings", [])),
             "entities_investigated": list(assistant_response.get("entities_investigated", [])),
@@ -82,6 +107,7 @@ class ConversationMemoryService:
             "finding_title": assistant_response.get("finding", {}).get("title", ""),
             "finding_summary": assistant_response.get("finding", {}).get("summary", ""),
             "recommendation": assistant_response.get("finding", {}).get("recommendation", ""),
+            "assistant_response": deepcopy(assistant_response),
         }
 
         # session memory — full history
@@ -181,6 +207,8 @@ class ConversationMemoryService:
             parts.append(r["finding"]["summary"])
         elif r.get("final_response"):
             parts.append(str(r["final_response"])[:400])
+        elif r.get("assistant_message"):
+            parts.append(str(r["assistant_message"])[:400])
         risk = r.get("risk_rating")
         if risk:
             parts.append(f"Risk: {risk}.")

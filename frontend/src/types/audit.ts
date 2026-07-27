@@ -131,6 +131,43 @@ export interface SuggestedAction {
   description: string;
 }
 
+export interface ChatSessionSummary {
+  session_id: string;
+  session_title: string;
+  turn_count: number;
+  workspace_id?: string | null;
+  connection_id?: string | null;
+  last_message_preview?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  last_message_at?: string | null;
+  is_archived?: boolean;
+}
+
+export interface ChatTurnRecord {
+  turn_id: string;
+  turn_index: number;
+  timestamp?: string | null;
+  user_message: string;
+  assistant_message: string;
+  assistant_mode?: string;
+  is_followup?: boolean;
+  resolved_query?: string | null;
+  response: ChatResponse;
+}
+
+export interface ChatHistoryResponse {
+  session_id: string;
+  session_title: string;
+  turn_count: number;
+  workspace_id?: string | null;
+  connection_id?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  last_message_at?: string | null;
+  turns: ChatTurnRecord[];
+}
+
 export interface InvestigationState {
   entity_type?: string | null;
   entity_ids: string[];
@@ -156,9 +193,12 @@ export interface ChatMessage {
 
 export interface ChatResponse extends AuditResponse {
   session_id: string;
+  session_title?: string;
   is_followup: boolean;
   resolved_query: string;
   original_query: string;
+  assistant_message?: string;
+  conversation_mode?: string;
   injected_context: Record<string, unknown>;
   suggested_actions: SuggestedAction[];
   investigation_state: InvestigationState;

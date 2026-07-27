@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 
 from app.dependencies.auth import get_current_user
 from app.dependencies.database import get_db
-from app.schemas.chat import ChatRequest, ChatResponse
+from app.schemas.chat import ChatHistoryResponse, ChatRequest, ChatResponse, ChatSessionSummary
 from app.services.chat_service import ChatService
-from app.services.conversation_memory_service import ConversationMemoryService
+from app.services.chat_session_service import ChatSessionService
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -24,6 +24,7 @@ def chat_message(
         page=payload.page,
         page_size=payload.page_size,
         user_id=current_user.user_id,
+        user_name=current_user.full_name,
         connection_id=payload.connection_id,
         workspace_id=payload.workspace_id,
         attached_document_ids=payload.attached_document_ids,
@@ -31,42 +32,35 @@ def chat_message(
 
 
 @router.post("/session")
-def create_session(_current_user = Depends(get_current_user)) -> dict:
-    session_id = ConversationMemoryService.create_session()
-    return {"session_id": session_id}
+def create_session(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+) -> dict:
+    session = ChatSessionService(db).create_session(user_id=current_user.user_id)
+    return session
 
 
-@router.get("/session/{session_id}/history")
-def get_session_history(session_id: str, _current_user = Depends(get_current_user)) -> dict:
-    session = ConversationMemoryService.get_session(session_id)
-    if not session:
-        return {"error": "Session not found", "session_id": session_id}
-    turns = session["session"]["turns"]
-    investigation = dict(session["investigation"])
-    investigation["entity_ids"] = list(investigation.get("entity_ids", set()))
-    investigation["transaction_ids"] = list(investigation.get("transaction_ids", set()))
-    return {
-        "session_id": session_id,
-        "turn_count": len(turns),
-        "turns": [
-            {
-                "turn_id": t["turn_id"],
-                "timestamp": t["timestamp"],
-                "user": t["user"],
-                "summary": t["assistant_summary"],
-                "risk_rating": t["risk_rating"],
-                "finding_title": t["finding_title"],
-            }
-            for t in turns
-        ],
-        "investigation": investigation,
-    }
+@router.get("/sessions", response_model=list[ChatSessionSummary])
+def list_sessions(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+) -> list[dict]:
+    return ChatSessionService(db).list_sessions(user_id=current_user.user_id)
+
+
+@router.get("/session/{session_id}/history", response_model=ChatHistoryResponse)
+def get_session_history(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+) -> dict:
+    return ChatSessionService(db).get_history(session_id=session_id, user_id=current_user.user_id)
 
 
 @router.delete("/session/{session_id}")
-def clear_session(session_id: str, _current_user = Depends(get_current_user)) -> dict:
-    from app.services.conversation_memory_service import ConversationMemoryService as CMS
-    if session_id in CMS._sessions:
-        del CMS._sessions[session_id]
-        return {"cleared": True, "session_id": session_id}
-    return {"cleared": False, "session_id": session_id}
+def clear_session(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+) -> dict:
+    return ChatSessionService(db).archive_session(session_id=session_id, user_id=current_user.user_id)
