@@ -19,6 +19,10 @@ DEFAULT_AVAILABLE_AGENTS = [
         "description": "Retrieve transaction evidence and transaction-level filters.",
     },
     {
+        "name": "control_testing_agent",
+        "description": "Run internal control tests for approvals, segregation of duties proxies, policy exceptions, duplicate payments, and failed controls.",
+    },
+    {
         "name": "vendor_investigation_agent",
         "description": "Investigate vendor risk, vendor profile, and vendor-related relationships.",
     },
@@ -150,6 +154,8 @@ class InvestigationPlannerService:
 
     def build_execution_query(self, query: str) -> str | None:
         normalized = query.lower().strip()
+        if self._looks_like_control_review(normalized):
+            return "show flagged transactions"
         if self._looks_like_vendor_activity(normalized) or self._looks_like_vendor_risk(normalized):
             return "show suspicious transactions"
         if self._looks_like_approval_exception(normalized):
@@ -378,6 +384,31 @@ Do not include markdown or extra keys.
                 ],
             }
 
+        if self._looks_like_control_review(normalized):
+            return {
+                "investigation_type": "control_testing_investigation",
+                "entities_required": ["transaction", "approval_workflow", "compliance_record", "document"],
+                "agents_required": ["control_testing_agent", "document_retrieval_agent"],
+                "reasoning": [
+                    "Control testing requires structured checks across transactions, approvals, and compliance evidence.",
+                    "Document evidence is required to support control exceptions and audit conclusions.",
+                ],
+                "plan": [
+                    {
+                        "agent": "control_testing_agent",
+                        "reason": "Run baseline internal control tests across the available structured audit data.",
+                        "expected_output": "Structured control testing evidence",
+                        "query_hint": "run control testing",
+                    },
+                    {
+                        "agent": "document_retrieval_agent",
+                        "reason": "Link supporting control evidence and citations.",
+                        "expected_output": "Document citations",
+                        "query_hint": "find supporting control documents",
+                    },
+                ],
+            }
+
         if self._looks_like_approval_exception(normalized):
             return {
                 "investigation_type": "approval_exception_investigation",
@@ -547,6 +578,18 @@ Do not include markdown or extra keys.
 
     def _looks_like_approval_exception(self, normalized: str) -> bool:
         return bool(re.search(r"\bapproval\b.*\bexception\b|\bexceptions\b.*\bapproval\b", normalized))
+
+    def _looks_like_control_review(self, normalized: str) -> bool:
+        return bool(
+            re.search(r"\bcontrol\b", normalized)
+            or re.search(r"\bcontrols\b", normalized)
+            or re.search(r"\bcontrol testing\b", normalized)
+            or re.search(r"\btest controls\b", normalized)
+            or re.search(r"\binternal control\b", normalized)
+            or re.search(r"\bsegregation of duties\b", normalized)
+            or re.search(r"\bpolicy exception\b", normalized)
+            or re.search(r"\bduplicate payment\b", normalized)
+        )
 
     def _looks_like_payment_anomaly(self, normalized: str) -> bool:
         return bool(

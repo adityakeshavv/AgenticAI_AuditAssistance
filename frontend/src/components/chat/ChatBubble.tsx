@@ -305,6 +305,7 @@ export function ChatBubble({ msg }: Props) {
             {evidenceCount > 0 && <span className="source-pill">{evidenceCount} records</span>}
             <span style={{ marginLeft: 'auto', fontSize: '0.72rem', color: 'var(--text-muted)' }}>{new Date(msg.timestamp).toLocaleTimeString()}</span>
           </div>
+
         </div>
 
         {response && response.conversation_mode === 'audit' && (

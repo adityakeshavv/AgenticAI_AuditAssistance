@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { listDatabaseConnections, getSelectedDatabaseConnectionId, setSelectedDatabaseConnectionId } from '../services/databaseConnectionsApi';
 import {
+  createWorkspaceCollaborationItem,
+  deleteWorkspaceCollaborationItem,
+  listWorkspaceCollaborationItems,
+  updateWorkspaceCollaborationItem,
+} from '../services/workspaceCollaborationApi';
+import {
   activateWorkspace,
   createWorkspace,
   deleteWorkspace,
@@ -13,6 +19,11 @@ import {
 } from '../services/workspacesApi';
 import type { DatabaseConnectionRecord } from '../types/databaseConnections';
 import type { WorkspaceForm, WorkspaceRecord } from '../types/workspace';
+import type {
+  WorkspaceCollaborationItem,
+  WorkspaceCollaborationItemType,
+  WorkspaceCollaborationSummary,
+} from '../types/workspaceCollaboration';
 import { FeedbackBanner } from './FeedbackBanner';
 
 const DEFAULT_FORM: WorkspaceForm = {
@@ -26,6 +37,50 @@ function prettyDate(value?: string | null) {
   if (!value) return 'n/a';
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+}
+
+const DEFAULT_COLLAB_FORM = {
+  item_type: 'comment' as WorkspaceCollaborationItemType,
+  title: '',
+  body: '',
+  status: 'open',
+  priority: 'medium',
+  mentions_text: '',
+  assignee_user_id: '',
+  due_date: '',
+};
+
+const EMPTY_COLLAB_SUMMARY: WorkspaceCollaborationSummary = {
+  total_items: 0,
+  open_items: 0,
+  completed_items: 0,
+  comment_count: 0,
+  task_count: 0,
+  review_count: 0,
+  mention_count: 0,
+};
+
+function formatCollaborationLabel(value: string | null | undefined, fallback = 'n/a') {
+  if (!value) return fallback;
+  return value
+    .split(/[_\-\s]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function summarizeCollaborationItem(item: WorkspaceCollaborationItem): string {
+  const body = (item.body || '').replace(/\s+/g, ' ').trim();
+  if (!body) return 'No details added yet.';
+  if (body.length <= 120) return body;
+  return `${body.slice(0, 119).trimEnd()}...`;
+}
+
+function parseMentions(value: string): string[] {
+  return value
+    .split(/[,\n]/)
+    .map((entry) => entry.trim().replace(/^@/, ''))
+    .filter(Boolean);
 }
 
 interface WorkspaceManagementPageProps {
@@ -44,6 +99,14 @@ export function WorkspaceManagementPage({ realtimeTick = 0 }: WorkspaceManagemen
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [collaborationItems, setCollaborationItems] = useState<WorkspaceCollaborationItem[]>([]);
+  const [collaborationSummary, setCollaborationSummary] = useState<WorkspaceCollaborationSummary>(EMPTY_COLLAB_SUMMARY);
+  const [collaborationLoading, setCollaborationLoading] = useState(false);
+  const [collaborationActionLoading, setCollaborationActionLoading] = useState(false);
+  const [collaborationError, setCollaborationError] = useState<string | null>(null);
+  const [collaborationMessage, setCollaborationMessage] = useState<string | null>(null);
+  const [collaborationFilter, setCollaborationFilter] = useState<'all' | WorkspaceCollaborationItemType>('all');
+  const [collaborationForm, setCollaborationForm] = useState(DEFAULT_COLLAB_FORM);
 
   const activeWorkspace = useMemo(
     () => workspaces.find((item) => item.workspace_id === selectedWorkspaceId) || null,
@@ -122,8 +185,35 @@ export function WorkspaceManagementPage({ realtimeTick = 0 }: WorkspaceManagemen
     }
   }, [selectedWorkspaceId, workspaces]);
 
+  useEffect(() => {
+    const loadCollaboration = async () => {
+      if (!selectedWorkspaceId) {
+        setCollaborationItems([]);
+        setCollaborationSummary(EMPTY_COLLAB_SUMMARY);
+        return;
+      }
+      setCollaborationLoading(true);
+      setCollaborationError(null);
+      try {
+        const result = await listWorkspaceCollaborationItems(selectedWorkspaceId, collaborationFilter === 'all' ? null : collaborationFilter);
+        setCollaborationItems(result.items || []);
+        setCollaborationSummary(result.summary || EMPTY_COLLAB_SUMMARY);
+      } catch (err) {
+        setCollaborationError(err instanceof Error ? err.message : 'Unable to load collaboration items.');
+      } finally {
+        setCollaborationLoading(false);
+      }
+    };
+
+    void loadCollaboration();
+  }, [collaborationFilter, realtimeTick, selectedWorkspaceId]);
+
   const updateField = <K extends keyof WorkspaceForm>(field: K, value: WorkspaceForm[K]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const updateCollaborationField = <K extends keyof typeof DEFAULT_COLLAB_FORM>(field: K, value: (typeof DEFAULT_COLLAB_FORM)[K]) => {
+    setCollaborationForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const saveWorkspace = async () => {
@@ -166,6 +256,75 @@ export function WorkspaceManagementPage({ realtimeTick = 0 }: WorkspaceManagemen
       setError(err instanceof Error ? err.message : 'Unable to save workspace selection.');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const saveCollaborationItem = async () => {
+    if (!selectedWorkspaceId) return;
+    if (!collaborationForm.body.trim() && !collaborationForm.title.trim()) {
+      setCollaborationError('Add a note, task, or review summary before saving.');
+      return;
+    }
+
+    setCollaborationActionLoading(true);
+    setCollaborationError(null);
+    setCollaborationMessage(null);
+    try {
+      await createWorkspaceCollaborationItem(selectedWorkspaceId, {
+        item_type: collaborationForm.item_type,
+        title: collaborationForm.title.trim() || null,
+        body: collaborationForm.body.trim() || null,
+        status: collaborationForm.status.trim() || null,
+        priority: collaborationForm.priority.trim() || null,
+        mentions: parseMentions(collaborationForm.mentions_text),
+        assignee_user_id: collaborationForm.assignee_user_id.trim() || null,
+        due_date: collaborationForm.due_date || null,
+      });
+      setCollaborationMessage('Workspace collaboration item saved.');
+      setCollaborationForm(DEFAULT_COLLAB_FORM);
+      const refreshed = await listWorkspaceCollaborationItems(selectedWorkspaceId, collaborationFilter === 'all' ? null : collaborationFilter);
+      setCollaborationItems(refreshed.items || []);
+      setCollaborationSummary(refreshed.summary || EMPTY_COLLAB_SUMMARY);
+    } catch (err) {
+      setCollaborationError(err instanceof Error ? err.message : 'Unable to save collaboration item.');
+    } finally {
+      setCollaborationActionLoading(false);
+    }
+  };
+
+  const changeCollaborationStatus = async (item: WorkspaceCollaborationItem, nextStatus: string) => {
+    if (!selectedWorkspaceId) return;
+    setCollaborationActionLoading(true);
+    setCollaborationError(null);
+    try {
+      await updateWorkspaceCollaborationItem(selectedWorkspaceId, item.collaboration_id, { status: nextStatus });
+      const refreshed = await listWorkspaceCollaborationItems(selectedWorkspaceId, collaborationFilter === 'all' ? null : collaborationFilter);
+      setCollaborationItems(refreshed.items || []);
+      setCollaborationSummary(refreshed.summary || EMPTY_COLLAB_SUMMARY);
+      setCollaborationMessage('Item status updated.');
+    } catch (err) {
+      setCollaborationError(err instanceof Error ? err.message : 'Unable to update item.');
+    } finally {
+      setCollaborationActionLoading(false);
+    }
+  };
+
+  const removeCollaborationItem = async (item: WorkspaceCollaborationItem) => {
+    if (!selectedWorkspaceId) return;
+    const confirmDelete = window.confirm(`Delete ${item.title || item.item_type}?`);
+    if (!confirmDelete) return;
+    setCollaborationActionLoading(true);
+    setCollaborationError(null);
+    try {
+      await deleteWorkspaceCollaborationItem(selectedWorkspaceId, item.collaboration_id);
+      const refreshed = await listWorkspaceCollaborationItems(selectedWorkspaceId, collaborationFilter === 'all' ? null : collaborationFilter);
+      setCollaborationItems(refreshed.items || []);
+      setCollaborationSummary(refreshed.summary || EMPTY_COLLAB_SUMMARY);
+      setCollaborationMessage('Item deleted.');
+    } catch (err) {
+      setCollaborationError(err instanceof Error ? err.message : 'Unable to delete item.');
+    } finally {
+      setCollaborationActionLoading(false);
     }
   };
 
@@ -219,6 +378,11 @@ export function WorkspaceManagementPage({ realtimeTick = 0 }: WorkspaceManagemen
       return next;
     });
   };
+
+  const filteredCollaborationItems =
+    collaborationFilter === 'all'
+      ? collaborationItems
+      : collaborationItems.filter((item) => item.item_type === collaborationFilter);
 
   return (
     <div className="stack" style={{ gap: '1.25rem' }}>
@@ -346,6 +510,243 @@ export function WorkspaceManagementPage({ realtimeTick = 0 }: WorkspaceManagemen
             </button>
           </div>
 
+          <div className="card-sm" style={{ marginBottom: '1rem' }}>
+            <div className="flex-between" style={{ flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <div>
+                <p className="label" style={{ marginBottom: '0.25rem' }}>Collaboration Hub</p>
+                <strong style={{ fontSize: '1rem' }}>Comments, mentions, tasks, and review notes</strong>
+                <p className="small-copy" style={{ marginTop: '0.3rem' }}>
+                  Keep decisions, review requests, and follow-up items attached to this workspace.
+                </p>
+              </div>
+              <div className="flex-row" style={{ gap: '0.45rem', flexWrap: 'wrap' }}>
+                {(['all', 'comment', 'task', 'review'] as const).map((itemType) => (
+                  <button
+                    key={itemType}
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => setCollaborationFilter(itemType)}
+                    style={{
+                      fontSize: '0.78rem',
+                      borderColor: collaborationFilter === itemType ? 'rgba(79,70,229,0.35)' : undefined,
+                      background: collaborationFilter === itemType ? 'rgba(79,70,229,0.08)' : undefined,
+                    }}
+                  >
+                    {itemType === 'all' ? 'All items' : formatCollaborationLabel(itemType)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {collaborationError && <FeedbackBanner title="Collaboration Error" message={collaborationError} variant="error" />}
+            {collaborationMessage && <FeedbackBanner title="Status" message={collaborationMessage} variant="success" />}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+              <div className="card-sm">
+                <p className="label">Total Items</p>
+                <strong style={{ fontSize: '1.15rem' }}>{collaborationSummary.total_items}</strong>
+              </div>
+              <div className="card-sm">
+                <p className="label">Open Items</p>
+                <strong style={{ fontSize: '1.15rem' }}>{collaborationSummary.open_items}</strong>
+              </div>
+              <div className="card-sm">
+                <p className="label">Completed</p>
+                <strong style={{ fontSize: '1.15rem' }}>{collaborationSummary.completed_items}</strong>
+              </div>
+              <div className="card-sm">
+                <p className="label">Mentions</p>
+                <strong style={{ fontSize: '1.15rem' }}>{collaborationSummary.mention_count}</strong>
+              </div>
+            </div>
+
+            <div className="grid-2" style={{ gap: '1rem', alignItems: 'start' }}>
+              <div className="card-sm">
+                <div className="flex-between" style={{ marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <p className="label" style={{ marginBottom: 0 }}>Workspace Feed</p>
+                  <span className="source-pill">
+                    {collaborationLoading ? 'Refreshing...' : `${filteredCollaborationItems.length} visible`}
+                  </span>
+                </div>
+
+                {collaborationLoading ? (
+                  <p className="body-copy">Loading collaboration items...</p>
+                ) : filteredCollaborationItems.length === 0 ? (
+                  <p className="body-copy">No collaboration items yet. Add a comment, task, or review note to start the workspace conversation.</p>
+                ) : (
+                  <div className="stack-sm">
+                    {filteredCollaborationItems.map((item) => {
+                      const isDone = Boolean(item.status && ['resolved', 'done', 'closed', 'approved'].includes(item.status.toLowerCase()));
+                      return (
+                        <div
+                          key={item.collaboration_id}
+                          className="card-sm"
+                          style={{
+                            borderLeft: `3px solid ${item.item_type === 'task' ? 'var(--accent-blue)' : item.item_type === 'review' ? 'var(--accent-purple)' : 'var(--accent-green)'}`,
+                            background: 'rgba(255,255,255,0.92)',
+                          }}
+                        >
+                          <div className="flex-between" style={{ gap: '0.75rem', alignItems: 'flex-start' }}>
+                            <div style={{ minWidth: 0 }}>
+                              <div className="flex-row" style={{ gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                                <span className="source-pill">{formatCollaborationLabel(item.item_type)}</span>
+                                {item.status && <span className="source-pill">{formatCollaborationLabel(item.status)}</span>}
+                                {item.priority && <span className="source-pill">Priority: {formatCollaborationLabel(item.priority)}</span>}
+                              </div>
+                              <strong style={{ display: 'block', marginBottom: '0.2rem' }}>{item.title || 'Untitled item'}</strong>
+                              <p className="body-copy" style={{ margin: 0 }}>{summarizeCollaborationItem(item)}</p>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', marginTop: '0.6rem' }}>
+                                {item.mentions.map((mention) => (
+                                  <span key={`${item.collaboration_id}-${mention}`} className="source-pill">
+                                    @{mention}
+                                  </span>
+                                ))}
+                                {item.assignee_user_id && <span className="source-pill">Assignee: {item.assignee_user_id}</span>}
+                                {item.due_date && <span className="source-pill">Due: {prettyDate(item.due_date)}</span>}
+                              </div>
+                            </div>
+                            <div className="flex-row" style={{ gap: '0.45rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                              <button
+                                type="button"
+                                className="btn btn-ghost"
+                                onClick={() => void changeCollaborationStatus(item, isDone ? 'open' : 'done')}
+                                disabled={collaborationActionLoading}
+                              >
+                                {isDone ? 'Reopen' : 'Mark Done'}
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-ghost"
+                                onClick={() => void changeCollaborationStatus(item, 'resolved')}
+                                disabled={collaborationActionLoading}
+                              >
+                                Resolve
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-ghost"
+                                onClick={() => void removeCollaborationItem(item)}
+                                disabled={collaborationActionLoading}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                          <p className="small-copy" style={{ margin: '0.6rem 0 0' }}>
+                            Updated {prettyDate(item.updated_at)}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="card-sm">
+                <p className="label" style={{ marginBottom: '0.6rem' }}>Add Workspace Note</p>
+                <div className="stack-sm">
+                  <div className="grid-2" style={{ gap: '0.75rem' }}>
+                    <label className="stack-sm" style={{ gap: '0.35rem' }}>
+                      <span className="small-copy">Type</span>
+                      <select
+                        className="input"
+                        value={collaborationForm.item_type}
+                        onChange={(event) => updateCollaborationField('item_type', event.target.value as WorkspaceCollaborationItemType)}
+                      >
+                        <option value="comment">Comment</option>
+                        <option value="task">Task</option>
+                        <option value="review">Review</option>
+                      </select>
+                    </label>
+                    <label className="stack-sm" style={{ gap: '0.35rem' }}>
+                      <span className="small-copy">Status</span>
+                      <input className="input" value={collaborationForm.status} onChange={(event) => updateCollaborationField('status', event.target.value)} placeholder="open / done / resolved" />
+                    </label>
+                  </div>
+
+                  <label className="stack-sm" style={{ gap: '0.35rem' }}>
+                    <span className="small-copy">Title</span>
+                    <input
+                      className="input"
+                      value={collaborationForm.title}
+                      onChange={(event) => updateCollaborationField('title', event.target.value)}
+                      placeholder="Short title for this item"
+                    />
+                  </label>
+
+                  <label className="stack-sm" style={{ gap: '0.35rem' }}>
+                    <span className="small-copy">Body</span>
+                    <textarea
+                      className="input"
+                      rows={4}
+                      value={collaborationForm.body}
+                      onChange={(event) => updateCollaborationField('body', event.target.value)}
+                      placeholder="Write a comment, review note, or follow-up task"
+                    />
+                  </label>
+
+                  <div className="grid-2" style={{ gap: '0.75rem' }}>
+                    <label className="stack-sm" style={{ gap: '0.35rem' }}>
+                      <span className="small-copy">Priority</span>
+                      <select
+                        className="input"
+                        value={collaborationForm.priority}
+                        onChange={(event) => updateCollaborationField('priority', event.target.value)}
+                      >
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                      </select>
+                    </label>
+                    <label className="stack-sm" style={{ gap: '0.35rem' }}>
+                      <span className="small-copy">Due Date</span>
+                      <input
+                        className="input"
+                        type="date"
+                        value={collaborationForm.due_date}
+                        onChange={(event) => updateCollaborationField('due_date', event.target.value)}
+                      />
+                    </label>
+                  </div>
+
+                  <label className="stack-sm" style={{ gap: '0.35rem' }}>
+                    <span className="small-copy">Mentions</span>
+                    <input
+                      className="input"
+                      value={collaborationForm.mentions_text}
+                      onChange={(event) => updateCollaborationField('mentions_text', event.target.value)}
+                      placeholder="team.member, reviewer.name"
+                    />
+                  </label>
+
+                  <label className="stack-sm" style={{ gap: '0.35rem' }}>
+                    <span className="small-copy">Assignee User ID</span>
+                    <input
+                      className="input"
+                      value={collaborationForm.assignee_user_id}
+                      onChange={(event) => updateCollaborationField('assignee_user_id', event.target.value)}
+                      placeholder="Optional user identifier"
+                    />
+                  </label>
+
+                  <div className="flex-row" style={{ gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button className="btn btn-primary" type="button" onClick={() => void saveCollaborationItem()} disabled={collaborationActionLoading}>
+                      Save Item
+                    </button>
+                    <button
+                      className="btn btn-secondary"
+                      type="button"
+                      onClick={() => setCollaborationForm(DEFAULT_COLLAB_FORM)}
+                      disabled={collaborationActionLoading}
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="grid-2" style={{ gap: '1rem', alignItems: 'start' }}>
             <div className="card-sm">
               <p className="label" style={{ marginBottom: '0.6rem' }}>Available Sources</p>
@@ -413,3 +814,4 @@ export function WorkspaceManagementPage({ realtimeTick = 0 }: WorkspaceManagemen
     </div>
   );
 }
+

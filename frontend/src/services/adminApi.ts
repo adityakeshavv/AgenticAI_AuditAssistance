@@ -4,6 +4,7 @@ import type { AuthUser } from '../types/auth';
 import type { GovernanceAuditRecord, RouterReviewSummaryResponse } from '../types/audit';
 import type { DatabaseConnectionRecord } from '../types/databaseConnections';
 import type { WorkspaceRecord } from '../types/workspace';
+import type { MonitoringAlertRecord, MonitoringSummaryResponse } from '../types/monitoring';
 
 function getApiBaseUrl(): string {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -136,4 +137,57 @@ export async function getRouterReviewSummary(filters: RouterReviewSummaryQuery =
     headers: { ...buildAuthHeaders() },
   });
   return parseJson<RouterReviewSummaryResponse>(response, 'Failed to load router review summary');
+}
+
+export async function getMonitoringSummary(): Promise<MonitoringSummaryResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/admin/monitoring/summary`, {
+    headers: { ...buildAuthHeaders() },
+  });
+  return parseJson<MonitoringSummaryResponse>(response, 'Failed to load monitoring summary');
+}
+
+export interface MonitoringAlertQuery {
+  limit?: number;
+  offset?: number;
+  status?: string;
+  severity?: string;
+  alert_type?: string;
+  search?: string;
+}
+
+export async function listMonitoringAlerts(filters: MonitoringAlertQuery = {}): Promise<MonitoringAlertRecord[]> {
+  const params = new URLSearchParams();
+  params.set('limit', String(filters.limit ?? 50));
+  if (filters.offset) params.set('offset', String(filters.offset));
+  if (filters.status) params.set('status', filters.status);
+  if (filters.severity) params.set('severity', filters.severity);
+  if (filters.alert_type) params.set('alert_type', filters.alert_type);
+  if (filters.search) params.set('search', filters.search);
+  const response = await fetch(`${getApiBaseUrl()}/admin/monitoring/alerts?${params.toString()}`, {
+    headers: { ...buildAuthHeaders() },
+  });
+  const data = await parseJson<{ alerts: MonitoringAlertRecord[] }>(response, 'Failed to load monitoring alerts');
+  return data.alerts || [];
+}
+
+export async function runMonitoringScan(): Promise<MonitoringSummaryResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/admin/monitoring/scan`, {
+    method: 'POST',
+    headers: { ...buildAuthHeaders() },
+  });
+  const data = await parseJson<{ success: boolean; summary: MonitoringSummaryResponse }>(response, 'Failed to run monitoring scan');
+  return data.summary;
+}
+
+export async function updateMonitoringAlertStatus(alertId: string, status: string): Promise<MonitoringAlertRecord> {
+  const response = await fetch(`${getApiBaseUrl()}/admin/monitoring/alerts/${alertId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...buildAuthHeaders(),
+    },
+    body: JSON.stringify({ status }),
+  });
+  const data = await parseJson<{ success: boolean; alert: MonitoringAlertRecord }>(response, 'Failed to update monitoring alert');
+  return data.alert;
 }

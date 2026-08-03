@@ -164,6 +164,27 @@ class Settings(BaseSettings):
     finding_supporting_investigation_document_bonus: bool = True
     finding_no_evidence_risk: str = "LOW"
 
+    monitoring_enabled: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("MONITORING_ENABLED", "AUDIT_MONITORING_ENABLED"),
+        description="Enable the background monitoring and alerting loop.",
+    )
+    monitoring_scan_interval_seconds: int = Field(
+        default=120,
+        validation_alias=AliasChoices("MONITORING_SCAN_INTERVAL_SECONDS", "AUDIT_MONITORING_SCAN_INTERVAL_SECONDS"),
+        description="How often the monitoring supervisor scans for alerts.",
+    )
+    monitoring_flagged_transaction_threshold: int = Field(
+        default=5,
+        validation_alias=AliasChoices("MONITORING_FLAGGED_TRANSACTION_THRESHOLD", "AUDIT_MONITORING_FLAGGED_TRANSACTION_THRESHOLD"),
+        description="Flagged transaction count that should trigger a warning alert.",
+    )
+    monitoring_high_risk_transaction_threshold: int = Field(
+        default=5,
+        validation_alias=AliasChoices("MONITORING_HIGH_RISK_TRANSACTION_THRESHOLD", "AUDIT_MONITORING_HIGH_RISK_TRANSACTION_THRESHOLD"),
+        description="High-risk transaction count that should trigger a warning or critical alert.",
+    )
+
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
         env_file_encoding="utf-8",

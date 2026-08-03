@@ -331,7 +331,10 @@ export default function App() {
         <main className="app-main" style={{ marginLeft: isDashboard ? 280 : 0 }}>
           <div className="page-content" style={{ overflow: 'auto', maxWidth: isDashboard ? 1600 : 'none' }}>
             {page === 'chat' ? (
-              <ChatPage />
+              <ChatPage
+                onNavigateToSources={() => setPage('sources')}
+                onNavigateToWorkspaces={() => setPage('workspaces')}
+              />
             ) : page === 'sources' ? (
               <DatabaseConnectionsPage isAdminView={isAdmin} realtimeTick={realtimeTick} />
             ) : page === 'workspaces' ? (

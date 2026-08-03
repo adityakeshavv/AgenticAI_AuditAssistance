@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { AdminDashboard } from './AdminDashboard';
 import { MetricCard } from './MetricCard';
+import { MonitoringPanel } from './MonitoringPanel';
 import { RecentInvestigations } from './RecentInvestigations';
 import { SystemOverview } from './SystemOverview';
 import { getRouterReviewSummary, listActiveUsers, listAdminUsers, listGovernanceAuditEventsWithFilters } from '../services/adminApi';
@@ -8,7 +9,7 @@ import type { ActiveUserRecord } from '../services/adminApi';
 import type { AuthUser } from '../types/auth';
 import type { GovernanceAuditRecord, RouterReviewSummaryResponse } from '../types/audit';
 
-type GovernanceSection = 'overview' | 'users' | 'policies' | 'activity';
+type GovernanceSection = 'overview' | 'users' | 'policies' | 'monitoring' | 'activity';
 
 interface GovernancePageProps {
   isAdmin: boolean;
@@ -45,6 +46,10 @@ const SECTION_COPY: Record<GovernanceSection, { title: string; description: stri
     title: 'Policies',
     description: 'Review access rules and governance guardrails.',
   },
+  monitoring: {
+    title: 'Monitoring & Alerts',
+    description: 'Track live alerts, connection health, and transaction risk signals in one place.',
+  },
   activity: {
     title: 'Governance Activity',
     description: 'Review recent governance actions and admin activity.',
@@ -72,6 +77,7 @@ export function GovernancePage({ isAdmin, currentUserId, realtimeTick = 0 }: Gov
       ['overview', 'Overview'],
       ['users', 'Users & Roles'],
       ['policies', 'Policies'],
+      ['monitoring', 'Monitoring'],
       ['activity', 'Activity'],
     ] as const),
     [],
@@ -286,6 +292,10 @@ export function GovernancePage({ isAdmin, currentUserId, realtimeTick = 0 }: Gov
             </div>
           )}
         </div>
+      )}
+
+      {section === 'monitoring' && (
+        <MonitoringPanel isAdmin={isAdmin} realtimeTick={realtimeTick} />
       )}
 
       {section === 'activity' && (

@@ -15,6 +15,7 @@ VALID_AGENTS = {
     "compliance_agent",
     "approval_agent",
     "expense_agent",
+    "control_testing_agent",
     "investigation_agent",
     "general_agent",
 }
@@ -207,6 +208,7 @@ Available agents:
 - compliance_agent: compliance status, expired certifications, certifications, policies, regulatory violations, compliance frameworks.
 - approval_agent: approvals, approvers, approval workflow, authority limits, who approved a transaction.
 - expense_agent: expense claims, travel policy violations, missing receipts, flagged expenses, reimbursement.
+- control_testing_agent: internal control testing, segregation of duties, duplicate payments, policy exceptions, control failures, approval control checks.
 - investigation_agent: audit investigations, findings, evidence, citations, traceability, finding support.
 - general_agent: use only when none of the above are appropriate.
 

@@ -20,6 +20,7 @@ from app.services.document_metadata_service import DocumentMetadataService
 from app.services.document_metadata_service import build_citation_record, build_source_uri
 from app.services.document_intelligence_service import DocumentIntelligenceService
 from app.services.semantic_retrieval_service import SemanticRetrievalService
+from app.services.tabular_text_service import TabularTextService
 from app.services.uploaded_document_search_service import UploadedDocumentSearchService
 
 
@@ -38,6 +39,7 @@ class DocumentRetrievalAgent:
         self.intelligence_service = DocumentIntelligenceService()
         self.semantic_service = SemanticRetrievalService(db)
         self.uploaded_search_service = UploadedDocumentSearchService(db)
+        self.tabular_text_service = TabularTextService()
         self.settings = get_settings()
 
     def retrieve(
@@ -474,10 +476,20 @@ class DocumentRetrievalAgent:
             "control",
             "threshold",
             "limit",
+            "spreadsheet",
+            "sheet",
+            "workbook",
+            "row",
+            "column",
+            "excel",
+            "csv",
         )
         return any(signal in lowered for signal in semantic_signals)
 
     def _reason_selected(self, document: dict[str, Any], linked_transaction: str | None) -> str:
+        file_name = str(document.get("file_name") or "").lower()
+        if file_name.endswith((".xlsx", ".xlsm", ".xltx", ".xltm", ".csv")):
+            return "Spreadsheet evidence was selected because it matched the retrieved audit context."
         if document.get("related_transaction_id"):
             return "Document references a transaction returned by the Transaction Agent."
         if document.get("related_vendor_id"):
@@ -535,8 +547,12 @@ class DocumentRetrievalAgent:
 
         suffix = path.suffix.lower()
         try:
-            if suffix in {".txt", ".md", ".log", ".csv"}:
+            if suffix in {".txt", ".md", ".log"}:
                 content = path.read_text(encoding="utf-8", errors="ignore")
+            elif suffix == ".csv":
+                content = self.tabular_text_service.extract_text(path)
+            elif suffix in self.tabular_text_service.SPREADSHEET_SUFFIXES:
+                content = self.tabular_text_service.extract_text(path)
             elif suffix == ".eml":
                 content = self._read_eml(path)
             elif suffix == ".docx":

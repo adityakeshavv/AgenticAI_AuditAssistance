@@ -14,6 +14,7 @@ from app.core.config import get_settings
 from app.crud import document_metadata_crud, user_crud
 from app.services.document_processing_service import DocumentProcessingService
 from app.services.document_metadata_service import serialize_document_metadata
+from app.services.semantic_retrieval_service import SemanticRetrievalService
 from app.services.governance_audit_service import GovernanceAuditService
 
 
@@ -22,6 +23,7 @@ class DocumentUploadService:
         self.db = db
         self.settings = get_settings()
         self.processing_service = DocumentProcessingService()
+        self.semantic_service = SemanticRetrievalService(db)
 
     def upload_document(
         self,
@@ -58,13 +60,40 @@ class DocumentUploadService:
             document_type=resolved_type,
             document_category=resolved_category,
         )
+        indexed_chunks = self.semantic_service.build_document_index(
+            {
+                "document_id": document_id,
+                "document_type": resolved_type,
+                "document_category": resolved_category,
+                "file_name": original_name,
+                "file_path": str(file_path.resolve()),
+                "source_metadata_file": f"uploaded:{original_name}",
+                "related_vendor_id": related_vendor_id or None,
+                "related_employee_id": related_employee_id or None,
+                "related_transaction_id": related_transaction_id or None,
+                "related_contract_id": related_contract_id or None,
+                "related_investigation_id": related_investigation_id or None,
+                "creation_date": date.today().isoformat(),
+            }
+        )
+        processing_artifact = {
+            **processing,
+            "indexed_chunk_count": len(indexed_chunks),
+            "index_status": "indexed" if indexed_chunks else "stored_only",
+            "chunks": indexed_chunks,
+        }
+        processing_response = {
+            **processing,
+            "indexed_chunk_count": len(indexed_chunks),
+            "index_status": "indexed" if indexed_chunks else "stored_only",
+        }
         self._write_processing_artifact(
             file_path=file_path,
             document_id=document_id,
             file_name=original_name,
             document_type=resolved_type,
             document_category=resolved_category,
-            processing=processing,
+            processing=processing_artifact,
         )
 
         document = document_metadata_crud.create_document_metadata(
@@ -94,7 +123,7 @@ class DocumentUploadService:
             summary=f"Document '{document.file_name}' was uploaded and registered.",
             after_state={
                 **serialize_document_metadata(document),
-                "processing": processing,
+                "processing": processing_response,
             },
         )
         self.db.commit()
@@ -102,7 +131,7 @@ class DocumentUploadService:
             "success": True,
             "message": "Document uploaded successfully.",
             "document": serialize_document_metadata(document),
-            "processing": processing,
+            "processing": processing_response,
         }
 
     def _slugify(self, value: str) -> str:

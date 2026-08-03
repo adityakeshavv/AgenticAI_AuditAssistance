@@ -6,6 +6,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.services.document_retrieval_agent_service import DocumentRetrievalAgent
+from app.services.control_testing_service import ControlTestingService
 from app.services.evidence_aggregator_service import EvidenceAggregatorService
 from app.services.investigation_planner_service import InvestigationPlannerService
 from app.services.transaction_service import execute_transaction_query
@@ -48,6 +49,7 @@ class AgentOrchestratorService:
         transaction_rows: list[dict[str, Any]] = []
         vendor_investigations: list[dict[str, Any]] = []
         structured_evidence_extra: list[dict[str, Any]] = []
+        control_document_evidence: list[dict[str, Any]] = []
         document_result: dict[str, Any] = {"documents": [], "sources": []}
         transaction_intent: dict[str, Any] = structured_intent
 
@@ -206,6 +208,28 @@ class AgentOrchestratorService:
                 )
                 continue
 
+            if agent == "control_testing_agent":
+                result = ControlTestingService(self.db).run(
+                    query=query,
+                    trace_context=trace_context,
+                    page=page,
+                    page_size=page_size,
+                )
+                if result.get("success"):
+                    structured_evidence_extra.extend(list(result.get("structured_evidence", [])))
+                    control_document_evidence.extend(list(result.get("document_evidence", [])))
+                    document_result.setdefault("sources", []).extend(list(result.get("sources", [])))
+                self._append_execution_metadata(
+                    execution_metadata,
+                    agent=agent,
+                    reason=step.get("reason"),
+                    started_at=started_at,
+                    result=result,
+                    inputs={"query": query, "page": page, "page_size": page_size},
+                    status="completed" if result.get("success") else "failed",
+                )
+                continue
+
             self._append_execution_metadata(
                 execution_metadata,
                 agent=agent,
@@ -217,7 +241,7 @@ class AgentOrchestratorService:
             )
 
         structured_evidence = list(transaction_rows) + list(structured_evidence_extra)
-        document_evidence = list(document_result.get("documents", []))
+        document_evidence = list(document_result.get("documents", [])) + control_document_evidence
         aggregated_sources = ["transaction_master"]
         if document_evidence:
             aggregated_sources.append("document_metadata")

@@ -12,11 +12,13 @@ from zipfile import ZipFile
 from xml.etree import ElementTree as ET
 
 from app.services.document_intelligence_service import DocumentIntelligenceService
+from app.services.tabular_text_service import TabularTextService
 
 
 class DocumentProcessingService:
     def __init__(self) -> None:
         self.document_intelligence_service = DocumentIntelligenceService()
+        self.tabular_text_service = TabularTextService()
 
     def process_document(
         self,
@@ -66,8 +68,12 @@ class DocumentProcessingService:
 
         suffix = path.suffix.lower()
         try:
-            if suffix in {".txt", ".md", ".log", ".csv"}:
+            if suffix in {".txt", ".md", ".log"}:
                 return path.read_text(encoding="utf-8", errors="ignore")
+            if suffix == ".csv":
+                return self.tabular_text_service.extract_text(path)
+            if suffix in self.tabular_text_service.SPREADSHEET_SUFFIXES:
+                return self.tabular_text_service.extract_text(path)
             if suffix == ".eml":
                 return self._read_eml(path)
             if suffix == ".docx":

@@ -70,9 +70,9 @@ class ChatSessionService:
             "turn_count": session.turn_count,
             "workspace_id": session.workspace_id,
             "connection_id": session.connection_id,
-            "created_at": session.created_at,
-            "updated_at": session.updated_at,
-            "last_message_at": session.last_message_at,
+            "created_at": self._format_dt(session.created_at),
+            "updated_at": self._format_dt(session.updated_at),
+            "last_message_at": self._format_dt(session.last_message_at),
             "turns": [self._serialize_turn(turn) for turn in turns],
         }
 
@@ -89,6 +89,7 @@ class ChatSessionService:
         response_payload: dict[str, Any],
     ) -> dict[str, Any]:
         session = self._require_session(session_id=session_id, user_id=user_id)
+        response_payload = self._normalize_response_payload(response_payload, session.session_id)
         turn = chat_crud.append_turn(
             self.db,
             session,
@@ -155,22 +156,48 @@ class ChatSessionService:
             "workspace_id": session.workspace_id,
             "connection_id": session.connection_id,
             "last_message_preview": session.last_message_preview,
-            "created_at": session.created_at,
-            "updated_at": session.updated_at,
-            "last_message_at": session.last_message_at,
+            "created_at": ChatSessionService._format_dt(session.created_at),
+            "updated_at": ChatSessionService._format_dt(session.updated_at),
+            "last_message_at": ChatSessionService._format_dt(session.last_message_at),
             "is_archived": session.is_archived,
         }
 
     @staticmethod
     def _serialize_turn(turn) -> dict[str, Any]:
+        response_payload = ChatSessionService._normalize_response_payload(turn.response_payload or {}, turn.session_id)
         return {
             "turn_id": turn.turn_id,
             "turn_index": turn.turn_index,
-            "timestamp": turn.created_at,
+            "timestamp": ChatSessionService._format_dt(turn.created_at),
             "user_message": turn.user_message,
             "assistant_message": turn.assistant_message,
             "assistant_mode": turn.assistant_mode,
             "is_followup": turn.is_followup,
             "resolved_query": turn.resolved_query,
-            "response": turn.response_payload,
+            "response": response_payload,
         }
+
+    @staticmethod
+    def _normalize_response_payload(response_payload: dict[str, Any], session_id: str) -> dict[str, Any]:
+        normalized = dict(response_payload or {})
+        normalized.setdefault("session_id", session_id)
+        normalized.setdefault("session_title", "")
+        normalized.setdefault("is_followup", False)
+        normalized.setdefault("resolved_query", normalized.get("query", ""))
+        normalized.setdefault("original_query", normalized.get("query", ""))
+        normalized.setdefault("assistant_message", normalized.get("final_response", ""))
+        normalized.setdefault("conversation_mode", "audit")
+        normalized.setdefault("injected_context", {})
+        normalized.setdefault("suggested_actions", [])
+        normalized.setdefault("investigation_state", {})
+        normalized.setdefault("turn_count", 1)
+        normalized.setdefault("success", True)
+        return normalized
+
+    @staticmethod
+    def _format_dt(value) -> str | None:
+        if value is None:
+            return None
+        if hasattr(value, "isoformat"):
+            return value.isoformat()
+        return str(value)

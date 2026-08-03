@@ -92,6 +92,9 @@ class ConversationMemoryService:
             "assistant_summary": cls._summarize_response(assistant_response),
             "assistant_message": assistant_response.get("assistant_message", assistant_response.get("final_response", "")),
             "conversation_mode": assistant_response.get("conversation_mode", "audit"),
+            "source_route": deepcopy(assistant_response.get("source_route", {})),
+            "source_mode": (assistant_response.get("source_route", {}) or {}).get("source_mode"),
+            "document_ids": cls._collect_document_ids(assistant_response),
             "risk_rating": assistant_response.get("risk_rating"),
             "key_findings": list(assistant_response.get("key_findings", [])),
             "entities_investigated": list(assistant_response.get("entities_investigated", [])),
@@ -139,7 +142,14 @@ class ConversationMemoryService:
 
         return {
             "recent_turns": [
-                {"user": t["user"], "summary": t["assistant_summary"], "risk": t["risk_rating"]}
+                {
+                    "user": t["user"],
+                    "summary": t["assistant_summary"],
+                    "risk": t["risk_rating"],
+                    "source_mode": t.get("source_mode"),
+                    "source_route": deepcopy(t.get("source_route", {})),
+                    "document_ids": list(t.get("document_ids", [])),
+                }
                 for t in short[-6:]
             ],
             "active_investigation": {
@@ -152,6 +162,8 @@ class ConversationMemoryService:
                 "document_count": inv.get("document_count", 0),
                 "finding_count": inv.get("finding_count", 0),
                 "status": inv.get("status", "in_progress"),
+                "source_modes": inv.get("source_modes", []),
+                "document_ids": list(inv.get("document_ids", set())),
             },
             "long_term_facts": lt["facts"][-20:],
             "turn_count": len(session["session"]["turns"]),
@@ -182,7 +194,9 @@ class ConversationMemoryService:
                 "entity_type": None,
                 "entity_ids": set(),
                 "transaction_ids": set(),
+                "document_ids": set(),
                 "topics": [],
+                "source_modes": [],
                 "risk_rating": None,
                 "transaction_count": 0,
                 "document_count": 0,
@@ -241,6 +255,12 @@ class ConversationMemoryService:
             if tid:
                 inv["transaction_ids"].add(str(tid))
 
+        # accumulate document IDs from document evidence
+        for ev in r.get("document_evidence", []):
+            did = ev.get("document_id")
+            if did:
+                inv["document_ids"].add(str(did))
+
         # counts
         inv["transaction_count"] = max(inv["transaction_count"], len(r.get("structured_evidence", [])))
         inv["document_count"] += len(r.get("document_evidence", []))
@@ -269,6 +289,11 @@ class ConversationMemoryService:
             if kw in q_lower and kw not in inv["topics"]:
                 inv["topics"].append(kw)
 
+        # source modes
+        source_mode = str(r.get("source_route", {}).get("source_mode") or "").strip().lower()
+        if source_mode and source_mode not in inv["source_modes"]:
+            inv["source_modes"].append(source_mode)
+
     @classmethod
     def _update_long_term(cls, lt: dict[str, Any], turn: dict[str, Any]) -> None:
         facts = lt["facts"]
@@ -277,5 +302,33 @@ class ConversationMemoryService:
                 facts.append(f)
         if turn["finding_summary"] and turn["finding_summary"] not in facts:
             facts.append(turn["finding_summary"])
+        source_mode = turn.get("source_mode")
+        if source_mode:
+            source_fact = f"Source route used: {source_mode}"
+            if source_fact not in facts:
+                facts.append(source_fact)
         if len(facts) > _MAX_LONG_TERM:
             lt["facts"] = facts[-_MAX_LONG_TERM:]
+
+    @staticmethod
+    def _collect_document_ids(r: dict[str, Any]) -> list[str]:
+        ids: list[str] = []
+        for item in r.get("document_evidence", []) or []:
+            did = item.get("document_id")
+            if did:
+                value = str(did)
+                if value not in ids:
+                    ids.append(value)
+        for item in r.get("citations", []) or []:
+            did = item.get("document_id")
+            if did:
+                value = str(did)
+                if value not in ids:
+                    ids.append(value)
+        for item in r.get("supporting_documents", []) or []:
+            did = item.get("document_id")
+            if did:
+                value = str(did)
+                if value not in ids:
+                    ids.append(value)
+        return ids

@@ -1,18 +1,21 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy.orm import Session
 
 from app.services.governance_audit_service import GovernanceAuditService
 from app.services.document_retrieval_agent_service import DocumentRetrievalAgent
+from app.services.control_testing_service import ControlTestingService
 from app.services.evidence_aggregator_service import EvidenceAggregatorService
 from app.services.investigation_planner_service import InvestigationPlannerService
 from app.services.langfuse_service import LangfuseService
 from app.services.llm_router_service import StructuredIntentService
 from app.services.query_router_service import QueryRoutingService
 from app.services.response_composer_service import ResponseComposerService
+from app.services.source_router_service import SourceRouterService
 from app.services.traceability_service import TraceabilityService
 from app.services.vendor_investigation_service import VendorInvestigationService
 from app.services.transaction_investigation_service import TransactionInvestigationService
@@ -30,6 +33,7 @@ class AuditWorkflowService:
         investigation_planner: InvestigationPlannerService | None = None,
         traceability_service: TraceabilityService | None = None,
         langfuse_service: LangfuseService | None = None,
+        source_router: SourceRouterService | None = None,
         document_agent: DocumentRetrievalAgent | None = None,
         vendor_investigation_service: VendorInvestigationService | None = None,
         transaction_investigation_service: TransactionInvestigationService | None = None,
@@ -43,7 +47,9 @@ class AuditWorkflowService:
         self.investigation_planner = investigation_planner or InvestigationPlannerService()
         self.traceability_service = traceability_service or TraceabilityService()
         self.langfuse_service = langfuse_service or LangfuseService()
+        self.source_router = source_router or SourceRouterService()
         self.document_agent = document_agent or DocumentRetrievalAgent(db)
+        self.control_testing_service = ControlTestingService(db)
         self.vendor_investigation_service = vendor_investigation_service or VendorInvestigationService(db)
         self.transaction_investigation_service = transaction_investigation_service or TransactionInvestigationService(db)
         self.evidence_aggregator = evidence_aggregator or EvidenceAggregatorService()
@@ -88,6 +94,7 @@ class AuditWorkflowService:
             "query": query,
             "intent": {},
             "routing_decision": {},
+            "source_route": {},
             "investigation_plan": {},
             "entities_investigated": [],
             "entity_type": None,
@@ -110,6 +117,7 @@ class AuditWorkflowService:
             "finding": {},
             "final_response": "",
             "traceability": traceability,
+            "workflow_automation": {},
             "message": None,
         }
 
@@ -137,6 +145,41 @@ class AuditWorkflowService:
         )
         self.audit_db.commit()
 
+        source_route = self.source_router.route(
+            query,
+            attached_document_ids=attached_document_ids or [],
+            memory_context={
+                "query": query,
+                "routing_decision": routing_decision,
+                "attached_document_ids": attached_document_ids or [],
+            },
+            trace_context=trace_context,
+        )
+        response_contract["source_route"] = source_route
+        self.traceability_service.record_agent(
+            traceability,
+            "source_router",
+            source_route.get("reason", "Source routing selected the most likely evidence source."),
+        )
+        self.traceability_service.record_reasoning(
+            traceability,
+            f"Source router selected {source_route.get('source_mode', 'unknown')} with confidence {float(source_route.get('confidence', 0) or 0):.2f}.",
+        )
+
+        if self._looks_like_control_testing(query):
+            self._run_control_testing(
+                response_contract=response_contract,
+                traceability=traceability,
+                trace_context=trace_context,
+                governance_audit=governance_audit,
+                actor_user_id=actor_user_id,
+                query=query,
+                page=page,
+                page_size=page_size,
+                routing_decision=routing_decision,
+            )
+            return response_contract
+
         transaction_id = self.transaction_investigation_service.extract_transaction_id(query)
         if self.transaction_investigation_service.matches_transaction_investigation(query) and transaction_id:
             self._run_transaction_investigation(
@@ -150,6 +193,34 @@ class AuditWorkflowService:
                 page=page,
                 page_size=page_size,
                 routing_decision=routing_decision,
+            )
+            return response_contract
+
+        if source_route.get("source_mode") == "pdf_only":
+            self._run_document_investigation(
+                response_contract=response_contract,
+                traceability=traceability,
+                trace_context=trace_context,
+                governance_audit=governance_audit,
+                actor_user_id=actor_user_id,
+                query=query,
+                attached_document_ids=attached_document_ids or [],
+            )
+            return response_contract
+
+        if source_route.get("source_mode") == "both":
+            self._run_hybrid_source_investigation(
+                response_contract=response_contract,
+                traceability=traceability,
+                trace_context=trace_context,
+                governance_audit=governance_audit,
+                actor_user_id=actor_user_id,
+                query=query,
+                page=page,
+                page_size=page_size,
+                attached_document_ids=attached_document_ids or [],
+                routing_decision=routing_decision,
+                source_route=source_route,
             )
             return response_contract
 
@@ -373,7 +444,93 @@ class AuditWorkflowService:
                 },
             )
 
+        response_contract["execution_metadata"] = [
+            {
+                "agent": "query_router",
+                "reason_selected": routing_decision.get("reason", "Query routed to the next workflow step."),
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query},
+                "outputs": {
+                    "selected_agent": routing_decision.get("agent"),
+                    "confidence": routing_decision.get("confidence"),
+                },
+            },
+            {
+                "agent": "source_router",
+                "reason_selected": source_route.get("reason", "Source routing selected the most likely evidence source."),
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query, "attached_document_ids": attached_document_ids},
+                "outputs": {
+                    "source_mode": source_route.get("source_mode"),
+                    "confidence": source_route.get("confidence"),
+                    "decision_source": source_route.get("decision_source"),
+                },
+            },
+            {
+                "agent": "transaction_agent",
+                "reason_selected": "Transaction workflow was selected for the current audit query.",
+                "status": "completed" if response_contract["structured_evidence"] else "completed_with_no_rows",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query, "page": page, "page_size": page_size},
+                "outputs": {
+                    "result_count": len(response_contract["structured_evidence"]),
+                    "success": bool(response_contract["structured_evidence"]),
+                },
+            },
+            {
+                "agent": "document_retrieval_agent",
+                "reason_selected": "Related document evidence was retrieved for the transaction results.",
+                "status": "completed" if response_contract["document_evidence"] else "completed_with_no_rows",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query, "transaction_count": len(response_contract["structured_evidence"])},
+                "outputs": {
+                    "document_count": len(response_contract["document_evidence"]),
+                    "sources": list(response_contract.get("sources", [])),
+                },
+            },
+            {
+                "agent": "evidence_aggregator",
+                "reason_selected": "Combine structured and document evidence into a single audit package.",
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {
+                    "structured_count": len(response_contract["structured_evidence"]),
+                    "document_count": len(response_contract["document_evidence"]),
+                },
+                "outputs": {
+                    "structured_count": len(response_contract["structured_evidence"]),
+                    "document_count": len(response_contract["document_evidence"]),
+                    "sources": list(response_contract.get("sources", [])),
+                },
+            },
+        ]
+
         response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
+        response_contract["execution_metadata"].append(
+            {
+                "agent": "response_composer",
+                "reason_selected": "Generate the final audit narrative and evaluation.",
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {
+                    "structured_count": len(response_contract.get("structured_evidence", [])),
+                    "document_count": len(response_contract.get("document_evidence", [])),
+                },
+                "outputs": {
+                    "risk_rating": response_contract.get("risk_rating"),
+                    "finding_title": response_contract.get("finding", {}).get("title"),
+                },
+            }
+        )
+        traceability["execution_metadata"] = list(response_contract["execution_metadata"])
         response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
         self._finalize_response(
             response_contract=response_contract,
@@ -385,6 +542,265 @@ class AuditWorkflowService:
             result="transaction_query",
         )
         return response_contract
+
+    def _run_hybrid_source_investigation(
+        self,
+        *,
+        response_contract: dict[str, Any],
+        traceability: dict[str, Any],
+        trace_context: Any,
+        governance_audit: GovernanceAuditService,
+        actor_user_id: str | None,
+        query: str,
+        page: int,
+        page_size: int,
+        attached_document_ids: list[str],
+        routing_decision: dict[str, Any],
+        source_route: dict[str, Any],
+    ) -> None:
+        self.traceability_service.record_reasoning(
+            traceability,
+            "Source router selected both PDF and database evidence, so both retrieval paths will be executed.",
+        )
+        self.traceability_service.record_agent(
+            traceability,
+            "transaction_agent",
+            "Hybrid routing requested database retrieval alongside document evidence.",
+        )
+        self.traceability_service.record_agent(
+            traceability,
+            "document_retrieval_agent",
+            "Hybrid routing requested document retrieval alongside database evidence.",
+        )
+
+        tx_span = trace_context.begin_span(
+            "transaction_agent",
+            input_payload={"query": query, "page": page, "page_size": page_size},
+            metadata={"service": "AuditWorkflowService", "route": "both"},
+        )
+        transaction_result = execute_transaction_query(
+            self.db,
+            query,
+            page=page,
+            page_size=page_size,
+            trace_context=trace_context,
+        )
+        tx_span.finish(
+            output={
+                "success": transaction_result.get("success"),
+                "row_count": len(transaction_result.get("results", [])),
+            },
+            metadata={
+                "row_count": len(transaction_result.get("results", [])),
+                "sources": transaction_result.get("sources", []),
+            },
+        )
+
+        structured_evidence = list(transaction_result.get("results", [])) if transaction_result.get("success", False) else []
+        response_contract["intent"] = self.intent_service.extract(
+            query,
+            domain="transaction",
+            entity="transaction",
+            allowed_intents=TRANSACTION_ALLOWED_INTENTS,
+            trace_context=trace_context,
+        )
+        response_contract["structured_evidence"] = structured_evidence
+
+        if structured_evidence:
+            self.traceability_service.record_source(traceability, "transaction_master")
+            self.traceability_service.record_reasoning(
+                traceability,
+                f"Hybrid routing returned {len(structured_evidence)} transaction record(s).",
+            )
+        else:
+            self.traceability_service.record_reasoning(
+                traceability,
+                "Hybrid routing did not return structured transaction records, so the answer will rely more heavily on document evidence if available.",
+            )
+
+        doc_span = trace_context.begin_span(
+            "document_retrieval_agent",
+            input_payload={
+                "query": query,
+                "transaction_count": len(structured_evidence),
+                "attached_document_ids": attached_document_ids,
+            },
+            metadata={"service": "AuditWorkflowService", "route": "both"},
+        )
+        document_result = self.document_agent.retrieve(
+            query=query,
+            structured_intent=response_contract.get("intent", {}),
+            transaction_results=structured_evidence,
+            attached_document_ids=attached_document_ids,
+            trace_context=trace_context,
+        )
+        response_contract["document_evidence"] = list(document_result.get("documents", []))
+        doc_span.finish(
+            output={
+                "document_count": len(response_contract["document_evidence"]),
+                "sources": document_result.get("sources", []),
+            },
+            metadata={
+                "document_count": len(response_contract["document_evidence"]),
+                "sources": document_result.get("sources", []),
+            },
+        )
+
+        if response_contract["document_evidence"]:
+            self.traceability_service.record_source(traceability, "document_metadata")
+            for source in document_result.get("sources", []):
+                self.traceability_service.record_source(traceability, source)
+            self.traceability_service.record_reasoning(
+                traceability,
+                f"Hybrid routing returned {len(response_contract['document_evidence'])} supporting document(s).",
+            )
+
+        aggregated_sources = ["transaction_master"]
+        if response_contract["document_evidence"]:
+            aggregated_sources.append("document_metadata")
+        aggregated_sources.extend(document_result.get("sources", []))
+
+        aggregator_output = self.evidence_aggregator.aggregate(
+            structured_evidence=response_contract["structured_evidence"],
+            document_evidence=response_contract["document_evidence"],
+            sources=aggregated_sources,
+            trace_context=trace_context,
+        )
+        response_contract["structured_evidence"] = aggregator_output["structured_evidence"]
+        response_contract["document_evidence"] = aggregator_output["document_evidence"]
+        response_contract["sources"] = aggregator_output["sources"]
+        response_contract["supporting_documents"] = response_contract["document_evidence"]
+        response_contract["execution_metadata"] = [
+            {
+                "agent": "query_router",
+                "reason_selected": routing_decision.get("reason", "Query routed to the next workflow step."),
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query},
+                "outputs": {
+                    "selected_agent": routing_decision.get("agent"),
+                    "confidence": routing_decision.get("confidence"),
+                },
+            },
+            {
+                "agent": "source_router",
+                "reason_selected": source_route.get("reason", "Source routing selected the most likely evidence source."),
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query, "attached_document_ids": attached_document_ids},
+                "outputs": {
+                    "source_mode": source_route.get("source_mode"),
+                    "confidence": source_route.get("confidence"),
+                    "decision_source": source_route.get("decision_source"),
+                },
+            },
+            {
+                "agent": "transaction_agent",
+                "reason_selected": "Hybrid routing requested database retrieval alongside document evidence.",
+                "status": "completed" if structured_evidence else "completed_with_no_rows",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query, "page": page, "page_size": page_size},
+                "outputs": {
+                    "result_count": len(structured_evidence),
+                    "success": bool(structured_evidence),
+                },
+            },
+            {
+                "agent": "document_retrieval_agent",
+                "reason_selected": "Hybrid routing requested document retrieval alongside database evidence.",
+                "status": "completed" if response_contract["document_evidence"] else "completed_with_no_docs",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query, "attached_document_ids": attached_document_ids},
+                "outputs": {
+                    "document_count": len(response_contract["document_evidence"]),
+                    "sources": document_result.get("sources", []),
+                },
+            },
+            {
+                "agent": "evidence_aggregator",
+                "reason_selected": "Combine database and document evidence into one response.",
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {
+                    "structured_count": len(response_contract["structured_evidence"]),
+                    "document_count": len(response_contract["document_evidence"]),
+                },
+                "outputs": {
+                    "structured_count": len(response_contract["structured_evidence"]),
+                    "document_count": len(response_contract["document_evidence"]),
+                    "source_count": len(response_contract["sources"]),
+                },
+            },
+        ]
+        traceability["execution_metadata"] = list(response_contract["execution_metadata"])
+
+        for item in response_contract["structured_evidence"]:
+            self.traceability_service.record_evidence(
+                traceability,
+                {
+                    "type": "structured",
+                    "reference": item.get("transaction_id"),
+                    "source": "transaction_master",
+                },
+            )
+        for item in response_contract["document_evidence"]:
+            self.traceability_service.record_evidence(
+                traceability,
+                {
+                    "type": "document",
+                    "reference": item.get("document_id"),
+                    "source": "document_metadata",
+                },
+            )
+
+        response_contract["risk_rating"] = response_contract.get("risk_rating", "LOW")
+        response_contract["risk_score"] = response_contract.get("risk_score", 0)
+        response_contract["risk_drivers"] = response_contract.get("risk_drivers", [])
+        response_contract["success"] = bool(response_contract["structured_evidence"] or response_contract["document_evidence"])
+        if not response_contract["success"]:
+            response_contract["finding"] = {
+                "title": "Insufficient Evidence",
+                "summary": "I could not identify sufficient structured or document evidence to investigate this request.",
+                "category": "No Findings",
+                "severity": "Low",
+            }
+            response_contract["final_response"] = response_contract["finding"]["summary"]
+
+        response_contract["traceability"] = traceability
+        response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
+        response_contract["execution_metadata"].append(
+            {
+                "agent": "response_composer",
+                "reason_selected": "Generate the final audit narrative and evaluation.",
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {
+                    "structured_count": len(response_contract.get("structured_evidence", [])),
+                    "document_count": len(response_contract.get("document_evidence", [])),
+                },
+                "outputs": {
+                    "risk_rating": response_contract.get("risk_rating"),
+                    "finding_title": response_contract.get("finding", {}).get("title"),
+                },
+            }
+        )
+        traceability["execution_metadata"] = list(response_contract["execution_metadata"])
+        response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
+        self._finalize_response(
+            response_contract=response_contract,
+            traceability=traceability,
+            trace_context=trace_context,
+            governance_audit=governance_audit,
+            actor_user_id=actor_user_id,
+            query=query,
+            result="hybrid_query",
+        )
 
     def _run_transaction_investigation(
         self,
@@ -464,8 +880,102 @@ class AuditWorkflowService:
                 },
             )
 
+        response_contract["execution_metadata"] = [
+            {
+                "agent": "query_router",
+                "reason_selected": routing_decision.get("reason", "Query routed to the next workflow step."),
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query},
+                "outputs": {
+                    "selected_agent": routing_decision.get("agent"),
+                    "confidence": routing_decision.get("confidence"),
+                },
+            },
+            {
+                "agent": "source_router",
+                "reason_selected": response_contract.get("source_route", {}).get(
+                    "reason", "Source routing selected the most likely evidence source."
+                ),
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query},
+                "outputs": {
+                    "source_mode": response_contract.get("source_route", {}).get("source_mode"),
+                    "confidence": response_contract.get("source_route", {}).get("confidence"),
+                    "decision_source": response_contract.get("source_route", {}).get("decision_source"),
+                },
+            },
+            {
+                "agent": "transaction_investigation_agent",
+                "reason_selected": "Transaction investigation was requested for a specific transaction identifier.",
+                "status": "completed" if transaction_result.get("success") else "completed_with_no_rows",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query, "transaction_id": transaction_id},
+                "outputs": {
+                    "risk_rating": transaction_result.get("risk_rating"),
+                    "evidence_count": len(transaction_result.get("structured_evidence", [])),
+                    "document_count": len(transaction_result.get("document_evidence", [])),
+                },
+            },
+        ]
+        if transaction_result.get("document_evidence"):
+            response_contract["execution_metadata"].append(
+                {
+                    "agent": "document_retrieval_agent",
+                    "reason_selected": "Supporting documents were retrieved for the transaction investigation.",
+                    "status": "completed",
+                    "started_at": self._now_iso(),
+                    "ended_at": self._now_iso(),
+                    "inputs": {"query": query, "transaction_id": transaction_id},
+                    "outputs": {
+                        "document_count": len(transaction_result.get("document_evidence", [])),
+                        "sources": list(transaction_result.get("sources", [])),
+                    },
+                }
+            )
+        response_contract["execution_metadata"].append(
+            {
+                "agent": "evidence_aggregator",
+                "reason_selected": "Combine structured and document evidence into a single audit package.",
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {
+                    "structured_count": len(transaction_result.get("structured_evidence", [])),
+                    "document_count": len(transaction_result.get("document_evidence", [])),
+                },
+                "outputs": {
+                    "structured_count": len(transaction_result.get("structured_evidence", [])),
+                    "document_count": len(transaction_result.get("document_evidence", [])),
+                    "sources": list(transaction_result.get("sources", [])),
+                },
+            }
+        )
+
         response_contract["traceability"] = traceability
         response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
+        response_contract["execution_metadata"].append(
+            {
+                "agent": "response_composer",
+                "reason_selected": "Generate the final audit narrative and evaluation.",
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {
+                    "structured_count": len(response_contract.get("structured_evidence", [])),
+                    "document_count": len(response_contract.get("document_evidence", [])),
+                },
+                "outputs": {
+                    "risk_rating": response_contract.get("risk_rating"),
+                    "finding_title": response_contract.get("finding", {}).get("title"),
+                },
+            }
+        )
+        traceability["execution_metadata"] = list(response_contract["execution_metadata"])
         response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
         self._finalize_response(
             response_contract=response_contract,
@@ -707,8 +1217,102 @@ class AuditWorkflowService:
                 },
             )
 
+        response_contract["execution_metadata"] = [
+            {
+                "agent": "query_router",
+                "reason_selected": routing_decision.get("reason", "Query routed to the next workflow step."),
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query},
+                "outputs": {
+                    "selected_agent": routing_decision.get("agent"),
+                    "confidence": routing_decision.get("confidence"),
+                },
+            },
+            {
+                "agent": "source_router",
+                "reason_selected": response_contract.get("source_route", {}).get(
+                    "reason", "Source routing selected the most likely evidence source."
+                ),
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query},
+                "outputs": {
+                    "source_mode": response_contract.get("source_route", {}).get("source_mode"),
+                    "confidence": response_contract.get("source_route", {}).get("confidence"),
+                    "decision_source": response_contract.get("source_route", {}).get("decision_source"),
+                },
+            },
+            {
+                "agent": "vendor_investigation_agent",
+                "reason_selected": "Vendor investigation was requested for a specific vendor identifier.",
+                "status": "completed" if vendor_result.get("success") else "completed_with_no_rows",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query, "vendor_id": vendor_id},
+                "outputs": {
+                    "risk_rating": vendor_result.get("risk_rating"),
+                    "evidence_count": len(vendor_result.get("structured_evidence", [])),
+                    "document_count": len(vendor_result.get("document_evidence", [])),
+                },
+            },
+        ]
+        if vendor_result.get("document_evidence"):
+            response_contract["execution_metadata"].append(
+                {
+                    "agent": "document_retrieval_agent",
+                    "reason_selected": "Supporting documents were retrieved for the vendor investigation.",
+                    "status": "completed",
+                    "started_at": self._now_iso(),
+                    "ended_at": self._now_iso(),
+                    "inputs": {"query": query, "vendor_id": vendor_id},
+                    "outputs": {
+                        "document_count": len(vendor_result.get("document_evidence", [])),
+                        "sources": list(vendor_result.get("sources", [])),
+                    },
+                }
+            )
+        response_contract["execution_metadata"].append(
+            {
+                "agent": "evidence_aggregator",
+                "reason_selected": "Combine structured and document evidence into a single audit package.",
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {
+                    "structured_count": len(vendor_result.get("structured_evidence", [])),
+                    "document_count": len(vendor_result.get("document_evidence", [])),
+                },
+                "outputs": {
+                    "structured_count": len(vendor_result.get("structured_evidence", [])),
+                    "document_count": len(vendor_result.get("document_evidence", [])),
+                    "sources": list(vendor_result.get("sources", [])),
+                },
+            }
+        )
+
         response_contract["traceability"] = traceability
         response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
+        response_contract["execution_metadata"].append(
+            {
+                "agent": "response_composer",
+                "reason_selected": "Generate the final audit narrative and evaluation.",
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {
+                    "structured_count": len(response_contract.get("structured_evidence", [])),
+                    "document_count": len(response_contract.get("document_evidence", [])),
+                },
+                "outputs": {
+                    "risk_rating": response_contract.get("risk_rating"),
+                    "finding_title": response_contract.get("finding", {}).get("title"),
+                },
+            }
+        )
+        traceability["execution_metadata"] = list(response_contract["execution_metadata"])
         response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
         self._finalize_response(
             response_contract=response_contract,
@@ -791,8 +1395,76 @@ class AuditWorkflowService:
         response_contract["risk_rating"] = "LOW"
         response_contract["risk_score"] = 0
         response_contract["risk_drivers"] = []
+        response_contract["execution_metadata"] = [
+            {
+                "agent": "query_router",
+                "reason_selected": "The request matched the document evidence workflow.",
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query},
+                "outputs": {"selected_agent": "document_retrieval_agent"},
+            },
+            {
+                "agent": "source_router",
+                "reason_selected": "Document evidence was selected as the primary source.",
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query, "attached_document_ids": attached_document_ids},
+                "outputs": {
+                    "source_mode": response_contract.get("source_route", {}).get("source_mode"),
+                    "decision_source": response_contract.get("source_route", {}).get("decision_source"),
+                },
+            },
+            {
+                "agent": "document_retrieval_agent",
+                "reason_selected": "Query requested document evidence or referenced uploaded documents.",
+                "status": "completed" if response_contract["document_evidence"] else "completed_with_no_rows",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {"query": query, "attached_document_ids": attached_document_ids},
+                "outputs": {
+                    "document_count": len(response_contract["document_evidence"]),
+                    "sources": list(response_contract["sources"]),
+                },
+            },
+            {
+                "agent": "evidence_aggregator",
+                "reason_selected": "Combine document evidence into a single audit package.",
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {
+                    "document_count": len(response_contract["document_evidence"]),
+                    "source_count": len(response_contract["sources"]),
+                },
+                "outputs": {
+                    "document_count": len(response_contract["document_evidence"]),
+                    "source_count": len(response_contract["sources"]),
+                },
+            },
+        ]
         response_contract["traceability"] = traceability
         response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
+        response_contract["execution_metadata"].append(
+            {
+                "agent": "response_composer",
+                "reason_selected": "Generate the final audit narrative and evaluation.",
+                "status": "completed",
+                "started_at": self._now_iso(),
+                "ended_at": self._now_iso(),
+                "inputs": {
+                    "structured_count": len(response_contract.get("structured_evidence", [])),
+                    "document_count": len(response_contract.get("document_evidence", [])),
+                },
+                "outputs": {
+                    "risk_rating": response_contract.get("risk_rating"),
+                    "finding_title": response_contract.get("finding", {}).get("title"),
+                },
+            }
+        )
+        traceability["execution_metadata"] = list(response_contract["execution_metadata"])
         response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
         self._finalize_response(
             response_contract=response_contract,
@@ -804,6 +1476,120 @@ class AuditWorkflowService:
             result="document_review",
         )
 
+    def _run_control_testing(
+        self,
+        *,
+        response_contract: dict[str, Any],
+        traceability: dict[str, Any],
+        trace_context: Any,
+        governance_audit: GovernanceAuditService,
+        actor_user_id: str | None,
+        query: str,
+        page: int,
+        page_size: int,
+        routing_decision: dict[str, Any],
+    ) -> None:
+        self.traceability_service.record_reasoning(traceability, "Query matched the control testing workflow.")
+        self.traceability_service.record_agent(
+            traceability,
+            "control_testing_agent",
+            "Query requested control testing across approvals, compliance, and duplicate-payment patterns.",
+        )
+        control_span = trace_context.begin_span(
+            "control_testing_agent",
+            input_payload={"query": query, "page": page, "page_size": page_size},
+            metadata={"service": "AuditWorkflowService"},
+        )
+        control_result = self.control_testing_service.run(
+            query=query,
+            trace_context=trace_context,
+            page=page,
+            page_size=page_size,
+        )
+        control_span.finish(
+            output={
+                "success": control_result.get("success"),
+                "tests_run": len(control_result.get("control_tests", [])),
+                "tests_failed": control_result.get("control_metrics", {}).get("tests_failed", 0),
+                "structured_count": len(control_result.get("structured_evidence", [])),
+                "document_count": len(control_result.get("document_evidence", [])),
+            },
+            metadata={
+                "service": "AuditWorkflowService",
+                "tests_run": len(control_result.get("control_tests", [])),
+                "tests_failed": control_result.get("control_metrics", {}).get("tests_failed", 0),
+            },
+        )
+        response_contract.update(
+            {
+                "success": control_result.get("success", True),
+                "entity_type": control_result.get("entity_type", "control"),
+                "entity_id": control_result.get("entity_id"),
+                "control_summary": control_result.get("control_summary", ""),
+                "control_tests": control_result.get("control_tests", []),
+                "control_metrics": control_result.get("control_metrics", {}),
+                "investigation_summary": control_result.get("investigation_summary", ""),
+                "key_findings": control_result.get("key_findings", []),
+                "top_supporting_evidence": control_result.get("top_supporting_evidence", []),
+                "supporting_evidence": control_result.get("supporting_evidence", []),
+                "supporting_documents": control_result.get("supporting_documents", []),
+                "structured_evidence": control_result.get("structured_evidence", []),
+                "document_evidence": control_result.get("document_evidence", []),
+                "sources": control_result.get("sources", []),
+                "recommendations": control_result.get("recommendations", []),
+                "finding": control_result.get("finding", {}),
+                "agents_used": control_result.get("agents_used", []),
+                "reasoning": control_result.get("reasoning", []),
+                "execution_metadata": control_result.get("execution_metadata", []),
+            }
+        )
+        response_contract["routing_decision"] = routing_decision
+        response_contract["traceability"] = traceability
+        for source in response_contract.get("sources", []):
+            self.traceability_service.record_source(traceability, source)
+        for item in response_contract.get("structured_evidence", []):
+            self.traceability_service.record_evidence(
+                traceability,
+                {
+                    "type": "structured",
+                    "reference": item.get("control_test_id") or item.get("transaction_id") or item.get("approval_id") or item.get("compliance_id"),
+                    "source": item.get("source_type") or "control_test",
+                },
+            )
+        for item in response_contract.get("document_evidence", []):
+            self.traceability_service.record_evidence(
+                traceability,
+                {
+                    "type": "document",
+                    "reference": item.get("document_id"),
+                    "source": "document_metadata",
+                },
+            )
+        response_contract = self.response_composer.compose(response_contract, trace_context=trace_context)
+        response_contract["agents_used"] = list(traceability.get("agents_invoked", []))
+        self._finalize_response(
+            response_contract=response_contract,
+            traceability=traceability,
+            trace_context=trace_context,
+            governance_audit=governance_audit,
+            actor_user_id=actor_user_id,
+            query=query,
+            result="control_testing",
+        )
+
+    def _looks_like_control_testing(self, query: str) -> bool:
+        normalized = query.lower()
+        return bool(
+            re.search(r"\bcontrol\b", normalized)
+            or re.search(r"\bcontrols\b", normalized)
+            or re.search(r"\bcontrol testing\b", normalized)
+            or re.search(r"\btest controls\b", normalized)
+            or re.search(r"\binternal control\b", normalized)
+            or re.search(r"\bsegregation of duties\b", normalized)
+            or re.search(r"\bpolicy exception\b", normalized)
+            or re.search(r"\bduplicate payment\b", normalized)
+        )
+
     def _looks_like_document_request(self, query: str) -> bool:
         normalized = query.lower()
         return bool(
@@ -813,6 +1599,10 @@ class AuditWorkflowService:
             or re.search(r"\bsummarize\b.*\b(document|file|attachment)\b", normalized)
             or re.search(r"\bshow\b.*\b(citation|evidence|supporting document)\b", normalized)
         )
+
+    @staticmethod
+    def _now_iso() -> str:
+        return datetime.now(timezone.utc).isoformat()
 
     def _run_adk_orchestrator(
         self,

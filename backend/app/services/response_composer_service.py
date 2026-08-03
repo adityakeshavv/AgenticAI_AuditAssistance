@@ -6,6 +6,8 @@ from app.services.risk_scoring_service import RiskScoringService
 from app.services.recommendation_service import RecommendationService
 from app.services.finding_generation_service import FindingGenerationService
 from app.services.response_evaluation_service import ResponseEvaluationService
+from app.services.workpaper_service import WorkpaperService
+from app.services.workflow_automation_service import WorkflowAutomationService
 
 
 class ResponseComposerService:
@@ -14,6 +16,8 @@ class ResponseComposerService:
         self.risk_scoring_service = RiskScoringService()
         self.recommendation_service = RecommendationService()
         self.response_evaluation_service = ResponseEvaluationService()
+        self.workpaper_service = WorkpaperService()
+        self.workflow_automation_service = WorkflowAutomationService()
 
     def compose(self, response_contract: dict[str, Any], trace_context: Any | None = None) -> dict[str, Any]:
         compose_span = trace_context.begin_span(
@@ -30,6 +34,7 @@ class ResponseComposerService:
         document_evidence = list(response_contract.get("document_evidence", []))
         intent = response_contract.get("intent", {})
         query = response_contract.get("query", "")
+        source_route = response_contract.get("source_route", {})
 
         finding = response_contract.get("finding")
         if not (isinstance(finding, dict) and finding):
@@ -99,6 +104,7 @@ class ResponseComposerService:
                 supporting_section=supporting_section,
                 recommendations=list(response_contract.get("recommendations", [])),
                 traceability=response_contract.get("traceability", {}),
+                source_route=source_route,
                 narrative=str(finding.get("narrative") or ""),
             )
         elif response_contract.get("entity_type") == "transaction":
@@ -120,6 +126,30 @@ class ResponseComposerService:
                 supporting_section=supporting_section,
                 recommendations=list(response_contract.get("recommendations", [])),
                 traceability=response_contract.get("traceability", {}),
+                source_route=source_route,
+                narrative=str(finding.get("narrative") or ""),
+            )
+        elif response_contract.get("entity_type") == "control":
+            final_response = self._build_control_narrative(
+                query=query,
+                intent=intent,
+                risk_rating=risk["risk_rating"],
+                risk_drivers=risk["risk_drivers"],
+                control_summary=str(
+                    response_contract.get("control_summary")
+                    or response_contract.get("investigation_summary")
+                    or finding.get("finding_summary", "")
+                ),
+                control_metrics=dict(response_contract.get("control_metrics", {})),
+                control_tests=list(response_contract.get("control_tests", [])),
+                key_findings=list(response_contract.get("key_findings", [])),
+                top_supporting_evidence=list(response_contract.get("top_supporting_evidence", [])),
+                supporting_evidence=list(response_contract.get("supporting_evidence", [])),
+                supporting_summary=supporting_summary,
+                supporting_section=supporting_section,
+                recommendations=list(response_contract.get("recommendations", [])),
+                traceability=response_contract.get("traceability", {}),
+                source_route=source_route,
                 narrative=str(finding.get("narrative") or ""),
             )
         elif response_contract.get("investigation_plan"):
@@ -139,6 +169,7 @@ class ResponseComposerService:
                 supporting_section=supporting_section,
                 recommendations=list(response_contract.get("recommendations", [])),
                 traceability=response_contract.get("traceability", {}),
+                source_route=source_route,
                 narrative=str(finding.get("narrative") or ""),
             )
         else:
@@ -150,6 +181,7 @@ class ResponseComposerService:
                 finding=finding,
                 supporting_summary=supporting_summary,
                 supporting_section=supporting_section,
+                source_route=source_route,
                 narrative=str(finding.get("narrative") or ""),
             )
 
@@ -163,17 +195,23 @@ class ResponseComposerService:
             response_contract=response_contract,
             trace_context=trace_context,
         )
+        response_contract["workflow_automation"] = self.workflow_automation_service.build(response_contract, trace_context=trace_context)
+        workpaper_bundle = self.workpaper_service.build(response_contract, trace_context=trace_context)
+        response_contract["workpaper"] = workpaper_bundle.get("workpaper", {})
+        response_contract["report_exports"] = workpaper_bundle.get("report_exports", {})
         if compose_span:
             compose_span.finish(
                 output={
                     "final_response_length": len(str(final_response)),
                     "finding_title": finding.get("finding_title"),
                     "risk_rating": response_contract.get("risk_rating"),
+                    "workpaper_id": response_contract.get("workpaper", {}).get("workpaper_id"),
                 },
                 metadata={
                     "finding_title": finding.get("finding_title"),
                     "risk_rating": response_contract.get("risk_rating"),
                     "risk_score": response_contract.get("risk_score"),
+                    "workpaper_id": response_contract.get("workpaper", {}).get("workpaper_id"),
                 },
             )
         return response_contract
@@ -321,9 +359,11 @@ class ResponseComposerService:
         finding: dict[str, Any],
         supporting_summary: str,
         supporting_section: str,
+        source_route: dict[str, Any],
         narrative: str = "",
     ) -> str:
         risk_driver_text = "\n".join(f"- {driver}" for driver in risk_drivers) if risk_drivers else "None"
+        source_route_text = self._format_source_route(source_route)
         return (
             f"Narrative:\n{narrative}\n\n" if narrative else ""
         ) + (
@@ -333,6 +373,7 @@ class ResponseComposerService:
             f"Evidence Summary: {finding.get('evidence_summary', '')}\n"
             f"Supporting Documents: {supporting_summary}\n"
             f"{supporting_section}\n"
+            f"Source Route: {source_route_text}\n"
             f"Recommendation: {finding.get('recommendation', '')}\n"
             f"Query: {query}\n"
             f"Intent: {intent.get('intent') or 'unsupported'}"
@@ -354,6 +395,7 @@ class ResponseComposerService:
         supporting_section: str,
         recommendations: list[str],
         traceability: dict[str, Any],
+        source_route: dict[str, Any],
         narrative: str = "",
     ) -> str:
         risk_driver_text = "\n".join(f"- {driver}" for driver in risk_drivers) if risk_drivers else "None"
@@ -362,6 +404,7 @@ class ResponseComposerService:
         top_evidence_text = self._format_top_supporting_evidence(top_supporting_evidence)
         evidence_text = self._format_evidence_summary_items(supporting_evidence)
         recommendation_text = "\n".join(f"- {item}" for item in recommendations) if recommendations else "None"
+        source_route_text = self._format_source_route(source_route)
         return (
             "Vendor Investigation Report\n\n"
             + (f"Narrative:\n{narrative}\n\n" if narrative else "")
@@ -375,6 +418,7 @@ class ResponseComposerService:
             f"Supporting Evidence:\n{evidence_text}\n"
             f"Supporting Documents: {supporting_summary}\n"
             f"{supporting_section}\n"
+            f"Source Route: {source_route_text}\n"
             f"Recommendations:\n{recommendation_text}\n"
             f"{self._format_traceability(traceability)}\n"
             f"Query: {query}\n"
@@ -398,6 +442,7 @@ class ResponseComposerService:
         supporting_section: str,
         recommendations: list[str],
         traceability: dict[str, Any],
+        source_route: dict[str, Any],
         narrative: str = "",
     ) -> str:
         risk_driver_text = "\n".join(f"- {driver}" for driver in risk_drivers) if risk_drivers else "None"
@@ -406,6 +451,7 @@ class ResponseComposerService:
         top_evidence_text = self._format_top_supporting_evidence(top_supporting_evidence)
         evidence_text = self._format_evidence_summary_items(supporting_evidence)
         recommendation_text = "\n".join(f"- {item}" for item in recommendations) if recommendations else "None"
+        source_route_text = self._format_source_route(source_route)
         return (
             "Transaction Investigation Report\n\n"
             + (f"Narrative:\n{narrative}\n\n" if narrative else "")
@@ -419,10 +465,67 @@ class ResponseComposerService:
             f"Supporting Evidence:\n{evidence_text}\n"
             f"Supporting Documents: {supporting_summary}\n"
             f"{supporting_section}\n"
+            f"Source Route: {source_route_text}\n"
             f"Recommendations:\n{recommendation_text}\n"
             f"{self._format_traceability(traceability)}\n"
             f"Query: {query}\n"
             f"Intent: {intent.get('intent') or 'transaction_investigation'}"
+            )
+        )
+
+    def _build_control_narrative(
+        self,
+        *,
+        query: str,
+        intent: dict[str, Any],
+        risk_rating: str,
+        risk_drivers: list[str],
+        control_summary: str,
+        control_metrics: dict[str, int],
+        control_tests: list[dict[str, Any]],
+        key_findings: list[dict[str, Any]],
+        top_supporting_evidence: list[dict[str, Any]],
+        supporting_evidence: list[dict[str, Any]],
+        supporting_summary: str,
+        supporting_section: str,
+        recommendations: list[str],
+        traceability: dict[str, Any],
+        source_route: dict[str, Any],
+        narrative: str = "",
+    ) -> str:
+        risk_driver_text = "\n".join(f"- {driver}" for driver in risk_drivers) if risk_drivers else "None"
+        control_test_text = "\n".join(
+            f"- {test.get('test_name', 'control')}: {test.get('description', '')} ({test.get('status', 'unknown')}, {test.get('result_count', 0)} result(s))"
+            for test in control_tests
+        ) if control_tests else "None"
+        key_finding_text = "\n".join(
+            f"- {finding.get('summary', '')} [{finding.get('severity', 'LOW')}]"
+            for finding in key_findings
+        ) if key_findings else "None"
+        metrics_text = self._format_metrics(control_metrics)
+        top_evidence_text = self._format_top_supporting_evidence(top_supporting_evidence)
+        evidence_text = self._format_evidence_summary_items(supporting_evidence)
+        recommendation_text = "\n".join(f"- {item}" for item in recommendations) if recommendations else "None"
+        source_route_text = self._format_source_route(source_route)
+        return (
+            "Control Testing Report\n\n"
+            + (f"Narrative:\n{narrative}\n\n" if narrative else "")
+            + (
+            f"Executive Summary:\n{control_summary}\n\n"
+            f"Control Metrics:\n{metrics_text}\n\n"
+            f"Risk Assessment: {risk_rating}\n"
+            f"Risk Drivers:\n{risk_driver_text}\n"
+            f"Control Tests:\n{control_test_text}\n"
+            f"Key Findings:\n{key_finding_text}\n"
+            f"Top Supporting Evidence:\n{top_evidence_text}\n"
+            f"Supporting Evidence:\n{evidence_text}\n"
+            f"Supporting Documents: {supporting_summary}\n"
+            f"{supporting_section}\n"
+            f"Source Route: {source_route_text}\n"
+            f"Recommendations:\n{recommendation_text}\n"
+            f"{self._format_traceability(traceability)}\n"
+            f"Query: {query}\n"
+            f"Intent: {intent.get('intent') or 'control_testing'}"
             )
         )
 
@@ -444,6 +547,7 @@ class ResponseComposerService:
         supporting_section: str,
         recommendations: list[str],
         traceability: dict[str, Any],
+        source_route: dict[str, Any],
         narrative: str = "",
     ) -> str:
         agents_selected = investigation_plan.get("agents_required", [])
@@ -457,6 +561,7 @@ class ResponseComposerService:
         top_evidence_text = self._format_top_supporting_evidence(top_supporting_evidence)
         evidence_text = self._format_evidence_summary_items(supporting_evidence)
         recommendation_text = "\n".join(f"- {item}" for item in recommendations) if recommendations else "None"
+        source_route_text = self._format_source_route(source_route)
         return (
             "Investigation Report\n\n"
             + (f"Narrative:\n{narrative}\n\n" if narrative else "")
@@ -474,6 +579,7 @@ class ResponseComposerService:
             f"Supporting Evidence:\n{evidence_text}\n"
             f"Supporting Documents: {supporting_summary}\n"
             f"{supporting_section}\n"
+            f"Source Route: {source_route_text}\n"
             f"Recommendations:\n{recommendation_text}\n"
             f"{self._format_traceability(traceability)}\n"
             f"Query: {query}\n"
@@ -507,6 +613,14 @@ class ResponseComposerService:
     def _format_metrics(self, metrics: dict[str, int]) -> str:
         if not metrics:
             return "None"
+        if any(key in metrics for key in ("tests_run", "tests_failed", "structured_records_reviewed", "documents_reviewed")):
+            labels = [
+                ("tests_run", "Tests Run"),
+                ("tests_failed", "Tests Failed"),
+                ("structured_records_reviewed", "Structured Records Reviewed"),
+                ("documents_reviewed", "Documents Reviewed"),
+            ]
+            return "\n".join(f"- {label}: {metrics.get(key, 0)}" for key, label in labels)
         labels = [
             ("transactions_reviewed", "Transactions Reviewed"),
             ("contracts_reviewed", "Contracts Reviewed"),
@@ -582,6 +696,16 @@ class ResponseComposerService:
             f"Reasoning Path:\n{reasoning_text}"
         )
 
+    def _format_source_route(self, source_route: dict[str, Any]) -> str:
+        if not source_route:
+            return "n/a"
+        mode = source_route.get("source_mode") or "unknown"
+        decision_source = source_route.get("decision_source") or "n/a"
+        confidence = source_route.get("confidence")
+        reason = source_route.get("reason") or "n/a"
+        confidence_text = f"{float(confidence):.2f}" if confidence is not None else "n/a"
+        return f"{mode} (source={decision_source}, confidence={confidence_text}; {reason})"
+
     def _normalize_finding(self, finding: dict[str, Any]) -> dict[str, Any]:
         normalized = dict(finding)
         title = str(normalized.get("title") or normalized.get("finding_title") or "Evidence Retrieved").strip()
@@ -589,6 +713,9 @@ class ResponseComposerService:
         recommendation = str(normalized.get("recommendation") or "").strip()
         narrative = str(normalized.get("narrative") or "").strip()
         if not narrative:
+            source_route = normalized.get("source_route")
+            if not isinstance(source_route, dict):
+                source_route = {}
             narrative = self._build_narrative(
                 query=str(normalized.get("query") or ""),
                 intent=normalized.get("intent") if isinstance(normalized.get("intent"), dict) else {},
@@ -597,6 +724,7 @@ class ResponseComposerService:
                 finding=normalized,
                 supporting_summary=str(normalized.get("supporting_summary") or normalized.get("evidence_summary") or ""),
                 supporting_section=str(normalized.get("supporting_section") or ""),
+                source_route=source_route,
             )
         normalized.update(
             {

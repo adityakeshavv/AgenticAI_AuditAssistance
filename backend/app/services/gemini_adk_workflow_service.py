@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.services.approval_service import execute_approval_query
 from app.services.compliance_service import execute_compliance_query
+from app.services.control_testing_service import ControlTestingService
 from app.services.document_retrieval_agent_service import DocumentRetrievalAgent
 from app.services.evidence_aggregator_service import EvidenceAggregatorService
 from app.services.investigation_planner_service import InvestigationPlannerService
@@ -81,6 +82,7 @@ class GeminiAdkWorkflowService:
         transaction_rows: list[dict[str, Any]] = []
         vendor_investigations: list[dict[str, Any]] = []
         extra_structured_evidence: list[dict[str, Any]] = []
+        control_document_evidence: list[dict[str, Any]] = []
         document_result: dict[str, Any] = {"documents": [], "sources": []}
         transaction_intent: dict[str, Any] = structured_intent
 
@@ -157,6 +159,20 @@ class GeminiAdkWorkflowService:
                 if result.get("success"):
                     extra_structured_evidence.extend(list(result.get("results", [])))
 
+            elif agent == "control_testing_agent":
+                result = ControlTestingService(self.db).run(
+                    query=query,
+                    trace_context=trace_context,
+                    page=page,
+                    page_size=page_size,
+                )
+                if result.get("success"):
+                    extra_structured_evidence.extend(list(result.get("structured_evidence", [])))
+                    control_document_evidence.extend(list(result.get("document_evidence", [])))
+                    sources = result.get("sources", [])
+                    if isinstance(sources, list):
+                        document_result.setdefault("sources", []).extend(list(sources))
+
             self._append_execution_metadata(
                 execution_metadata,
                 agent=agent,
@@ -175,7 +191,7 @@ class GeminiAdkWorkflowService:
             )
 
         structured_evidence = list(transaction_rows) + list(extra_structured_evidence)
-        document_evidence = list(document_result.get("documents", []))
+        document_evidence = list(document_result.get("documents", [])) + control_document_evidence
         sources = ["transaction_master"]
         if document_evidence:
             sources.append("document_metadata")

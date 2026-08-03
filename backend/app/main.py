@@ -7,7 +7,8 @@ from app.database import Base, engine
 from app.core.config import get_settings
 from app.core.exceptions import safe_detail
 from app import models as _models  # noqa: F401
-from app.routers import admin, audit, auth, chat, connections, health, realtime, workspaces
+from app.routers import admin, audit, auth, chat, connections, health, realtime, workspaces, workspace_collaboration
+from app.services.monitoring_service import monitoring_supervisor
 from app.services.realtime_service import realtime_hub
 
 
@@ -31,6 +32,7 @@ app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(connections.router)
 app.include_router(workspaces.router)
+app.include_router(workspace_collaboration.router)
 app.include_router(admin.router)
 app.include_router(audit.router)
 app.include_router(chat.router)
@@ -65,12 +67,15 @@ async def unhandled_exception_handler(_: Request, exc: Exception) -> JSONRespons
 
 
 @app.on_event("startup")
-def create_missing_tables() -> None:
+async def create_missing_tables() -> None:
     Base.metadata.create_all(bind=engine)
+    await realtime_hub.ensure_started()
+    await monitoring_supervisor.ensure_started()
 
 
 @app.on_event("shutdown")
 async def shutdown_realtime_hub() -> None:
+    await monitoring_supervisor.shutdown()
     await realtime_hub.shutdown()
 
 

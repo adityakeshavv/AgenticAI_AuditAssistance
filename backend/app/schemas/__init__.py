@@ -7,6 +7,10 @@ from app.schemas.audit import (
     EvaluationRecord,
     ExecutionMetadataRecord,
     NavigationPayload,
+    ReportExportRecord,
+    WorkflowAutomationRecord,
+    WorkflowStageRecord,
+    WorkpaperRecord,
     TraceabilityRecord,
 )
 from app.schemas.governance_audit import GovernanceAuditListResponse, GovernanceAuditRecord
@@ -30,12 +34,24 @@ from app.schemas.chat import (
     InvestigationState,
     SuggestedAction,
 )
+from app.schemas.monitoring import (
+    MonitoringAlertRecord,
+    MonitoringAlertStatusUpdate,
+    MonitoringScanResponse,
+    MonitoringSummaryResponse,
+)
 from app.schemas.workspace import (
     WorkspaceCreate,
     WorkspaceListResponse,
     WorkspaceMutationResponse,
     WorkspaceResponse,
     WorkspaceSelectionUpdate,
+)
+from app.schemas.workspace_collaboration import (
+    WorkspaceCollaborationCreate,
+    WorkspaceCollaborationListResponse,
+    WorkspaceCollaborationResponse,
+    WorkspaceCollaborationUpdate,
 )
 
 __all__ = [
@@ -45,6 +61,10 @@ __all__ = [
     "EvaluationRecord",
     "ExecutionMetadataRecord",
     "NavigationPayload",
+    "ReportExportRecord",
+    "WorkflowAutomationRecord",
+    "WorkflowStageRecord",
+    "WorkpaperRecord",
     "TraceabilityRecord",
     "GovernanceAuditListResponse",
     "GovernanceAuditRecord",
@@ -68,9 +88,17 @@ __all__ = [
     "ChatResponse",
     "InvestigationState",
     "SuggestedAction",
+    "MonitoringAlertRecord",
+    "MonitoringAlertStatusUpdate",
+    "MonitoringScanResponse",
+    "MonitoringSummaryResponse",
     "WorkspaceCreate",
     "WorkspaceListResponse",
     "WorkspaceMutationResponse",
     "WorkspaceResponse",
     "WorkspaceSelectionUpdate",
+    "WorkspaceCollaborationCreate",
+    "WorkspaceCollaborationListResponse",
+    "WorkspaceCollaborationResponse",
+    "WorkspaceCollaborationUpdate",
 ]

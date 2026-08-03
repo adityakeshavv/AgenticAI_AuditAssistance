@@ -4,7 +4,9 @@ from app.crud import (
     document_metadata_crud,
     expense_crud,
     governance_audit_crud,
+    monitoring_alert_crud,
     user_crud,
+    workspace_collaboration_crud,
     transaction_crud,
     vendor_crud,
 )
@@ -15,7 +17,9 @@ __all__ = [
     "document_metadata_crud",
     "expense_crud",
     "governance_audit_crud",
+    "monitoring_alert_crud",
     "user_crud",
+    "workspace_collaboration_crud",
     "transaction_crud",
     "vendor_crud",
 ]

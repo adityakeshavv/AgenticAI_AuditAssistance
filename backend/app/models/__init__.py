@@ -13,6 +13,8 @@ from app.models.chat_session import ChatSession
 from app.models.chat_turn import ChatTurn
 from app.models.governance_audit import GovernanceAuditLog
 from app.models.investigation import AuditInvestigation
+from app.models.monitoring_alert import MonitoringAlert
+from app.models.workspace_collaboration import WorkspaceCollaborationItem
 from app.models.transaction import TransactionMaster
 from app.models.user import AppUser
 from app.models.vendor import Vendor
@@ -34,6 +36,8 @@ __all__ = [
     "ExpenseClaim",
     "TransactionMaster",
     "GovernanceAuditLog",
+    "MonitoringAlert",
     "AppUser",
+    "WorkspaceCollaborationItem",
     "Vendor",
 ]

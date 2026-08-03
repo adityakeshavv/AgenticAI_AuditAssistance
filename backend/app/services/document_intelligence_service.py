@@ -15,6 +15,7 @@ class DocumentIntelligenceService:
         "sop": "SOP",
         "contract": "Contract",
         "email": "Escalation Email",
+        "spreadsheet": "Spreadsheet",
     }
 
     SIGNAL_RULES = [
@@ -60,6 +61,10 @@ class DocumentIntelligenceService:
         }
 
     def _classify_document(self, document: dict[str, Any]) -> str:
+        file_name = str(document.get("file_name") or "").lower()
+        document_type = str(document.get("document_type") or "").lower()
+        if file_name.endswith((".xlsx", ".xlsm", ".xltx", ".xltm", ".csv")) or document_type in {"xlsx", "xlsm", "xltx", "xltm", "csv", "spreadsheet"}:
+            return "Spreadsheet"
         haystack = " ".join(
             str(document.get(field, "")).lower()
             for field in ("document_type", "document_category", "file_name", "reason_selected", "content_snippet")

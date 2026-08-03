@@ -67,6 +67,8 @@ class SuggestedActionsService:
         has_docs = bool(response_contract.get("document_evidence"))
         has_vendors = bool(response_contract.get("vendor_summary"))
         has_transactions = bool(response_contract.get("structured_evidence"))
+        source_route = response_contract.get("source_route", {})
+        source_mode = str(source_route.get("source_mode") or "unknown").lower()
 
         system = (
             "You are an audit copilot. Given the current audit context, suggest "
@@ -85,6 +87,8 @@ class SuggestedActionsService:
             f"Has supporting documents: {has_docs}\n"
             f"Has vendor data: {has_vendors}\n"
             f"Has transaction data: {has_transactions}\n"
+            f"Source route: {source_mode}\n"
+            f"Source route reason: {source_route.get('reason') or 'n/a'}\n"
             f"Turn count: {memory_context.get('turn_count', 1)}\n"
             f"Investigation topics: {inv.get('topics', [])}"
         )
@@ -124,6 +128,8 @@ class SuggestedActionsService:
         has_find    = bool(r.get("key_findings"))
         risk        = (r.get("risk_rating") or "LOW").upper()
         agents_used = set(r.get("agents_used") or [])
+        source_route = r.get("source_route") or {}
+        source_mode = str(source_route.get("source_mode") or "").lower()
         has_compliance = "compliance_agent" in agents_used
         has_approval   = "approval_agent" in agents_used
         has_expense    = "expense_agent" in agents_used
@@ -149,6 +155,13 @@ class SuggestedActionsService:
             general_actions.append(_DETERMINISTIC_ACTIONS[9])   # open document
         if has_find:
             general_actions.append(_DETERMINISTIC_ACTIONS[7])   # generate audit report
+
+        if source_mode == "pdf_only" and has_docs:
+            general_actions.insert(0, {"id": "review_uploaded_document", "label": "Review Uploaded Document", "description": "Open the supporting document and inspect the cited passage."})
+        elif source_mode == "db_only" and has_tx:
+            general_actions.insert(0, {"id": "review_structured_records", "label": "Review Structured Records", "description": "Inspect the structured database records behind the finding."})
+        elif source_mode == "both":
+            general_actions.insert(0, {"id": "compare_sources", "label": "Compare Sources", "description": "Review the document evidence alongside the structured records."})
 
         actions = domain_actions + general_actions
         if not actions:

@@ -79,6 +79,12 @@ class KeywordFallbackRouter:
             supporting_terms=self._approval_support_terms(),
             audit_signal=audit_signal,
         )
+        control_score = self._score_domain(
+            query,
+            domain_terms=self._control_terms(),
+            supporting_terms=self._control_support_terms(),
+            audit_signal=audit_signal,
+        )
         expense_score = self._score_domain(
             query,
             domain_terms=self._expense_terms(),
@@ -97,6 +103,7 @@ class KeywordFallbackRouter:
             ("vendor_agent", vendor_score),
             ("compliance_agent", compliance_score),
             ("approval_agent", approval_score),
+            ("control_testing_agent", control_score),
             ("expense_agent", expense_score),
             ("investigation_agent", investigation_score),
         ]
@@ -248,6 +255,31 @@ class KeywordFallbackRouter:
             "escalation",
             "missing approval",
             "approval chain",
+        ]
+
+    @staticmethod
+    def _control_terms() -> list[str]:
+        return [
+            "control",
+            "controls",
+            "control testing",
+            "internal control",
+            "segregation of duties",
+            "duplicate payment",
+            "policy exception",
+        ]
+
+    @staticmethod
+    def _control_support_terms() -> list[str]:
+        return [
+            "test controls",
+            "failed controls",
+            "control failures",
+            "control exception",
+            "control exceptions",
+            "policy violations",
+            "approval controls",
+            "monitoring",
         ]
 
     @staticmethod

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import email
+import json
 import re
 import sys
 import zlib
@@ -22,6 +23,7 @@ from app.core.config import get_settings
 from app.models import DocumentMetadata
 from app.services.document_metadata_service import build_citation_record, build_source_uri
 from app.services.document_intelligence_service import DocumentIntelligenceService
+from app.services.tabular_text_service import TabularTextService
 from rag.ingestion.document_chunker import DocumentChunker
 from rag.vector_store.vector_store_service import VectorStoreService
 
@@ -34,6 +36,7 @@ class SemanticRetrievalService:
         self.chunker = DocumentChunker()
         self.vector_store = VectorStoreService()
         self.intelligence_service = DocumentIntelligenceService()
+        self.tabular_text_service = TabularTextService()
 
     def search(
         self,
@@ -47,21 +50,44 @@ class SemanticRetrievalService:
         chunks: list[dict[str, Any]] = []
 
         for document in documents:
-            for unit in self._extract_document_units(document):
-                content = unit.get("content") or ""
-                if not content.strip():
-                    continue
-                chunks.extend(self.chunker.chunk_document(document=unit, content=content))
+            cached_chunks = self._load_cached_chunks(document)
+            if cached_chunks:
+                chunks.extend(cached_chunks)
+                continue
+
+            chunks.extend(self.build_document_index(document))
 
         ranked_chunks = self.vector_store.search(query, chunks, top_k=top_k)
         semantic_evidence = [self._build_evidence_item(chunk, query=query) for chunk in ranked_chunks]
+        source_labels = ["semantic_retrieval"]
+        if any(str(chunk.get("source_type") or "").lower() in {"spreadsheet", "tabular"} for chunk in ranked_chunks):
+            source_labels.append("tabular_semantic_retrieval")
 
         return {
             "semantic_evidence": semantic_evidence,
             "documents_scanned": len(documents),
             "chunks_considered": len(chunks),
-            "sources": ["semantic_retrieval"],
+            "sources": source_labels,
         }
+
+    def build_document_index(self, document: dict[str, Any]) -> list[dict[str, Any]]:
+        """Build page-aware chunks plus embeddings for a single document."""
+        units = self._extract_document_units(document)
+        chunks: list[dict[str, Any]] = []
+        for unit in units:
+            content = unit.get("content") or ""
+            if not content.strip():
+                continue
+            chunks.extend(self.chunker.chunk_document(document=unit, content=content))
+
+        if not chunks:
+            return []
+
+        contents = [str(chunk.get("content") or "") for chunk in chunks]
+        vectors = self.vector_store.embedding_service.embed_many(contents)
+        for chunk, vector in zip(chunks, vectors):
+            chunk["embedding"] = vector
+        return chunks
 
     def _load_documents(self, *, exclude_document_ids: set[str]) -> list[dict[str, Any]]:
         stmt = select(DocumentMetadata).order_by(DocumentMetadata.document_id)
@@ -93,6 +119,41 @@ class SemanticRetrievalService:
             )
         return documents
 
+    def _load_cached_chunks(self, document: dict[str, Any]) -> list[dict[str, Any]]:
+        file_path = document.get("file_path")
+        if not file_path:
+            return []
+        artifact_path = Path(str(file_path)).with_suffix(f"{Path(str(file_path)).suffix}.meta.json")
+        if not artifact_path.exists() or not artifact_path.is_file():
+            return []
+
+        try:
+            artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+        except Exception:
+            return []
+
+        chunks = artifact.get("chunks")
+        if not isinstance(chunks, list):
+            return []
+
+        cached: list[dict[str, Any]] = []
+        for chunk in chunks:
+            if not isinstance(chunk, dict):
+                continue
+            content = str(chunk.get("content") or "").strip()
+            if not content:
+                continue
+            cached.append(
+                {
+                    **document,
+                    **chunk,
+                    "source_uri": build_source_uri(document),
+                    "content": content,
+                    "embedding": chunk.get("embedding"),
+                }
+            )
+        return cached
+
     def _resolve_document_path(self, row: DocumentMetadata) -> Path:
         if row.file_path:
             return Path(row.file_path)
@@ -101,6 +162,34 @@ class SemanticRetrievalService:
     def _extract_document_units(self, document: dict[str, Any]) -> list[dict[str, Any]]:
         path = Path(document["file_path"])
         suffix = path.suffix.lower()
+
+        if suffix in self.tabular_text_service.SPREADSHEET_SUFFIXES:
+            tabular_units = self.tabular_text_service.extract_units(path)
+            if tabular_units:
+                return [
+                    {
+                        **document,
+                        **unit,
+                        "source_uri": build_source_uri(document),
+                        "content": unit.get("content") or "",
+                    }
+                    for unit in tabular_units
+                    if str(unit.get("content") or "").strip()
+                ]
+
+        if suffix == ".csv":
+            tabular_units = self.tabular_text_service.extract_units(path)
+            if tabular_units:
+                return [
+                    {
+                        **document,
+                        **unit,
+                        "source_uri": build_source_uri(document),
+                        "content": unit.get("content") or "",
+                    }
+                    for unit in tabular_units
+                    if str(unit.get("content") or "").strip()
+                ]
 
         if suffix == ".pdf":
             pdf_units = self._extract_pdf_units(document, path)
@@ -243,8 +332,11 @@ class SemanticRetrievalService:
         lowered_query = query.lower()
         document_type = str(document.get("document_type") or "").upper()
         document_category = str(document.get("document_category") or "").lower()
+        file_name = str(document.get("file_name") or "").lower()
         page_text = f" page {page_number}" if page_number is not None else ""
 
+        if file_name.endswith((".xlsx", ".xlsm", ".xltx", ".xltm", ".csv")) or document_type == "SPREADSHEET":
+            return f"Spreadsheet or tabular evidence matched the investigation question{page_text}."
         if "policy" in lowered_query or "violat" in lowered_query or "clause" in lowered_query:
             if "policy" in document_type.lower() or document_category == "policies":
                 return f"Relevant policy clause matched the investigation question{page_text}."
@@ -268,8 +360,12 @@ class SemanticRetrievalService:
     def _read_document_content(self, path: Path) -> str:
         suffix = path.suffix.lower()
         try:
-            if suffix in {".txt", ".md", ".log", ".csv"}:
+            if suffix in {".txt", ".md", ".log"}:
                 return path.read_text(encoding="utf-8", errors="ignore")
+            if suffix == ".csv":
+                return self.tabular_text_service.extract_text(path)
+            if suffix in self.tabular_text_service.SPREADSHEET_SUFFIXES:
+                return self.tabular_text_service.extract_text(path)
             if suffix == ".eml":
                 return self._read_eml(path)
             if suffix == ".docx":

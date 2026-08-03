@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -84,6 +86,65 @@ class EvaluationRecord(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class WorkpaperRecord(BaseModel):
+    workpaper_id: str | None = None
+    title: str | None = None
+    generated_at: str | None = None
+    query: str | None = None
+    objective: str | None = None
+    scope: dict[str, Any] = Field(default_factory=dict)
+    methodology: list[str] = Field(default_factory=list)
+    summary: str | None = None
+    finding: dict[str, Any] = Field(default_factory=dict)
+    metrics: dict[str, Any] = Field(default_factory=dict)
+    risk_assessment: dict[str, Any] = Field(default_factory=dict)
+    key_findings: list[str] = Field(default_factory=list)
+    supporting_evidence: list[dict[str, Any]] = Field(default_factory=list)
+    supporting_documents: list[dict[str, Any]] = Field(default_factory=list)
+    citations: list[CitationRecord] = Field(default_factory=list)
+    recommendations: list[str] = Field(default_factory=list)
+    validation: EvaluationRecord | dict[str, Any] | None = None
+    traceability: TraceabilityRecord | dict[str, Any] = Field(default_factory=dict)
+    execution_metadata: list[ExecutionMetadataRecord] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ReportExportRecord(BaseModel):
+    formats: list[str] = Field(default_factory=list)
+    file_name: str | None = None
+    markdown: str | None = None
+    json: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class WorkflowStageRecord(BaseModel):
+    name: str | None = None
+    label: str | None = None
+    status: str | None = None
+    description: str | None = None
+    summary: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class WorkflowAutomationRecord(BaseModel):
+    workflow_id: str | None = None
+    workflow_type: str | None = None
+    entity_type: str | None = None
+    entity_id: str | None = None
+    current_stage: str | None = None
+    overall_status: str | None = None
+    progress: dict[str, Any] = Field(default_factory=dict)
+    summary: dict[str, Any] = Field(default_factory=dict)
+    stages: list[WorkflowStageRecord] = Field(default_factory=list)
+    timeline: list[dict[str, Any]] = Field(default_factory=list)
+    generated_at: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ExecutionMetadataRecord(BaseModel):
     agent: str | None = None
     reason_selected: str | None = None
@@ -134,6 +195,7 @@ class AuditResponse(BaseModel):
     query: str
     intent: dict[str, Any] = Field(default_factory=dict)
     routing_decision: dict[str, Any] = Field(default_factory=dict)
+    source_route: dict[str, Any] = Field(default_factory=dict)
     investigation_plan: dict[str, Any] = Field(default_factory=dict)
     entities_investigated: list[str] = Field(default_factory=list)
     entity_type: str | None = None
@@ -163,6 +225,9 @@ class AuditResponse(BaseModel):
     final_response: str = ""
     traceability: TraceabilityRecord = Field(default_factory=TraceabilityRecord)
     evaluation: EvaluationRecord | None = None
+    workflow_automation: WorkflowAutomationRecord | dict[str, Any] | None = None
+    workpaper: WorkpaperRecord | None = None
+    report_exports: ReportExportRecord | None = None
     execution_metadata: list[ExecutionMetadataRecord] = Field(default_factory=list)
     message: str | None = None
 

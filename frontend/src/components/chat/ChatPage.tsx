@@ -40,6 +40,20 @@ const EMPTY_INVESTIGATION: InvestigationState = {
   status: 'idle',
 };
 
+interface ChatPageProps {
+  onNavigateToSources?: () => void;
+  onNavigateToWorkspaces?: () => void;
+}
+
+interface SessionUiState {
+  title?: string;
+  pinned?: boolean;
+  archived?: boolean;
+  hidden?: boolean;
+}
+
+const SESSION_UI_KEY = 'audit_chat_session_ui_state';
+
 function getFirstName(fullName?: string | null): string {
   if (!fullName) return 'there';
   return fullName.trim().split(/\s+/)[0] || 'there';
@@ -92,7 +106,243 @@ function turnToMessages(history: ChatHistoryResponse): ChatMessage[] {
   return messages;
 }
 
-export function ChatPage() {
+function SessionGroup({
+  title,
+  sessions,
+  activeSessionId,
+  sessionUiState,
+  sessionMenuOpen,
+  setSessionMenuOpen,
+  sessionMenuRefs,
+  onSelectSession,
+  onRenameSession,
+  onShareSession,
+  onPinSession,
+  onArchiveSession,
+  onDeleteSession,
+  emptyLabel,
+}: {
+  title: string;
+  sessions: ChatSessionSummary[];
+  activeSessionId: string | null;
+  sessionUiState: Record<string, SessionUiState>;
+  sessionMenuOpen: string | null;
+  setSessionMenuOpen: (sessionId: string | null) => void;
+  sessionMenuRefs: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
+  onSelectSession: (id: string) => void;
+  onRenameSession: (id: string) => void;
+  onShareSession: (id: string) => void;
+  onPinSession: (id: string) => void;
+  onArchiveSession: (id: string) => void;
+  onDeleteSession: (id: string) => void;
+  emptyLabel: string;
+}) {
+  if (!sessions.length) {
+    return (
+      <div style={{ display: 'grid', gap: '0.5rem' }}>
+        <p className="label" style={{ marginBottom: 0 }}>
+          {title}
+        </p>
+        <div className="card" style={{ padding: '0.8rem 0.9rem', fontSize: '0.83rem', color: 'var(--text-muted)' }}>
+          {emptyLabel}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: '0.5rem' }}>
+      <p className="label" style={{ marginBottom: 0 }}>
+        {title}
+      </p>
+      <div style={{ display: 'grid', gap: '0.55rem' }}>
+        {sessions.map((session) => {
+          const active = session.session_id === activeSessionId;
+          const ui = sessionUiState[session.session_id] || {};
+          const titleText = ui.title || session.session_title || 'New chat';
+          const preview = truncatePreview(session.last_message_preview, 82);
+          const dateText = session.last_message_at ? new Date(session.last_message_at).toLocaleDateString() : '';
+          return (
+            <div
+              key={session.session_id}
+              style={{
+                position: 'relative',
+                borderRadius: '18px',
+                border: `1px solid ${active ? 'rgba(99,102,241,0.35)' : 'var(--border)'}`,
+                background: active ? 'rgba(99,102,241,0.08)' : 'rgba(255,255,255,0.9)',
+                boxShadow: active ? '0 10px 24px rgba(99,102,241,0.08)' : '0 8px 22px rgba(15,23,42,0.04)',
+                overflow: 'visible',
+                zIndex: sessionMenuOpen === session.session_id ? 20 : 1,
+              }}
+              onMouseLeave={() => setSessionMenuOpen(null)}
+            >
+              <button
+                type="button"
+                onClick={() => onSelectSession(session.session_id)}
+                style={{
+                  textAlign: 'left',
+                  width: '100%',
+                  padding: '0.82rem 2.35rem 0.82rem 0.9rem',
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.6rem' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <strong
+                      style={{
+                        display: 'block',
+                        fontSize: '0.9rem',
+                        color: 'var(--text-primary)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        maxWidth: '180px',
+                      }}
+                    >
+                      {titleText}
+                    </strong>
+                    <span
+                      className="small-copy"
+                      style={{
+                        display: '-webkit-box',
+                        WebkitBoxOrient: 'vertical',
+                        WebkitLineClamp: 2,
+                        overflow: 'hidden',
+                        marginTop: '0.25rem',
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      {preview}
+                    </span>
+                  </div>
+                  {ui.pinned && (
+                    <span className="source-pill" style={{ fontSize: '0.68rem', flexShrink: 0 }}>
+                      Pinned
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.55rem', gap: '0.5rem' }}>
+                  <span className="source-pill">
+                    {session.turn_count} turn{session.turn_count === 1 ? '' : 's'}
+                  </span>
+                  <span className="small-copy">{dateText}</span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                aria-label="Chat options"
+                onClick={() => setSessionMenuOpen(sessionMenuOpen === session.session_id ? null : session.session_id)}
+                style={{
+                  position: 'absolute',
+                  top: '0.6rem',
+                  right: '0.55rem',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(148,163,184,0.2)',
+                  background: sessionMenuOpen === session.session_id ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.82)',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                }}
+              >
+                ⋯
+              </button>
+
+              {sessionMenuOpen === session.session_id && (
+                <div
+                  ref={(node) => {
+                    sessionMenuRefs.current[session.session_id] = node;
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: '2.6rem',
+                    right: '0.6rem',
+                    minWidth: '180px',
+                    padding: '0.35rem',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(148,163,184,0.18)',
+                    background: 'rgba(17,24,39,0.96)',
+                    boxShadow: '0 18px 36px rgba(15,23,42,0.24)',
+                    zIndex: 5,
+                  }}
+                >
+                  <SessionMenuItem label="Rename" onClick={() => onRenameSession(session.session_id)} />
+                  <SessionMenuItem label="Share" onClick={() => onShareSession(session.session_id)} />
+                  <SessionMenuItem label={ui.pinned ? 'Unpin' : 'Pin'} onClick={() => onPinSession(session.session_id)} />
+                  <SessionMenuItem label={ui.archived ? 'Unarchive' : 'Archive'} onClick={() => onArchiveSession(session.session_id)} />
+                  <SessionMenuItem label="Delete" destructive onClick={() => onDeleteSession(session.session_id)} />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SessionMenuItem({
+  label,
+  onClick,
+  destructive,
+}: {
+  label: string;
+  onClick: () => void;
+  destructive?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        width: '100%',
+        padding: '0.6rem 0.75rem',
+        border: 'none',
+        borderRadius: '12px',
+        background: 'transparent',
+        color: destructive ? '#fda4af' : '#f9fafb',
+        cursor: 'pointer',
+        textAlign: 'left',
+        fontSize: '0.82rem',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'transparent';
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+function loadSessionUiState(): Record<string, SessionUiState> {
+  try {
+    const raw = localStorage.getItem(SESSION_UI_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, SessionUiState>;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function persistSessionUiState(state: Record<string, SessionUiState>) {
+  localStorage.setItem(SESSION_UI_KEY, JSON.stringify(state));
+}
+
+function truncatePreview(text: string | null | undefined, limit = 72): string {
+  const cleaned = (text || '').replace(/\s+/g, ' ').trim();
+  if (!cleaned) return 'No messages yet';
+  if (cleaned.length <= limit) return cleaned;
+  return `${cleaned.slice(0, limit - 1).trimEnd()}…`;
+}
+
+export function ChatPage({ onNavigateToSources, onNavigateToWorkspaces }: ChatPageProps = {}) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -104,12 +354,14 @@ export function ChatPage() {
   const [suggestedActions, setSuggestedActions] = useState<SuggestedAction[]>([]);
   const [investigationState, setInvestigationState] = useState<InvestigationState>(EMPTY_INVESTIGATION);
   const [turnCount, setTurnCount] = useState(0);
-  const [showSidebar, setShowSidebar] = useState(true);
-  const [showTools, setShowTools] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const [attachedDocuments, setAttachedDocuments] = useState<DocumentMetadataRecord[]>([]);
+  const [sessionUiState, setSessionUiState] = useState<Record<string, SessionUiState>>(loadSessionUiState());
+  const [sessionMenuOpen, setSessionMenuOpen] = useState<string | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sessionMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const activeWorkspaceId = getSelectedWorkspaceId();
   const currentUser = getStoredAuthUser();
   const firstName = getFirstName(currentUser?.full_name);
@@ -118,6 +370,25 @@ export function ChatPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    persistSessionUiState(sessionUiState);
+  }, [sessionUiState]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!sessionMenuOpen) return;
+      const currentMenu = sessionMenuRefs.current[sessionMenuOpen];
+      if (currentMenu && !currentMenu.contains(event.target as Node)) {
+        setSessionMenuOpen(null);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [sessionMenuOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -185,6 +456,14 @@ export function ChatPage() {
         last_message_at: new Date().toISOString(),
         is_archived: false,
       };
+      setSessionUiState((uiPrev) => ({
+        ...uiPrev,
+        [response.session_id]: {
+          ...uiPrev[response.session_id],
+          title: uiPrev[response.session_id]?.title || nextTitle,
+          archived: false,
+        },
+      }));
       return [updated, ...prev.filter((item) => item.session_id !== response.session_id)];
     });
   };
@@ -202,6 +481,7 @@ export function ChatPage() {
 
   const handleSelectSession = async (id: string) => {
     if (id === sessionId) return;
+    setSessionMenuOpen(null);
     await loadSessionHistory(id);
   };
 
@@ -215,10 +495,84 @@ export function ChatPage() {
     setSuggestedActions([]);
     setInvestigationState(EMPTY_INVESTIGATION);
     setTurnCount(0);
-    setShowTools(false);
     setUploadError(null);
     setAttachedDocuments([]);
   };
+
+  const updateSessionUiState = (sessionIdToUpdate: string, updater: (prev: SessionUiState) => SessionUiState) => {
+    setSessionUiState((prev) => ({
+      ...prev,
+      [sessionIdToUpdate]: updater(prev[sessionIdToUpdate] || {}),
+    }));
+  };
+
+  const handleRenameSession = (targetSessionId: string) => {
+    const current = sessionUiState[targetSessionId]?.title || chatSessions.find((item) => item.session_id === targetSessionId)?.session_title || 'New chat';
+    const next = window.prompt('Rename this chat', current)?.trim();
+    if (!next) return;
+    updateSessionUiState(targetSessionId, (prev) => ({ ...prev, title: next }));
+    setChatSessions((prev) =>
+      prev.map((item) =>
+        item.session_id === targetSessionId
+          ? { ...item, session_title: next, updated_at: new Date().toISOString() }
+          : item,
+      ),
+    );
+    setSessionMenuOpen(null);
+  };
+
+  const handleShareSession = async (targetSessionId: string) => {
+    const session = chatSessions.find((item) => item.session_id === targetSessionId);
+    const title = sessionUiState[targetSessionId]?.title || session?.session_title || 'Chat';
+    const shareText = `${title}\nSession: ${targetSessionId}`;
+    try {
+      await navigator.clipboard.writeText(shareText);
+    } catch {
+      window.prompt('Copy chat reference', shareText);
+    }
+    setSessionMenuOpen(null);
+  };
+
+  const handlePinSession = (targetSessionId: string) => {
+    updateSessionUiState(targetSessionId, (prev) => ({ ...prev, pinned: !prev.pinned }));
+    setSessionMenuOpen(null);
+  };
+
+  const handleArchiveSession = (targetSessionId: string) => {
+    updateSessionUiState(targetSessionId, (prev) => ({ ...prev, archived: !prev.archived }));
+    if (targetSessionId === sessionId) {
+      setSessionId(null);
+      setMessages([]);
+      setSuggestedActions([]);
+      setInvestigationState(EMPTY_INVESTIGATION);
+      setTurnCount(0);
+      setInput('');
+    }
+    setSessionMenuOpen(null);
+  };
+
+  const handleDeleteSession = (targetSessionId: string) => {
+    const session = chatSessions.find((item) => item.session_id === targetSessionId);
+    const title = sessionUiState[targetSessionId]?.title || session?.session_title || 'this chat';
+    const confirmed = window.confirm(`Delete ${title}? This removes it from your local chat list.`);
+    if (!confirmed) return;
+    updateSessionUiState(targetSessionId, (prev) => ({ ...prev, hidden: true }));
+    setChatSessions((prev) => prev.filter((item) => item.session_id !== targetSessionId));
+    if (targetSessionId === sessionId) {
+      setSessionId(null);
+      setMessages([]);
+      setSuggestedActions([]);
+      setInvestigationState(EMPTY_INVESTIGATION);
+      setTurnCount(0);
+      setInput('');
+    }
+    setSessionMenuOpen(null);
+  };
+
+  const visibleSessions = chatSessions.filter((session) => !sessionUiState[session.session_id]?.hidden && !sessionUiState[session.session_id]?.archived);
+  const archivedSessions = chatSessions.filter((session) => sessionUiState[session.session_id]?.archived && !sessionUiState[session.session_id]?.hidden);
+  const pinnedSessions = visibleSessions.filter((session) => sessionUiState[session.session_id]?.pinned);
+  const recentSessions = visibleSessions.filter((session) => !sessionUiState[session.session_id]?.pinned);
 
   const appendAssistantResponse = (response: ChatResponse) => {
     updateSessionSummary(response);
@@ -335,7 +689,6 @@ export function ChatPage() {
       }
       if (uploaded.length > 0) {
         setAttachedDocuments((prev) => [...prev, ...uploaded]);
-        setShowTools(true);
       }
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : 'Failed to upload document.');
@@ -393,38 +746,57 @@ export function ChatPage() {
               Loading chats...
             </div>
           ) : chatSessions.length > 0 ? (
-            <div style={{ display: 'grid', gap: '0.65rem' }}>
-              {chatSessions.map((session) => {
-                const active = session.session_id === sessionId;
-                return (
-                  <button
-                    key={session.session_id}
-                    type="button"
-                    onClick={() => void handleSelectSession(session.session_id)}
-                    style={{
-                      textAlign: 'left',
-                      width: '100%',
-                      padding: '0.82rem 0.9rem',
-                      borderRadius: '16px',
-                      border: `1px solid ${active ? 'rgba(37,99,235,0.35)' : 'var(--border)'}`,
-                      background: active ? 'rgba(37,99,235,0.08)' : 'rgba(255,255,255,0.86)',
-                      boxShadow: active ? '0 10px 24px rgba(37,99,235,0.08)' : '0 8px 22px rgba(15,23,42,0.04)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <strong style={{ display: 'block', fontSize: '0.88rem', color: 'var(--text-primary)' }}>
-                      {session.session_title || 'New chat'}
-                    </strong>
-                    <span className="small-copy" style={{ display: 'block', marginTop: '0.2rem' }}>
-                      {session.last_message_preview || 'No messages yet'}
-                    </span>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', gap: '0.5rem' }}>
-                      <span className="source-pill">{session.turn_count} turn{session.turn_count === 1 ? '' : 's'}</span>
-                      <span className="small-copy">{session.last_message_at ? new Date(session.last_message_at).toLocaleDateString() : ''}</span>
-                    </div>
-                  </button>
-                );
-              })}
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              <SessionGroup
+                title="Pinned"
+                sessions={pinnedSessions}
+                activeSessionId={sessionId}
+                sessionUiState={sessionUiState}
+                sessionMenuOpen={sessionMenuOpen}
+                setSessionMenuOpen={setSessionMenuOpen}
+                sessionMenuRefs={sessionMenuRefs}
+                onSelectSession={handleSelectSession}
+                onRenameSession={handleRenameSession}
+                onShareSession={handleShareSession}
+                onPinSession={handlePinSession}
+                onArchiveSession={handleArchiveSession}
+                onDeleteSession={handleDeleteSession}
+                emptyLabel="Pin chats to keep them at the top."
+              />
+              <SessionGroup
+                title="Recent"
+                sessions={recentSessions}
+                activeSessionId={sessionId}
+                sessionUiState={sessionUiState}
+                sessionMenuOpen={sessionMenuOpen}
+                setSessionMenuOpen={setSessionMenuOpen}
+                sessionMenuRefs={sessionMenuRefs}
+                onSelectSession={handleSelectSession}
+                onRenameSession={handleRenameSession}
+                onShareSession={handleShareSession}
+                onPinSession={handlePinSession}
+                onArchiveSession={handleArchiveSession}
+                onDeleteSession={handleDeleteSession}
+                emptyLabel="Your recent chats will show up here."
+              />
+              {archivedSessions.length > 0 && (
+                <SessionGroup
+                  title="Archived"
+                  sessions={archivedSessions}
+                  activeSessionId={sessionId}
+                  sessionUiState={sessionUiState}
+                  sessionMenuOpen={sessionMenuOpen}
+                  setSessionMenuOpen={setSessionMenuOpen}
+                  sessionMenuRefs={sessionMenuRefs}
+                  onSelectSession={handleSelectSession}
+                  onRenameSession={handleRenameSession}
+                  onShareSession={handleShareSession}
+                  onPinSession={handlePinSession}
+                  onArchiveSession={handleArchiveSession}
+                  onDeleteSession={handleDeleteSession}
+                  emptyLabel="Archived chats are tucked away here."
+                />
+              )}
             </div>
           ) : (
             <div className="card" style={{ padding: '0.95rem' }}>
@@ -465,7 +837,7 @@ export function ChatPage() {
               <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{sessionId.slice(0, 8)}</span>
             )}
             <button type="button" className="btn btn-ghost" onClick={() => setShowSidebar((value) => !value)} style={{ fontSize: '0.8rem' }}>
-              {showSidebar ? 'Hide panel' : 'Show panel'}
+              {showSidebar ? 'Close details' : 'Details'}
             </button>
             <button type="button" className="btn btn-secondary" onClick={() => void handleNewSession()} style={{ fontSize: '0.8rem' }}>
               New session
@@ -581,110 +953,79 @@ export function ChatPage() {
             />
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button type="button" className="btn btn-secondary" onClick={handleAttachClick} disabled={isUploading || isLoading} style={{ fontSize: '0.8rem' }}>
-                {isUploading ? 'Uploading...' : 'Attach docs'}
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => setShowTools((value) => !value)}
-                style={{ fontSize: '0.8rem' }}
-                disabled={isLoading}
-              >
-                {showTools ? 'Hide tools' : 'Show tools'}
-              </button>
-              {attachedDocuments.length > 0 && (
-                <span className="source-pill" style={{ fontSize: '0.72rem' }}>
-                  {attachedDocuments.length} attached
-                </span>
-              )}
-              {suggestedActions.length > 0 && (
-                <span className="source-pill" style={{ fontSize: '0.72rem' }}>
-                  {suggestedActions.length} next steps
+              {attachedDocuments.length > 0 && <span className="source-pill" style={{ fontSize: '0.72rem' }}>{attachedDocuments.length} attached</span>}
+              {suggestedActions.length > 0 && <span className="source-pill" style={{ fontSize: '0.72rem' }}>{suggestedActions.length} next steps</span>}
+              {uploadError && (
+                <span
+                  style={{
+                    fontSize: '0.76rem',
+                    color: 'var(--accent-red)',
+                    background: 'rgba(239,68,68,0.08)',
+                    border: '1px solid rgba(239,68,68,0.15)',
+                    borderRadius: '999px',
+                    padding: '0.35rem 0.65rem',
+                  }}
+                >
+                  {uploadError}
                 </span>
               )}
             </div>
 
-            {showTools && (
+            {suggestedActions.length > 0 && (
               <div
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 1fr)',
-                  gap: '0.75rem',
-                  padding: '0.85rem',
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border)',
+                  padding: '0.75rem 0.9rem',
                   borderRadius: '18px',
+                  border: '1px solid rgba(99,102,241,0.12)',
+                  background: 'rgba(99,102,241,0.04)',
                 }}
               >
-                <div style={{ minWidth: 0 }}>
-                  <p className="label" style={{ marginBottom: '0.5rem' }}>
-                    Attached Documents
-                  </p>
-                  {attachedDocuments.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                      {attachedDocuments.map((document) => (
-                        <div
-                          key={document.document_id}
-                          style={{
-                            padding: '0.55rem 0.7rem',
-                            border: '1px solid var(--border)',
-                            borderRadius: '12px',
-                            background: 'rgba(255,255,255,0.74)',
-                          }}
-                        >
-                          <div style={{ fontWeight: 700, fontSize: '0.86rem', color: 'var(--text-primary)' }}>{document.file_name}</div>
-                          <div className="small-copy" style={{ marginTop: '0.2rem' }}>
-                            {document.document_category} | {document.document_type}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="small-copy" style={{ margin: 0 }}>
-                      No attached documents yet.
-                    </p>
-                  )}
-                  {uploadError && (
-                    <div
-                      style={{
-                        marginTop: '0.65rem',
-                        padding: '0.55rem 0.7rem',
-                        borderRadius: '12px',
-                        border: '1px solid rgba(239,68,68,0.25)',
-                        background: 'rgba(239,68,68,0.08)',
-                        color: 'var(--accent-red)',
-                        fontSize: '0.82rem',
-                      }}
-                    >
-                      {uploadError}
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ minWidth: 0 }}>
-                  <p className="label" style={{ marginBottom: '0.5rem' }}>
-                    Suggested Next Steps
-                  </p>
-                  {suggestedActions.length > 0 ? (
-                    <SuggestedActions actions={suggestedActions} onSelect={handleActionSelect} disabled={isLoading} />
-                  ) : (
-                    <p className="small-copy" style={{ margin: 0 }}>
-                      Suggestions will appear after the first response.
-                    </p>
-                  )}
-                </div>
+                <p style={{ margin: '0 0 0.55rem', fontSize: '0.76rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+                  What would you like to do next?
+                </p>
+                <SuggestedActions actions={suggestedActions} onSelect={handleActionSelect} disabled={isLoading} />
               </div>
             )}
 
-            <ChatInput value={input} onChange={setInput} onSubmit={() => void sendMessage(input)} disabled={isLoading} />
+            <ChatInput
+              value={input}
+              onChange={setInput}
+              onSubmit={() => void sendMessage(input)}
+              disabled={isLoading}
+              attachedCount={attachedDocuments.length}
+              onAttachDocuments={handleAttachClick}
+              onOpenSources={onNavigateToSources}
+              onOpenWorkspaces={onNavigateToWorkspaces}
+            />
           </div>
         </div>
       </div>
 
       {showSidebar && (
-        <div style={{ width: '320px', flexShrink: 0, display: 'flex', minWidth: 0 }}>
-          <InvestigationSidebar state={investigationState} turnCount={turnCount} onCollapse={() => setShowSidebar(false)} />
+        <div
+          style={{
+            position: 'fixed',
+            top: '72px',
+            right: '1rem',
+            bottom: '1rem',
+            width: '360px',
+            zIndex: 35,
+            pointerEvents: 'auto',
+          }}
+        >
+          <div
+            style={{
+              height: '100%',
+              borderRadius: '24px',
+              border: '1px solid rgba(226,232,240,0.9)',
+              background: 'rgba(255,255,255,0.96)',
+              boxShadow: '0 24px 60px rgba(15,23,42,0.18)',
+              backdropFilter: 'blur(18px)',
+              overflow: 'hidden',
+            }}
+          >
+            <InvestigationSidebar state={investigationState} turnCount={turnCount} onCollapse={() => setShowSidebar(false)} />
+          </div>
         </div>
       )}
     </div>

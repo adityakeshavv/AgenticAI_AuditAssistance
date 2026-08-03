@@ -8,9 +8,11 @@ from app.dependencies.auth import require_admin
 from app.dependencies.database import get_db
 from app.schemas.audit import RouterReviewSummaryResponse
 from app.schemas.auth import AuthUser, UserStatusUpdate
+from app.schemas.monitoring import MonitoringAlertStatusUpdate, MonitoringScanResponse, MonitoringSummaryResponse
 from app.services.auth_service import AuthService
 from app.services.database_connector_service import DatabaseConnectorService
 from app.services.governance_audit_service import GovernanceAuditService
+from app.services.monitoring_service import MonitoringService
 from app.services.realtime_service import realtime_hub
 from app.services.workspace_service import WorkspaceService
 
@@ -161,3 +163,61 @@ def active_users(
 ) -> dict:
     active_users = realtime_hub.list_active_users()
     return {"active_users": active_users, "active_user_count": len(active_users)}
+
+
+@router.get("/monitoring/summary", response_model=MonitoringSummaryResponse)
+def monitoring_summary(
+    db: Session = Depends(get_db),
+    _current_user: AuthUser = Depends(require_admin),
+) -> MonitoringSummaryResponse:
+    svc = MonitoringService(db)
+    summary = svc.build_summary()
+    return MonitoringSummaryResponse(**summary)
+
+
+@router.get("/monitoring/alerts")
+def monitoring_alerts(
+    limit: int = 50,
+    offset: int = 0,
+    status: str | None = None,
+    severity: str | None = None,
+    alert_type: str | None = None,
+    search: str | None = None,
+    db: Session = Depends(get_db),
+    _current_user: AuthUser = Depends(require_admin),
+) -> dict:
+    svc = MonitoringService(db)
+    return {
+        "alerts": svc.list_alerts(
+            limit=limit,
+            offset=offset,
+            status=status,
+            severity=severity,
+            alert_type=alert_type,
+            search=search,
+        )
+    }
+
+
+@router.post("/monitoring/scan", response_model=MonitoringScanResponse)
+def monitoring_scan(
+    db: Session = Depends(get_db),
+    _current_user: AuthUser = Depends(require_admin),
+) -> MonitoringScanResponse:
+    svc = MonitoringService(db)
+    summary = svc.scan_now()
+    return MonitoringScanResponse(summary=MonitoringSummaryResponse(**summary))
+
+
+@router.patch("/monitoring/alerts/{alert_id}")
+def update_monitoring_alert(
+    alert_id: str,
+    payload: MonitoringAlertStatusUpdate,
+    db: Session = Depends(get_db),
+    current_user: AuthUser = Depends(require_admin),
+) -> dict:
+    svc = MonitoringService(db)
+    updated = svc.update_alert_status(alert_id=alert_id, status=payload.status, actor_user_id=current_user.user_id)
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Alert not found.")
+    return {"success": True, "alert": updated}
