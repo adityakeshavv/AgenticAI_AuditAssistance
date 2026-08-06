@@ -484,6 +484,38 @@ COMMENT ON COLUMN document_metadata.file_path IS
 COMMENT ON COLUMN document_metadata.source_metadata_file IS
     'Origin metadata CSV used to ingest this row.';
 
+CREATE TABLE knowledge_graph_node (
+    node_id VARCHAR(120) PRIMARY KEY,
+    entity_type VARCHAR(50) NOT NULL,
+    entity_id VARCHAR(100) NOT NULL,
+    display_label VARCHAR(255) NOT NULL,
+    node_kind VARCHAR(50) NOT NULL,
+    attributes JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT uq_knowledge_graph_node_entity UNIQUE (entity_type, entity_id)
+);
+
+CREATE TABLE knowledge_graph_edge (
+    edge_id VARCHAR(200) PRIMARY KEY,
+    source_node_id VARCHAR(120) NOT NULL,
+    target_node_id VARCHAR(120) NOT NULL,
+    relationship_type VARCHAR(100) NOT NULL,
+    strength DOUBLE PRECISION NOT NULL DEFAULT 1.0,
+    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT fk_knowledge_graph_edge_source
+        FOREIGN KEY (source_node_id)
+        REFERENCES knowledge_graph_node (node_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_knowledge_graph_edge_target
+        FOREIGN KEY (target_node_id)
+        REFERENCES knowledge_graph_node (node_id)
+        ON DELETE CASCADE,
+    CONSTRAINT uq_knowledge_graph_edge_link UNIQUE (source_node_id, target_node_id, relationship_type)
+);
+
 CREATE INDEX idx_employee_master_department_id
     ON employee_master (department_id);
 CREATE INDEX idx_employee_master_manager_id
@@ -537,6 +569,17 @@ CREATE INDEX idx_document_metadata_related_contract_id
     ON document_metadata (related_contract_id);
 CREATE INDEX idx_document_metadata_related_investigation_id
     ON document_metadata (related_investigation_id);
+
+CREATE INDEX idx_knowledge_graph_node_entity_type_entity_id
+    ON knowledge_graph_node (entity_type, entity_id);
+CREATE INDEX idx_knowledge_graph_node_kind
+    ON knowledge_graph_node (node_kind);
+CREATE INDEX idx_knowledge_graph_edge_source_node_id
+    ON knowledge_graph_edge (source_node_id);
+CREATE INDEX idx_knowledge_graph_edge_target_node_id
+    ON knowledge_graph_edge (target_node_id);
+CREATE INDEX idx_knowledge_graph_edge_relationship_type
+    ON knowledge_graph_edge (relationship_type);
 
 CREATE INDEX idx_vendor_risk_status
     ON vendor (risk_rating, status);
@@ -600,6 +643,12 @@ CREATE TRIGGER trg_evidence_set_updated_at
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_document_metadata_set_updated_at
     BEFORE UPDATE ON document_metadata
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_knowledge_graph_node_set_updated_at
+    BEFORE UPDATE ON knowledge_graph_node
+    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_knowledge_graph_edge_set_updated_at
+    BEFORE UPDATE ON knowledge_graph_edge
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 COMMIT;

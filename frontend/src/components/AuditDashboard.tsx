@@ -11,6 +11,7 @@ interface AuditDashboardProps {
   onNavigateToSources: () => void;
   onNavigateToAudit: () => void;
   onNavigateToChat: () => void;
+  onNavigateToGraph: () => void;
   activeWorkspaceName: string | null;
   hasSelectedSource: boolean;
   workspaceCount: number;
@@ -37,6 +38,7 @@ export function AuditDashboard({
   onNavigateToSources,
   onNavigateToAudit,
   onNavigateToChat,
+  onNavigateToGraph,
   activeWorkspaceName,
   hasSelectedSource,
   workspaceCount,
@@ -151,6 +153,13 @@ export function AuditDashboard({
       detail: 'Use the audit workspace to ask a question and inspect evidence-backed findings.',
       actionLabel: 'Open Audit Workspace',
       action: onNavigateToAudit,
+    },
+    {
+      title: 'Explore the knowledge graph',
+      status: hasSelectedSource ? 'Ready' : 'Pending',
+      detail: 'Inspect entity relationships across vendors, transactions, documents, and findings.',
+      actionLabel: 'Open Graph',
+      action: onNavigateToGraph,
     },
     {
       title: 'Continue in Copilot Chat',

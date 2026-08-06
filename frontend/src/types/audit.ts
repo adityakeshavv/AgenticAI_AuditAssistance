@@ -123,6 +123,57 @@ export interface AuditResponse {
   message?: string | null;
 }
 
+export type KnowledgeGraphEntityType =
+  | 'vendor'
+  | 'transaction'
+  | 'contract'
+  | 'compliance_record'
+  | 'audit_investigation'
+  | 'document_metadata';
+
+export interface KnowledgeGraphNodeRecord {
+  node_id: string;
+  entity_type: string;
+  entity_id: string;
+  display_label: string;
+  node_kind: string;
+  attributes: Record<string, unknown>;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface KnowledgeGraphEdgeRecord {
+  edge_id: string;
+  source_node_id: string;
+  target_node_id: string;
+  relationship_type: string;
+  strength: number;
+  metadata: Record<string, unknown>;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface KnowledgeGraphSummary {
+  entity_type: string;
+  entity_id: string;
+  root_node_id?: string | null;
+  node_count: number;
+  edge_count: number;
+  relationship_breakdown: Record<string, number>;
+  generated_at?: string | null;
+}
+
+export interface KnowledgeGraphResponse {
+  success: boolean;
+  entity_type: string;
+  entity_id: string;
+  root_node?: KnowledgeGraphNodeRecord | null;
+  nodes: KnowledgeGraphNodeRecord[];
+  edges: KnowledgeGraphEdgeRecord[];
+  summary: KnowledgeGraphSummary | Record<string, unknown>;
+  message?: string | null;
+}
+
 // ── Chat / Conversation types ──────────────────────────────────────────────
 
 export interface SuggestedAction {

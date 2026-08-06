@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AuthPage } from './components/AuthPage';
 import { AuditDashboard } from './components/AuditDashboard';
 import { AuditQueryPage } from './components/AuditQueryPage';
+import { KnowledgeGraphPage } from './components/KnowledgeGraphPage';
 import { GovernancePage } from './components/GovernancePage';
 import { WorkspaceManagementPage } from './components/WorkspaceManagementPage';
 import { DatabaseConnectionsPage } from './components/DatabaseConnectionsPage';
@@ -13,13 +14,14 @@ import { connectRealtimeSocket } from './services/realtimeSocket';
 import type { AuthResponse, AuthUser } from './types/auth';
 import type { WorkspaceRecord } from './types/workspace';
 
-type Page = 'dashboard' | 'workspaces' | 'sources' | 'audit' | 'chat' | 'governance';
+type Page = 'dashboard' | 'workspaces' | 'sources' | 'audit' | 'graph' | 'chat' | 'governance';
 
 const JOURNEY_STEPS: Array<{ key: Page; label: string; detail: string }> = [
   { key: 'workspaces', label: '1. Workspace', detail: 'Create or select the audit workspace.' },
   { key: 'sources', label: '2. Data Source', detail: 'Connect databases and document sources.' },
   { key: 'audit', label: '3. Audit Workspace', detail: 'Run investigations and review evidence.' },
-  { key: 'chat', label: '4. Copilot Chat', detail: 'Continue with follow-up questions.' },
+  { key: 'graph', label: '4. Knowledge Graph', detail: 'Explore how entities relate across the audit data.' },
+  { key: 'chat', label: '5. Copilot Chat', detail: 'Continue with follow-up questions.' },
 ];
 
 export default function App() {
@@ -245,6 +247,9 @@ export default function App() {
                   <button className={`rail-tab${page === 'audit' ? ' active' : ''}`} onClick={() => setPage('audit')}>
                     Audit Workspace
                   </button>
+                  <button className={`rail-tab${page === 'graph' ? ' active' : ''}`} onClick={() => setPage('graph')}>
+                    Knowledge Graph
+                  </button>
                   <button className={`rail-tab${page === 'chat' ? ' active' : ''}`} onClick={() => setPage('chat')}>
                     Copilot Chat
                   </button>
@@ -341,6 +346,8 @@ export default function App() {
               <WorkspaceManagementPage realtimeTick={realtimeTick} />
             ) : page === 'audit' ? (
               <AuditQueryPage />
+            ) : page === 'graph' ? (
+              <KnowledgeGraphPage />
             ) : page === 'governance' ? (
               <GovernancePage isAdmin={isAdmin} currentUserId={authUser.user_id} realtimeTick={realtimeTick} />
             ) : page === 'dashboard' ? (
@@ -348,6 +355,7 @@ export default function App() {
                 onNavigateToWorkspace={() => setPage('workspaces')}
                 onNavigateToSources={() => setPage('sources')}
                 onNavigateToAudit={() => setPage('audit')}
+                onNavigateToGraph={() => setPage('graph')}
                 onNavigateToChat={() => setPage('chat')}
                 activeWorkspaceName={activeWorkspace?.workspace_name || null}
                 hasSelectedSource={Boolean(activeWorkspace?.active_connection_id || activeWorkspace?.selected_connection_ids?.length)}
